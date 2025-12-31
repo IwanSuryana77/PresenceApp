@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:peresenceapp/screens/home/home_screen.dart';
 
-// Sky blue color
 const skyBlue = Color(0xFF53B6FF);
 
 class LemburPage extends StatefulWidget {
   const LemburPage({super.key});
 
   @override
-  State<LemburPage> createState() => _LemburModernPageState();
+  State<LemburPage> createState() => _LemburPageState();
 }
 
-class _LemburModernPageState extends State<LemburPage> {
+class _LemburPageState extends State<LemburPage> {
   final _formKey = GlobalKey<FormState>();
 
   final tglLemburC = TextEditingController();
@@ -25,16 +26,25 @@ class _LemburModernPageState extends State<LemburPage> {
   List<String> dummyRiwayat = [
     "2024-06-12 • Shift: Siang • Kompensasi: Uang makan",
     "2024-06-18 • Shift: Malam • Kompensasi: Transport",
-    "2024-06-19 • Shift: Pagi • Kompensasi: Uang lembur",
   ];
 
-  // Placeholder untuk file lampiran
   List<String> lampiran = [];
+
+  Future<void> pickFile() async {
+    final result = await FilePicker.platform.pickFiles();
+    if (result != null && result.files.isNotEmpty) {
+      setState(() {
+        lampiran.add(result.files.single.name);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FBFF),
+
+      // ================= APP BAR =================
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(60),
         child: SafeArea(
@@ -43,8 +53,12 @@ class _LemburModernPageState extends State<LemburPage> {
             child: Row(
               children: [
                 IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.arrow_back_rounded, color: skyBlue, size: 28),
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(
+                    Icons.arrow_back_rounded,
+                    color: skyBlue,
+                    size: 28,
+                  ),
                 ),
                 const Expanded(
                   child: Center(
@@ -54,98 +68,94 @@ class _LemburModernPageState extends State<LemburPage> {
                         color: skyBlue,
                         fontWeight: FontWeight.w700,
                         fontSize: 24,
-                        letterSpacing: 0.2,
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 54), // supaya judul tetap center
+                const SizedBox(width: 54),
               ],
             ),
           ),
         ),
       ),
+
+      // ================= BODY =================
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _LemburForm(
-                formKey: _formKey,
-                tglLemburC: tglLemburC,
-                shiftValue: shiftValue,
-                shiftOnChanged: (v) => setState(() => shiftValue = v),
-                sebelumDurasiC: sebelumDurasiC,
-                sebelumIstirahatC: sebelumIstirahatC,
-                sesudahDurasiC: sesudahDurasiC,
-                sesudahIstirahatC: sesudahIstirahatC,
-                kompensasiC: kompensasiC,
-                alasanC: alasanC,
-                onUploadLampiran: () {
-                  // Tambahkan fungsi file picker di sini
+        padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _LemburForm(
+              formKey: _formKey,
+              tglLemburC: tglLemburC,
+              shiftValue: shiftValue,
+              shiftOnChanged: (v) => setState(() => shiftValue = v),
+              sebelumDurasiC: sebelumDurasiC,
+              sebelumIstirahatC: sebelumIstirahatC,
+              sesudahDurasiC: sesudahDurasiC,
+              sesudahIstirahatC: sesudahIstirahatC,
+              kompensasiC: kompensasiC,
+              alasanC: alasanC,
+              lampiran: lampiran,
+              onUploadLampiran: pickFile,
+              onDeleteLampiran: (i) => setState(() => lampiran.removeAt(i)),
+              onSubmit: () {
+                if (_formKey.currentState!.validate()) {
                   setState(() {
-                    lampiran.add('lampiran_${lampiran.length + 1}.pdf');
-                  });
-                },
-                lampiran: lampiran,
-                onDeleteLampiran: (i) {
-                  setState(() {
-                    lampiran.removeAt(i);
-                  });
-                },
-                onSubmit: () {
-                  if (_formKey.currentState!.validate()) {
-                    setState(() {
-                      dummyRiwayat.insert(
-                        0,
-                        "${tglLemburC.text} • Shift: $shiftValue • Kompensasi: ${kompensasiC.text}",
-                      );
-                    });
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Pengajuan berhasil disubmit! (dummy, belum ke DB)"),
-                        behavior: SnackBarBehavior.floating,
-                      ),
+                    dummyRiwayat.insert(
+                      0,
+                      "${tglLemburC.text} • Shift: $shiftValue • ${kompensasiC.text}",
                     );
-                  }
-                },
-              ),
-              const SizedBox(height: 32),
-              const Text(
-                "Riwayat Pengajuan",
+                  });
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Pengajuan berhasil")),
+                  );
+                }
+              },
+            ),
+
+            const SizedBox(height: 28),
+
+            GestureDetector(
+              onTap: () {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (_) => const HomeScreen()),
+                  (_) => false,
+                );
+              },
+              child: const Text(
+                "Kembali ke Home",
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: skyBlue,
                   fontSize: 20,
                 ),
               ),
-              const SizedBox(height: 10),
-              ...dummyRiwayat.map((s) => Card(
-                elevation: 1.5,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                margin: const EdgeInsets.symmetric(vertical: 5),
-                child: ListTile(
-                  leading: Icon(Icons.history_edu, color: skyBlue),
-                  title: Text(
-                    s,
-                    style: const TextStyle(fontSize: 15, color: Color(0xFF323A4B)),
-                  ),
-                  trailing: Icon(Icons.check_circle_rounded, color: Colors.green[400]),
+            ),
+
+            const SizedBox(height: 12),
+
+            ...dummyRiwayat.map(
+              (s) => Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
                 ),
-              )),
-              const SizedBox(height: 22),
-              // SPACE untuk koneksi ke database firebase
-              // TODO: Implementasi pengiriman data & pengambilan riwayat dari Firebase
-            ],
-          ),
+                child: ListTile(
+                  leading: const Icon(Icons.history, color: skyBlue),
+                  title: Text(s),
+                  trailing:
+                      const Icon(Icons.check_circle, color: Colors.green),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
-
-// === Form Widget Modern ===
 class _LemburForm extends StatelessWidget {
   final GlobalKey<FormState> formKey;
   final TextEditingController tglLemburC;
@@ -157,8 +167,8 @@ class _LemburForm extends StatelessWidget {
   final TextEditingController sesudahIstirahatC;
   final TextEditingController kompensasiC;
   final TextEditingController alasanC;
-  final VoidCallback onUploadLampiran;
   final List<String> lampiran;
+  final VoidCallback onUploadLampiran;
   final ValueChanged<int> onDeleteLampiran;
   final VoidCallback onSubmit;
 
@@ -173,250 +183,21 @@ class _LemburForm extends StatelessWidget {
     required this.sesudahIstirahatC,
     required this.kompensasiC,
     required this.alasanC,
-    required this.onUploadLampiran,
     required this.lampiran,
+    required this.onUploadLampiran,
     required this.onDeleteLampiran,
     required this.onSubmit,
   });
 
-  Widget _formSectionTitle(String text) => Padding(
-    padding: const EdgeInsets.only(top: 20, bottom: 9),
-    child: Text(
-      text,
-      style: const TextStyle(
-        color: skyBlue,
-        fontWeight: FontWeight.w600,
-        fontSize: 17,
-      ),
-    ),
-  );
-
-  @override
-  Widget build(BuildContext context) {
-    final borderRadius = BorderRadius.circular(18.0);
-
+  @override 
+   Widget build(BuildContext context) {
     return Form(
       key: formKey,
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _formSectionTitle("Jadwal lembur"),
-          Material(
-            elevation: 1,
-            borderRadius: borderRadius,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 13),
-              child: Column(
-                children: [
-                  TextFormField(
-                    controller: tglLemburC,
-                    decoration: InputDecoration(
-                      labelText: 'Tanggal lembur *',
-                      prefixIcon: const Icon(Icons.date_range, color: skyBlue,),
-                      border: const OutlineInputBorder(),
-                    ),
-                    validator: (v) => v!.isEmpty ? "Tanggal wajib diisi" : null,
-                    readOnly: true,
-                    onTap: () async {
-                      final picked = await showDatePicker(
-                        context: context,
-                        firstDate: DateTime(2023),
-                        lastDate: DateTime(2100),
-                        initialDate: DateTime.now(),
-                      );
-                      if (picked != null) {
-                        tglLemburC.text = "${picked.year}-${picked.month.toString().padLeft(2, "0")}-${picked.day.toString().padLeft(2, "0")}";
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 14),
-                  DropdownButtonFormField<String>(
-                    decoration: InputDecoration(
-                      labelText: "Shift *",
-                      border: const OutlineInputBorder(),
-                    ),
-                    value: shiftValue,
-                    items: [
-                      "Pagi",
-                      "Siang",
-                      "Malam",
-                    ].map((e) => DropdownMenuItem(
-                      value: e,
-                      child: Text(e),
-                    )).toList(),
-                    onChanged: shiftOnChanged,
-                    validator: (v) => v == null ? "Shift wajib dipilih" : null,
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          _formSectionTitle("Lembur sebelum shift"),
-          Material(
-            elevation: 1,
-            borderRadius: borderRadius,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 13),
-              child: Column(
-                children: [
-                  TextFormField(
-                    controller: sebelumDurasiC,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: "Durasi lembur",
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: sebelumIstirahatC,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: "Durasi istirahat lembur",
-                      border: OutlineInputBorder(),
-                      helperText: "opsional",
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          _formSectionTitle("Lembur setelah shift"),
-          Material(
-            elevation: 1,
-            borderRadius: borderRadius,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 13),
-              child: Column(
-                children: [
-                  TextFormField(
-                    controller: sesudahDurasiC,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: "Durasi lembur",
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: sesudahIstirahatC,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: "Durasi istirahat lembur",
-                      border: OutlineInputBorder(),
-                      helperText: "opsional",
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          _formSectionTitle("Informasi tambahan"),
-          Material(
-            elevation: 1,
-            borderRadius: borderRadius,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 13),
-              child: Column(
-                children: [
-                  TextFormField(
-                    controller: kompensasiC,
-                    decoration: const InputDecoration(
-                      labelText: "Kompensasi *",
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (v) => v!.isEmpty ? "Kompensasi wajib diisi" : null,
-                  ),
-                  const SizedBox(height: 14),
-                  TextFormField(
-                    controller: alasanC,
-                    decoration: const InputDecoration(
-                      labelText: "Alasan",
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "Lampiran",
-                      style: TextStyle(color: Colors.blueGrey[600], fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      GestureDetector(
-                        onTap: onUploadLampiran,
-                        child: DottedUploadBox(),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Wrap(
-                          spacing: 5,
-                          children: lampiran.map((f) {
-                            final i = lampiran.indexOf(f);
-                            return Chip(
-                              label: Text(f, style: const TextStyle(fontSize: 12)),
-                              deleteIcon: const Icon(Icons.close, size: 16),
-                              onDeleted: () => onDeleteLampiran(i),
-                              backgroundColor: skyBlue.withOpacity(0.15),
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.only(top: 4),
-                    child: Text(
-                      "Maksimal 5 file. Format: PDF, JPG, PNG, XLSX, DOCX, DLL. Maks 10MB",
-                      style: TextStyle(fontSize: 11),
-                    ),
-                  )
-                ],
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 18),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: onSubmit,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: skyBlue,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
-                padding: const EdgeInsets.symmetric(vertical: 15),
-              ),
-              child: const Text(
-                "Kirim",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white),
-              ),
-            ),
-          ),
+          // Form fields go here
         ],
-      ),
-    );
-  }
-}
-
-// ==== Tombol Upload Lampiran Kotak Putus-putus ====
-class DottedUploadBox extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 66, height: 66,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(13),
-        border: Border.all(color: skyBlue, width: 1.7, style: BorderStyle.solid),
-        // Simulasikan border dashed/putus
-      ),
-      child: Center(
-        child: Icon(Icons.add, size: 34, color: skyBlue),
       ),
     );
   }
