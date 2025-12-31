@@ -369,7 +369,7 @@ class _CalendarPageState extends State<CalendarPage> {
                               "catatan",
                               style: TextStyle(
                                 color: persibBlue,
-                                fontSize: 22,
+                                fontSize: 18,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -384,14 +384,14 @@ class _CalendarPageState extends State<CalendarPage> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 19),
+                        const SizedBox(height: 2),
                         // Icon Calendar
                         Icon(
                           Icons.calendar_month_rounded,
                           size: 60,
                           color: Color(0xFFEF7D8A),
                         ),
-                        const SizedBox(height: 13),
+                        const SizedBox(height: 4),
                         // Daftar acara
                         _eventForSelectedDay.isEmpty
                             ? const Column(
@@ -401,16 +401,16 @@ class _CalendarPageState extends State<CalendarPage> {
                                     style: TextStyle(
                                       color: persibBlue,
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 16,
+                                      fontSize: 14,
                                     ),
                                   ),
-                                  SizedBox(height: 6),
+                                  SizedBox(height: 2),
                                   Text(
                                     "Acara pada tanggal yang dipilih akan terlihat disini",
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                       color: persibBlue,
-                                      fontSize: 13,
+                                      fontSize: 10,
                                     ),
                                   ),
                                   Divider(height: 30),
