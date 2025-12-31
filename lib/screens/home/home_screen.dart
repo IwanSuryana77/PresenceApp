@@ -10,7 +10,7 @@ import '../../widgets/empty_state.dart';
 import '../../widgets/promo_card.dart';
 import '../../widgets/section_card.dart';
 import '../../widgets/surface.dart';
-import '../../widgets/svg_icon_tile.dart';
+import '../../widgets/icon_tile.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -92,8 +92,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   children: [
-                    SvgIconTile(
-                      asset: 'assets/images/Kalender.jpg',
+                    IconTile(
+                      icon: Icons.calendar_today,
                       label: 'KALENDER',
                       onTap: () {
                         Navigator.push(
@@ -104,8 +104,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         );
                       },
                     ),
-                    SvgIconTile(
-                      asset: 'assets/images/selipgaji.jpg',
+                    IconTile(
+                      icon: Icons.receipt_long,
                       label: 'SLIP GAJI',
                       onTap: () {
                         Navigator.push(
@@ -116,8 +116,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         );
                       },
                     ),
-                    SvgIconTile(
-                      asset: 'assets/images/daftarabsen.jpg',
+                    IconTile(
+                      icon: Icons.list_alt,
                       label: 'DAFTAR ABSEN',
                       onTap: () {
                         Navigator.push(
@@ -128,8 +128,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         );
                       },
                     ),
-                    SvgIconTile(
-                      asset: 'assets/images/JamLembur.jpg',
+                    IconTile(
+                      icon: Icons.access_time,
                       label: 'LEMBUR',
                       onTap: () {
                         Navigator.push(
@@ -138,8 +138,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         );
                       },
                     ),
-                    SvgIconTile(
-                      asset: 'assets/images/Reimbursment.jpg',
+                    IconTile(
+                      icon: Icons.attach_money,
                       label: 'REIMBURSEMENT',
                       onTap: () {
                         Navigator.push(
@@ -150,8 +150,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         );
                       },
                     ),
-                    SvgIconTile(
-                      asset: 'assets/images/FaceKamera.jpg',
+                    IconTile(
+                      icon: Icons.camera_alt,
                       label: 'ABSEN',
                       onTap: () {
                         Navigator.push(
