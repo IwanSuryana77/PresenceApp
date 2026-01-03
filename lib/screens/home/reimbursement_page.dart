@@ -1,273 +1,587 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
-class ReimbursementData {
-  DateTime tanggal;
-  double nominal;
-  String keterangan;
-
-  ReimbursementData({
-    required this.tanggal,
-    required this.nominal,
-    required this.keterangan,
-  });
-}
+import 'package:file_picker/file_picker.dart';
+import 'package:dotted_border/dotted_border.dart';
 
 class ReimbursementPage extends StatefulWidget {
   const ReimbursementPage({super.key});
 
   @override
-  State<ReimbursementPage> createState() => _ReimbursementPageState();
+  State<ReimbursementPage> createState() =>
+      _PengajuanReimbursementPageState();
 }
 
-class _ReimbursementPageState extends State<ReimbursementPage> {
-  final navy = const Color(0xFF1B1E6D);
-  final _formKey = GlobalKey<FormState>();
+class _PengajuanReimbursementPageState
+    extends State<ReimbursementPage> {
+  String? selectedPolicy;
+  DateTime? transactionDate;
+  final TextEditingController _descController = TextEditingController();
+  List<PlatformFile> _attachments = [];
+  List<_ReimburseItem> _items = [];
 
-  DateTime _tanggal = DateTime.now();
-  double? _nominal;
-  String? _keterangan;
+  final brightBlue = const Color(0xFF2596FF); 
+  final blueAccent = const Color(0xFFE3F0FB);
 
-  final List<ReimbursementData> _list = [];
+  final policies = ['Kesehatan', 'Transportasi', 'Pendidikan', 'Lainnya'];
 
-  Future<void> _pickTanggal() async {
+  Future<void> _pickFile() async {
+    if (_attachments.length >= 5) return;
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      allowMultiple: true,
+      allowedExtensions: [
+        'pdf',
+        'jpg',
+        'png',
+        'jpeg',
+        'doc',
+        'docx',
+        'xls',
+        'xlsx',
+        'txt',
+        'ppt',
+        'pptx',
+      ],
+      type: FileType.custom,
+      withData: true,
+    );
+    if (result != null) {
+      setState(() {
+        _attachments.addAll(result.files.take(5 - _attachments.length));
+      });
+    }
+  }
+
+  void _removeAttachment(int idx) {
+    setState(() {
+      _attachments.removeAt(idx);
+    });
+  }
+
+  Future<void> _pickDate() async {
     final picked = await showDatePicker(
       context: context,
-      initialDate: _tanggal,
-      firstDate: DateTime(2024, 1),
-      lastDate: DateTime(2100, 12, 31),
+      initialDate: transactionDate ?? DateTime.now(),
+      firstDate: DateTime.now().subtract(const Duration(days: 365 * 5)),
+      lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
       builder: (context, child) => Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: ColorScheme.light(primary: navy, onSurface: navy),
+        data: ThemeData(
+          colorScheme: ColorScheme.light(
+            primary: brightBlue,
+            onPrimary: Colors.white,
+            onSurface: Colors.black,
+          ),
         ),
         child: child!,
       ),
     );
-    if (picked != null) {
-      setState(() => _tanggal = picked);
-    }
+    if (picked != null) setState(() => transactionDate = picked);
   }
 
-  void _submitForm() {
-    if (_formKey.currentState?.validate() != true) return;
-    _formKey.currentState?.save();
+  void _showAddItemDialog() {
+    final nameController = TextEditingController();
+    final amountController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text("Tambah Item"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextFormField(
+              controller: nameController,
+              decoration: InputDecoration(
+                labelText: "Nama item",
+                border: OutlineInputBorder(),
+              ),
+            ),
+            SizedBox(height: 12),
+            TextFormField(
+              controller: amountController,
+              decoration: InputDecoration(
+                labelText: "Nominal (Rp)",
+                prefixText: "Rp ",
+                border: OutlineInputBorder(),
+              ),
+              keyboardType: TextInputType.number,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            child: Text("Batal"),
+            onPressed: () => Navigator.of(ctx).pop(),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: brightBlue,
+              foregroundColor: Colors.white,
+            ),
+            child: Text("Tambah"),
+            onPressed: () {
+              if (nameController.text.trim().isNotEmpty &&
+                  num.tryParse(
+                        amountController.text
+                            .replaceAll('.', '')
+                            .replaceAll(',', ''),
+                      ) !=
+                      null) {
+                setState(() {
+                  _items.add(
+                    _ReimburseItem(
+                      name: nameController.text.trim(),
+                      amount: int.parse(
+                        amountController.text
+                            .replaceAll('.', '')
+                            .replaceAll(',', ''),
+                      ),
+                    ),
+                  );
+                });
+                Navigator.of(ctx).pop();
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
 
-    setState(() {
-      _list.insert(
-        0,
-        ReimbursementData(
-          tanggal: _tanggal,
-          nominal: _nominal ?? 0,
-          keterangan: _keterangan ?? "",
+  int get total => _items.fold(0, (sum, v) => sum + v.amount);
+
+  void _submit() {
+    // validasi sederhana
+    if (selectedPolicy == null ||
+        transactionDate == null ||
+        _attachments.isEmpty ||
+        _items.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            "Semua field wajib diisi dan minimal 1 item serta 1 file lampiran!",
+          ),
+          backgroundColor: Colors.red,
         ),
       );
-      // Reset form (tanggal tetap hari ini)
-      _nominal = null;
-      _keterangan = null;
-    });
-
-    // TODO: Simpan ke database (hubungkan ke SQLite, Firestore, API, dll. sesuai kebutuhan)
-    // saveToDatabase(_list.first);
-
+      return;
+    }
+    // Submit (mock)
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Pengajuan reimbursement berhasil ditambah!'),
-        duration: Duration(seconds: 2),
+      SnackBar(
+        content: Text("Pengajuan reimbursement berhasil dikirim!"),
+        backgroundColor: brightBlue,
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    const surface = Color(0xFFF6F7FB);
-
+    final borderRadius = BorderRadius.circular(16);
+    final borderColor = brightBlue.withOpacity(0.25);
     return Scaffold(
-      backgroundColor: surface,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 2,
-        iconTheme: IconThemeData(color: navy),
-        title: const Text(
-          'Reimburs',
-          style: TextStyle(
-            color: Color(0xFF1B1E6D),
-            fontWeight: FontWeight.bold,
-            fontSize: 22,
-          ),
-        ),
-        centerTitle: true,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            color: Colors.white,
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x12000000),
-                blurRadius: 18,
-                offset: Offset(0, 8),
+      backgroundColor: blueAccent,
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(0),
+          children: [
+            // Header
+            Padding(
+              padding: const EdgeInsets.only(
+                top: 12,
+                left: 12,
+                right: 12,
+                bottom: 5,
               ),
-            ],
-          ),
-          child: Column(
-            children: [
-              Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    // Tanggal
-                    InkWell(
-                      borderRadius: BorderRadius.circular(8),
-                      onTap: _pickTanggal,
-                      child: InputDecorator(
-                        decoration: InputDecoration(
-                          labelText: "Tanggal Pengajuan",
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        child: Text(
-                          DateFormat('d MMMM yyyy').format(_tanggal),
-                          style: TextStyle(
-                            color: navy,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14.5,
-                          ),
-                        ),
-                      ),
+              child: Row(
+                children: [
+                  Material(
+                    color: Colors.transparent,
+                    shape: const CircleBorder(),
+                    clipBehavior: Clip.antiAlias,
+                    child: IconButton(
+                      icon: Icon(Icons.arrow_back, color: brightBlue, size: 28),
+                      onPressed: () => Navigator.of(context).maybePop(),
                     ),
-                    const SizedBox(height: 12),
-
-                    // Nominal
-                    TextFormField(
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        labelText: "Nominal (Rp)",
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      "Pengajuan Reimbursement",
+                      textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: navy,
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
+                        color: brightBlue,
+                        letterSpacing: 0.2,
                       ),
-                      onSaved: (val) => _nominal = double.tryParse(
-                        val?.replaceAll('.', '').replaceAll(',', '') ?? '',
-                      ),
-                      validator: (val) =>
-                          (val == null ||
-                              val.isEmpty ||
-                              double.tryParse(
-                                    val.replaceAll('.', '').replaceAll(',', ''),
-                                  ) ==
-                                  null)
-                          ? "Nominal wajib diisi"
-                          : null,
                     ),
-                    const SizedBox(height: 12),
+                  ),
+                  const SizedBox(width: 44),
+                ],
+              ),
+            ),
+            Divider(thickness: 1, height: 2, color: borderColor),
 
-                    // Keterangan
-                    TextFormField(
-                      decoration: InputDecoration(
-                        labelText: "Keterangan Reimbursement",
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
+            // Main Form Card
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: borderRadius,
+                boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 6)],
+              ),
+              margin: EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+              padding: EdgeInsets.fromLTRB(18, 16, 18, 22),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Policy Picker
+                  DropdownButtonFormField<String>(
+                    value: selectedPolicy,
+                    items: policies
+                        .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                        .toList(),
+                    onChanged: (value) =>
+                        setState(() => selectedPolicy = value),
+                    decoration: InputDecoration(
+                      label: const Text("Kebijakan reimbursement *"),
+                      filled: true,
+                      fillColor: Colors.grey[100],
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(color: borderColor),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: borderColor),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 14,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+
+                  // Tanggal Transaksi
+                  Text(
+                    "Tanggal transaksi *",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 7),
+                  GestureDetector(
+                    onTap: _pickDate,
+                    child: AbsorbPointer(
+                      child: TextFormField(
+                        controller: TextEditingController(
+                          text: transactionDate != null
+                              ? DateFormat(
+                                  'dd MMM yyyy',
+                                ).format(transactionDate!)
+                              : '',
+                        ),
+                        decoration: InputDecoration(
+                          hintText: "Pilih tanggal",
+                          suffixIcon: Icon(
+                            Icons.calendar_today_rounded,
+                            color: brightBlue,
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey[100],
+                          border: UnderlineInputBorder(
+                            borderSide: BorderSide(color: borderColor),
+                          ),
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: borderColor),
+                          ),
                         ),
                       ),
-                      maxLines: 1,
-                      onSaved: (val) => _keterangan = val,
-                      validator: (val) => (val == null || val.isEmpty)
-                          ? "Keterangan wajib diisi"
-                          : null,
                     ),
-                    const SizedBox(height: 17),
+                  ),
 
-                    // Tombol Simpan
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: navy,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(vertical: 13),
-                          textStyle: const TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 16,
+                  const SizedBox(height: 16),
+
+                  // Lampiran
+                  Text(
+                    "Lampiran",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      GestureDetector(
+                        onTap: _pickFile,
+                        child: DottedBorder(
+                          color: brightBlue,
+                          strokeWidth: 1.6,
+                          dashPattern: [8, 3],
+                          borderType: BorderType.RRect,
+                          radius: Radius.circular(12),
+                          child: Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Center(
+                              child: Icon(
+                                Icons.add,
+                                color: brightBlue,
+                                size: 32,
+                              ),
+                            ),
                           ),
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Wrap(
+                          spacing: 6,
+                          children: List.generate(_attachments.length, (idx) {
+                            final f = _attachments[idx];
+                            return Stack(
+                              alignment: Alignment.topRight,
+                              children: [
+                                Container(
+                                  margin: EdgeInsets.only(top: 6, bottom: 6),
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: blueAccent,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    f.name,
+                                    style: TextStyle(
+                                      color: brightBlue,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                                Positioned(
+                                  top: -10,
+                                  right: -8,
+                                  child: GestureDetector(
+                                    onTap: () => _removeAttachment(idx),
+                                    child: CircleAvatar(
+                                      radius: 10,
+                                      backgroundColor: Colors.red,
+                                      child: Icon(
+                                        Icons.close,
+                                        color: Colors.white,
+                                        size: 14,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          }),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    "Anda dapat mengunggah maksimal 5 file, dan harus berformat PDF, JPG, PNG, XLSX, XLS, JPEG, DOCX, DOC, TXT, PPT, dan PPTX maksimum 10MB",
+                    style: TextStyle(fontSize: 11, color: Colors.black54),
+                  ),
+
+                  const SizedBox(height: 14),
+                  TextFormField(
+                    controller: _descController,
+                    minLines: 2,
+                    maxLines: 4,
+                    decoration: InputDecoration(
+                      hintText: "Deskripsi",
+                      border: UnderlineInputBorder(
+                        borderSide: BorderSide(color: borderColor),
+                      ),
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: borderColor),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Benefit part, bottom card
+            Container(
+              width: double.infinity,
+              margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
+              padding: EdgeInsets.fromLTRB(0, 14, 0, 0),
+              decoration: BoxDecoration(
+                color: blueAccent,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.blue.shade100.withOpacity(0.16),
+                    blurRadius: 6,
+                    offset: Offset(0, -4),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(left: 24, right: 24),
+                    child: Text(
+                      'Item benefit',
+                      style: TextStyle(
+                        color: brightBlue,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 24, right: 24, top: 2),
+                    child: Text(
+                      'Tambahkan rincian benefit yang akan diajukan.',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.black54,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: brightBlue,
+                          foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
+                          elevation: 0,
+                          padding: EdgeInsets.symmetric(vertical: 13),
                         ),
-                        icon: const Icon(Icons.save_rounded),
-                        label: const Text("Simpan Reimbursement"),
-                        onPressed: _submitForm,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Divider(),
-              // Daftar reimbursement
-              Expanded(
-                child: _list.isEmpty
-                    ? const Center(
+                        onPressed: _showAddItemDialog,
                         child: Text(
-                          "Belum ada data reimbursement.",
+                          "+ tambahkan item",
                           style: TextStyle(
-                            color: Color(0xFF1B1E6D),
-                            fontWeight: FontWeight.w500,
-                            fontSize: 14.5,
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1,
                           ),
                         ),
-                      )
-                    : ListView.separated(
-                        itemCount: _list.length,
-                        separatorBuilder: (_, __) =>
-                            const Divider(height: 16, color: Color(0xFFE5E7F1)),
-                        itemBuilder: (context, i) {
-                          final d = _list[i];
-                          return ListTile(
-                            contentPadding: EdgeInsets.zero,
-                            leading: const Icon(
-                              Icons.attach_money,
-                              color: Color(0xFF1B1E6D),
-                            ),
-                            title: Text(
-                              "Rp ${NumberFormat('#,###', 'id').format(d.nominal)}",
-                              style: const TextStyle(
-                                color: Color(0xFF1B1E6D),
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15,
-                              ),
-                            ),
-                            subtitle: Text(
-                              d.keterangan,
-                              style: TextStyle(
-                                color: navy.withValues(alpha: 0.75),
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            trailing: Text(
-                              DateFormat('d MMM yyyy').format(d.tanggal),
-                              style: TextStyle(
-                                color: navy.withValues(alpha: 0.6),
-                                fontSize: 12.5,
-                              ),
-                            ),
-                            // TODO: Tambah aksi edit/hapus untuk CRUD jika mau
-                          );
-                        },
                       ),
+                    ),
+                  ),
+                  if (_items.isNotEmpty)
+                    Column(
+                      children: List.generate(_items.length, (i) {
+                        final item = _items[i];
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 4,
+                          ),
+                          child: Card(
+                            margin: EdgeInsets.zero,
+                            color: Colors.white,
+                            elevation: 2,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(11),
+                            ),
+                            child: ListTile(
+                              title: Text(
+                                item.name,
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              subtitle: Text(
+                                "Rp${item.amount.toString().replaceAllMapped(RegExp(r"\B(?=(\d{3})+(?!\d))"), (match) => ".")}",
+                                style: TextStyle(
+                                  color: brightBlue,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              trailing: IconButton(
+                                icon: Icon(Icons.delete, color: Colors.red),
+                                onPressed: () =>
+                                    setState(() => _items.removeAt(i)),
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
+                  const SizedBox(height: 8),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 8,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Total jumlah pengajuan",
+                          style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 16,
+                            color: Colors.black54,
+                          ),
+                        ),
+                        Text(
+                          "Rp${total.toString().replaceAllMapped(RegExp(r"\B(?=(\d{3})+(?!\d))"), (match) => ".")}",
+                          style: TextStyle(
+                            color: brightBlue,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: brightBlue,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          elevation: 0,
+                          padding: EdgeInsets.symmetric(vertical: 15),
+                        ),
+                        onPressed: _submit,
+                        child: Text(
+                          "Kirim",
+                          style: TextStyle(
+                            fontSize: 19,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
+}
+
+class _ReimburseItem {
+  final String name;
+  final int amount;
+  _ReimburseItem({required this.name, required this.amount});
 }

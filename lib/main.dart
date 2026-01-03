@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
-import 'theme/app_theme.dart';
-import 'shells/home_shell.dart';
-import 'package:firebase_core/firebase_core.dart'; 
+import 'package:firebase_core/firebase_core.dart';
+import 'screens/home/home_screen.dart';
+import 'screens/home/pengajuan_page.dart';
+import 'screens/home/inbox_page.dart';
+import 'screens/home/profile_page.dart';
+import 'widgets/bottom_nav.dart'; 
+import 'theme/app_theme.dart'; 
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -9,30 +13,16 @@ void main() async {
   if (Firebase.apps.isEmpty) {
     await Firebase.initializeApp(
       options: FirebaseOptions(
-        apiKey: "AIzaSyD...EwAELA", // <- diisi dari Firebase
-        appId: "1:993...b1f9", // <- diisi dari Firebase
-        messagingSenderId: "993683626108", // <- dari Firebase
-        projectId: "presenceapp-bb0f5", // <- dari Firebase
+        apiKey: "AIzaSyD...EwAELA", 
+        appId: "1:993...b1f9", 
+        messagingSenderId: "993683626108", 
+        projectId: "presenceapp-bb0f5", 
       ),
     );
   }
 
   runApp(const MyApp());
 }
-// void main() async {
-//   WidgetsFlutterBinding.ensureInitialized();
-//   await Firebase.initializeApp(
-//     options: FirebaseOptions(
-//       apiKey: "AIzaSyD...EwAELA", // <- diisi dari Firebase
-//       appId: "1:993...b1f9", // <- diisi dari Firebase
-//       messagingSenderId: "993683626108", // <- dari Firebase
-//       projectId: "presenceapp-bb0f5", // <- dari Firebase
-//     ),
-//   );
-//   runApp(const MyApp());
-// }
-
-// void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -42,8 +32,41 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Modern HR UI',
-      theme: AppTheme.light(),
-      home: const HomeShell(),
+      theme: AppTheme.light(), // Pastikan ada AppTheme
+      home: const BottomNavWrapper(), // Mulai dari navbar wrapper
+    );
+  }
+}
+
+class BottomNavWrapper extends StatefulWidget {
+  const BottomNavWrapper({super.key});
+
+  @override
+  State<BottomNavWrapper> createState() => _BottomNavWrapperState();
+}
+
+class _BottomNavWrapperState extends State<BottomNavWrapper> {
+  int _selectedIndex = 0;
+
+  final List<Widget> _pages = [
+    const HomeScreen(),
+    const PengajuanPage(),
+    const InboxPage(),
+    const ProfilPage(),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: _pages[_selectedIndex], // Tampilkan halaman sesuai index
+      bottomNavigationBar: BottomNav(
+        index: _selectedIndex,
+        onChanged: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+      ),
     );
   }
 }
