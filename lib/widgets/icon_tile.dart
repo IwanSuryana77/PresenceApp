@@ -5,12 +5,18 @@ class IconTile extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback? onTap;
+  final Color iconColor;
+  final Color textColor;
+  final TextStyle? labelStyle;
 
   const IconTile({
     super.key,
     required this.icon,
     required this.label,
     this.onTap,
+    required this.iconColor,
+    required this.textColor,
+    this.labelStyle,
   });
 
   @override
@@ -31,14 +37,14 @@ class IconTile extends StatelessWidget {
                 color: const Color.fromARGB(179, 245, 248, 252),
               ),
             ),
-            child: Center(child: Icon(icon, size: 30, color: AppColors.navy)),
+            child: Center(child: Icon(icon, size: 30, color: iconColor)),
           ),
           const SizedBox(height: 10),
           Text(
             label,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: AppColors.navy,
+            style: labelStyle ?? TextStyle(
+              color: textColor,
               fontWeight: FontWeight.w800,
               letterSpacing: 1.25,
               fontSize: 11,

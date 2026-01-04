@@ -4,8 +4,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:file_picker/file_picker.dart';
 
 // ===== COLORS =====
-const primaryBlue = Color(0xFF1F2A7A);
-const softGrey = Color(0xFFF1F1F1);
+const primaryBlue = Color(0xFF2196F3);   // Bright blue
+const boxWhite = Colors.white;
 
 class LemburPage extends StatefulWidget {
   const LemburPage({super.key});
@@ -37,6 +37,17 @@ class _LemburPageState extends State<LemburPage> {
       initialDate: tanggalLembur ?? now,
       firstDate: DateTime(now.year - 1),
       lastDate: DateTime(now.year + 5),
+      builder: (context, child) => Theme(
+        data: ThemeData(
+          colorScheme: ColorScheme.light(
+            primary: primaryBlue,
+            onPrimary: Colors.white,
+            surface: Colors.white,
+            onSurface: Colors.black,
+          ),
+        ),
+        child: child!,
+      ),
     );
     if (picked != null) {
       setState(() => tanggalLembur = picked);
@@ -102,7 +113,7 @@ class _LemburPageState extends State<LemburPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey[100],
       body: SafeArea(
         child: Form(
           key: _formKey,
@@ -120,13 +131,8 @@ class _LemburPageState extends State<LemburPage> {
                       borderRadius: BorderRadius.circular(24),
                       onTap: () => Navigator.pop(context),
                       child: CircleAvatar(
-                        backgroundColor: const Color.fromARGB(
-                          255,
-                          255,
-                          255,
-                          255,
-                        ).withOpacity(0.1),
-                        child: Icon(Icons.arrow_back, color: primaryBlue),
+                        backgroundColor: primaryBlue.withOpacity(0.09),
+                        child: Icon(Icons.arrow_back, color: primaryBlue, size: 26),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -135,7 +141,8 @@ class _LemburPageState extends State<LemburPage> {
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
-                        color: primaryBlue,
+                        color: Colors.black,
+                        letterSpacing: 0.5,
                       ),
                     ),
                   ],
@@ -143,10 +150,10 @@ class _LemburPageState extends State<LemburPage> {
               ),
               const Divider(),
 
-              // From
+              // FORM
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 18),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -160,8 +167,15 @@ class _LemburPageState extends State<LemburPage> {
                             child: TextFormField(
                               decoration: InputDecoration(
                                 labelText: "Tanggal lembur *",
-                                suffixIcon: const Icon(Icons.calendar_today),
-                                border: const UnderlineInputBorder(),
+                                labelStyle: TextStyle(color: Colors.black),
+                                suffixIcon: Icon(Icons.calendar_today, color: primaryBlue),
+                                filled: true,
+                                fillColor: boxWhite,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide.none,
+                                ),
+                                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                               ),
                               validator: (_) =>
                                   tanggalLembur == null ? "Wajib diisi" : null,
@@ -171,6 +185,7 @@ class _LemburPageState extends State<LemburPage> {
                                     : "${tanggalLembur!.day.toString().padLeft(2, '0')}-${tanggalLembur!.month.toString().padLeft(2, '0')}-${tanggalLembur!.year}",
                               ),
                               readOnly: true,
+                              style: TextStyle(color: Colors.black),
                             ),
                           ),
                         ),
@@ -183,58 +198,71 @@ class _LemburPageState extends State<LemburPage> {
                           items: ['Pagi', 'Siang', 'Malam']
                               .map(
                                 (e) =>
-                                    DropdownMenuItem(value: e, child: Text(e)),
+                                    DropdownMenuItem(value: e, child: Text(e, style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black))),
                               )
                               .toList(),
                           onChanged: (v) => setState(() => shift = v ?? ''),
-                          decoration: const InputDecoration(
+                          decoration: InputDecoration(
                             labelText: "Shift *",
-                            suffixIcon: Icon(Icons.keyboard_arrow_down),
-                            border: UnderlineInputBorder(),
+                            labelStyle: TextStyle(color: Colors.black),
+                            suffixIcon: Icon(Icons.keyboard_arrow_down, color: primaryBlue),
+                            filled: true,
+                            fillColor: boxWhite,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                           ),
                           validator: (v) =>
                               (v == null || v.isEmpty) ? "Wajib diisi" : null,
+                          style: TextStyle(color: Colors.black),
                         ),
                       ),
 
                       sectionTitle("Lembur sebelum shift"),
-                      greyCard([
+                      whiteCard([
                         inputField(
                           "Durasi lembur",
                           (v) => setState(() => sebelumLembur = v),
+                          icon: Icons.timelapse,
                         ),
                         inputField(
                           "Durasi istirahat lembur",
                           (v) => setState(() => sebelumIstirahat = v),
                           helper: "opsional",
+                          icon: Icons.self_improvement_rounded,
                         ),
                       ]),
 
                       sectionTitle("Lembur setelah shift"),
-                      greyCard([
+                      whiteCard([
                         inputField(
                           "Durasi lembur",
                           (v) => setState(() => sesudahLembur = v),
+                          icon: Icons.timelapse,
                         ),
                         inputField(
                           "Durasi istirahat lembur",
                           (v) => setState(() => sesudahIstirahat = v),
                           helper: "opsional",
+                          icon: Icons.self_improvement_rounded,
                         ),
                       ]),
 
                       sectionTitle("Informasi tambahan"),
-                      greyCard([
+                      whiteCard([
                         inputField(
-                          "Kompensasi *",
+                          "Kompensasi ",
                           (v) => setState(() => kompensasi = v),
                           isRequired: true,
+                          icon: Icons.monetization_on_rounded,
                         ),
-                        inputField("Alasan", (v) => setState(() => alasan = v)),
-                        const SizedBox(height: 10),
+                        inputField("Alasan", (v) => setState(() => alasan = v), icon: Icons.sticky_note_2_outlined),
+                        const SizedBox(height: 12),
                         const Text(
                           "Lampiran",
-                          style: TextStyle(fontWeight: FontWeight.w600),
+                          style: TextStyle(fontWeight: FontWeight.w600, color: Colors.black),
                         ),
                         const SizedBox(height: 8),
                         Row(
@@ -246,19 +274,26 @@ class _LemburPageState extends State<LemburPage> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    "Anda dapat mengunggah maksimal 5 file\nPDF, JPG, PNG, XLSX, DOCX (maks 10MB)",
+                                    "Upload maksimal 5 file:\nPDF, JPG, PNG, XLSX, DOCX (max 10MB)",
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color: Colors.grey[600],
+                                      color: Colors.black54,
                                     ),
                                   ),
                                   if (attachments.isNotEmpty) ...[
                                     const SizedBox(height: 8),
-                                    ...attachments.map(
-                                      (a) => Text(
-                                        a.name,
-                                        style: const TextStyle(fontSize: 12),
-                                      ),
+                                    Wrap(
+                                      spacing: 6,
+                                      children: attachments.map(
+                                        (a) => Chip(
+                                          label: Text(a.name, style: TextStyle(fontSize: 12, color: Colors.black)),
+                                          backgroundColor: boxWhite,
+                                          deleteIcon: const Icon(Icons.close, size: 18, color: Colors.red),
+                                          onDeleted: () {
+                                            setState(() => attachments.remove(a));
+                                          },
+                                        ),
+                                      ).toList(),
                                     ),
                                   ],
                                 ],
@@ -275,9 +310,9 @@ class _LemburPageState extends State<LemburPage> {
                         width: double.infinity,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: primaryBlue,
+                            backgroundColor: const Color.fromARGB(255, 0, 46, 250),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
+                              borderRadius: BorderRadius.circular(18),
                             ),
                             padding: const EdgeInsets.symmetric(vertical: 16),
                           ),
@@ -301,7 +336,7 @@ class _LemburPageState extends State<LemburPage> {
                                 ),
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 24),
                     ],
                   ),
                 ),
@@ -315,13 +350,13 @@ class _LemburPageState extends State<LemburPage> {
 
   // ===== WIDGET KECIL =====
   static Widget sectionTitle(String text) => Padding(
-    padding: const EdgeInsets.only(top: 24, bottom: 10),
+    padding: const EdgeInsets.only(top: 28, bottom: 12),
     child: Text(
       text,
       style: const TextStyle(
         fontSize: 18,
-        fontWeight: FontWeight.bold,
-        color: primaryBlue,
+        fontWeight: FontWeight.w700,
+        color: Colors.black,
       ),
     ),
   );
@@ -331,14 +366,24 @@ class _LemburPageState extends State<LemburPage> {
     void Function(String) onChanged, {
     String? helper,
     bool isRequired = false,
+    IconData? icon,
   }) => Padding(
     padding: const EdgeInsets.only(bottom: 12),
     child: TextFormField(
       decoration: InputDecoration(
         labelText: label,
+        labelStyle: TextStyle(color: Colors.black),
+        prefixIcon: icon != null ? Icon(icon, color: primaryBlue) : null,
         helperText: helper,
-        border: const UnderlineInputBorder(),
+        filled: true,
+        fillColor: boxWhite,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(11),
+          borderSide: BorderSide.none,
+        ),
+        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       ),
+      style: TextStyle(fontSize: 16, color: Colors.black),
       validator: isRequired
           ? (v) => v == null || v.isEmpty ? "Wajib diisi" : null
           : null,
@@ -346,26 +391,37 @@ class _LemburPageState extends State<LemburPage> {
     ),
   );
 
-  static Widget greyCard(List<Widget> children) => Container(
-    padding: const EdgeInsets.all(14),
+  static Widget whiteCard(List<Widget> children) => Container(
+    margin: EdgeInsets.only(bottom: 2),
+    padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
-      color: softGrey,
-      borderRadius: BorderRadius.circular(14),
+      color: boxWhite,
+      borderRadius: BorderRadius.circular(17),
+      boxShadow: [
+        BoxShadow(color: Colors.blue.withOpacity(0.03), blurRadius: 5, offset: Offset(0,2))
+      ],
     ),
     child: Column(children: children),
   );
 
   static Widget uploadBox() => Container(
-    width: 64,
-    height: 64,
+    width: 60,
+    height: 60,
     decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(13),
       border: Border.all(
         color: primaryBlue,
         width: 1.5,
         style: BorderStyle.solid,
       ),
+      color: boxWhite,
+      boxShadow: [
+        BoxShadow(
+          color: primaryBlue.withOpacity(0.07),
+          blurRadius: 3,
+          offset: Offset(1, 2))
+      ],
     ),
-    child: const Icon(Icons.add, color: primaryBlue, size: 32),
+    child: const Icon(Icons.add, color: primaryBlue, size: 30),
   );
 }

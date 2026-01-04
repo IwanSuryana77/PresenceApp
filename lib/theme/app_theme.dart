@@ -1,33 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class AppColors {
-  static const navy = Color(0xFF1B1E6D);
-  static const bg = Color(0xFFF6F7FB);
-  static const surface = Colors.white;
-  static const muted = Color(0xFF6E7A97);
-  static const border = Color(0xFFE6E9F2);
+  static const Color navy = Color(0xFF1B1E6D);
+  static const Color lightBlue = Color(0xFF2196F3);
+  static const Color grey = Color(0xFF757575);
+  static const Color muted = Color(0xFF999999);
+  static const Color lightGrey = Color(0xFFF5F5F5);
+  static const Color white = Color(0xFFFFFFFF);
+  static const Color black = Color(0xFF000000);
 }
 
 class AppTheme {
   static ThemeData light() {
-    final serif = GoogleFonts.playfairDisplayTextTheme();
-
     return ThemeData(
       useMaterial3: true,
-      scaffoldBackgroundColor: AppColors.bg,
-      colorScheme: ColorScheme.fromSeed(seedColor: AppColors.navy),
-      textTheme: serif.copyWith(
-        headlineSmall: serif.headlineSmall?.copyWith(
-          fontSize: 26,
-          height: 1.15,
-          fontWeight: FontWeight.w700,
+      brightness: Brightness.light,
+      primaryColor: AppColors.navy,
+      scaffoldBackgroundColor: Colors.white,
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: IconThemeData(color: AppColors.navy),
+        titleTextStyle: TextStyle(
           color: AppColors.navy,
-        ),
-        titleLarge: serif.titleLarge?.copyWith(
-          fontSize: 22,
-          fontWeight: FontWeight.w800,
-          color: AppColors.navy,
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
         ),
       ),
     );

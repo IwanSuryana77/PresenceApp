@@ -12,6 +12,8 @@ import '../../widgets/section_card.dart';
 import '../../widgets/surface.dart';
 import '../../widgets/icon_tile.dart';
 
+const Color brightBlue = Color(0xFF2196F3);
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -28,7 +30,6 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  // Nama user bisa diganti/dinamis sesuai login/setting
   final String username = 'Ramadhani Hibban';
 
   @override
@@ -70,7 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     effect: WormEffect(
                       dotHeight: 7,
                       dotWidth: 7,
-                      activeDotColor: AppColors.navy,
+                      activeDotColor: brightBlue,
                       dotColor: const Color(0xFFCBD2E1),
                     ),
                   ),
@@ -94,7 +95,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     IconTile(
                       icon: Icons.calendar_today,
+                      iconColor: brightBlue,
                       label: 'KALENDER',
+                      textColor: Colors.black,
+                      labelStyle: const TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -106,7 +114,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     IconTile(
                       icon: Icons.receipt_long,
+                      iconColor: brightBlue,
                       label: 'SLIP GAJI',
+                      textColor: Colors.black,
+                      labelStyle: const TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -118,7 +133,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     IconTile(
                       icon: Icons.list_alt,
+                      iconColor: brightBlue,
                       label: 'DAFTAR ABSEN',
+                      textColor: Colors.black,
+                      labelStyle: const TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -130,7 +152,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     IconTile(
                       icon: Icons.access_time,
+                      iconColor: brightBlue,
                       label: 'LEMBUR',
+                      textColor: Colors.black,
+                      labelStyle: const TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -140,7 +169,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     IconTile(
                       icon: Icons.attach_money,
+                      iconColor: brightBlue,
                       label: 'REIMBURSEMENT',
+                      textColor: Colors.black,
+                      labelStyle: const TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -152,7 +188,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     IconTile(
                       icon: Icons.camera_alt,
+                      iconColor: brightBlue,
                       label: 'ABSEN',
+                      textColor: Colors.black,
+                      labelStyle: const TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -173,10 +216,31 @@ class _HomeScreenState extends State<HomeScreen> {
               child: SectionCard(
                 title: 'Pengumuman',
                 actionText: 'Lihat semua',
-                onActionTap: () {},
+                onActionTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const AllPengumumanPage(),
+                    ),
+                  );
+                },
+                titleStyle: const TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+                actionTextStyle: const TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
                 child: const EmptyState(
                   title: 'Belum ada pengumuman',
                   subtitle: 'Pengumuman akan tampil disini',
+                  titleStyle: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  subtitleStyle: TextStyle(color: Colors.black54),
                 ),
               ),
             ),
@@ -189,10 +253,29 @@ class _HomeScreenState extends State<HomeScreen> {
               child: SectionCard(
                 title: 'Tugas',
                 actionText: 'Lihat semua',
-                onActionTap: () {},
+                onActionTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const AllTugasPage()),
+                  );
+                },
+                titleStyle: const TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+                actionTextStyle: const TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
                 child: const EmptyState(
                   title: 'Tidak ada tugas',
                   subtitle: 'Anda tidak memiliki tugas yang tertunda',
+                  titleStyle: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  subtitleStyle: TextStyle(color: Colors.black54),
                 ),
               ),
             ),
@@ -245,31 +328,20 @@ class GreetingHeader extends StatelessWidget {
       ),
       child: Stack(
         children: [
-          // Top bar icons
-          // Positioned(
-          //   top: 18,
-          //   left: 18,
-          //   child: Icon(Icons.menu, color: Color(0xFF0052A5), size: 28),
-          // ),
           Positioned(
             top: 18,
             right: 60,
             child: Icon(
               Icons.notifications_none_rounded,
-              color: Color(0xFF0052A5),
+              color: brightBlue,
               size: 26,
             ),
           ),
           Positioned(
             top: 18,
             right: 18,
-            child: Icon(
-              Icons.settings_outlined,
-              color: Color(0xFF0052A5),
-              size: 26,
-            ),
+            child: Icon(Icons.settings_outlined, color: brightBlue, size: 26),
           ),
-          // Greeting and profile
           Positioned(
             left: 18,
             top: 54,
@@ -284,7 +356,7 @@ class GreetingHeader extends StatelessWidget {
                       const Text(
                         'Hello',
                         style: TextStyle(
-                          color: Color(0xFFB1B6C6),
+                          color: Colors.black54,
                           fontWeight: FontWeight.w600,
                           fontSize: 15,
                         ),
@@ -296,7 +368,7 @@ class GreetingHeader extends StatelessWidget {
                         softWrap: false,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          color: Color(0xFF0052A5),
+                          color: Colors.black,
                           fontWeight: FontWeight.w700,
                           fontSize: 21,
                         ),
@@ -310,7 +382,7 @@ class GreetingHeader extends StatelessWidget {
                   child: Text(
                     getInitials(username),
                     style: const TextStyle(
-                      color: Color(0xFF0052A5),
+                      color: brightBlue,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.5,
@@ -339,7 +411,7 @@ class GreetingHeader extends StatelessWidget {
                         const SizedBox(width: 12),
                         const Icon(
                           Icons.search,
-                          color: Color(0xFFB1B6C6),
+                          color: Colors.black54,
                           size: 22,
                         ),
                         const SizedBox(width: 8),
@@ -349,14 +421,17 @@ class GreetingHeader extends StatelessWidget {
                               hintText: 'Search',
                               border: InputBorder.none,
                               hintStyle: TextStyle(
-                                color: Color(0xFFB1B6C6),
+                                color: Colors.black54,
                                 fontWeight: FontWeight.w500,
                                 fontSize: 15,
                               ),
                               isDense: true,
                               contentPadding: EdgeInsets.symmetric(vertical: 8),
                             ),
-                            style: const TextStyle(fontSize: 15),
+                            style: const TextStyle(
+                              fontSize: 15,
+                              color: Colors.black,
+                            ),
                           ),
                         ),
                       ],
@@ -368,7 +443,7 @@ class GreetingHeader extends StatelessWidget {
                   height: 38,
                   width: 38,
                   decoration: BoxDecoration(
-                    color: Color(0xFF0052A5),
+                    color: brightBlue,
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: const Icon(Icons.tune, color: Colors.white, size: 22),
@@ -377,6 +452,54 @@ class GreetingHeader extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// --- Tambahan: Halaman Semua Pengumuman dan Semua Tugas ---
+class AllPengumumanPage extends StatelessWidget {
+  const AllPengumumanPage({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text(
+          'Semua Pengumuman',
+          style: TextStyle(color: Colors.black),
+        ),
+        backgroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: brightBlue),
+        elevation: 1,
+      ),
+      body: const Center(
+        child: Text(
+          'Daftar semua pengumuman',
+          style: TextStyle(color: Colors.black, fontSize: 16),
+        ),
+      ),
+    );
+  }
+}
+
+class AllTugasPage extends StatelessWidget {
+  const AllTugasPage({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text('Semua Tugas', style: TextStyle(color: Colors.black)),
+        backgroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: brightBlue),
+        elevation: 1,
+      ),
+      body: const Center(
+        child: Text(
+          'Daftar semua tugas',
+          style: TextStyle(color: Colors.black, fontSize: 16),
+        ),
       ),
     );
   }

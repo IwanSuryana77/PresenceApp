@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../theme/app_theme.dart';
 
 class PlaceholderScreen extends StatelessWidget {
   final String title;
@@ -15,7 +14,7 @@ class PlaceholderScreen extends StatelessWidget {
           style: GoogleFonts.playfairDisplay(
             fontSize: 22,
             fontWeight: FontWeight.w800,
-            color: AppColors.navy,
+            
           ),
         ),
       ),

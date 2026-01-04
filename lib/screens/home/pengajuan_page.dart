@@ -166,12 +166,12 @@ class _PengajuanPageState extends State<PengajuanPage> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                IconButton(
-                  icon: Icon(Icons.arrow_back, color: colorPrimary),
-                  onPressed: () {
-                    Navigator.of(context).maybePop();
-                  },
-                ),
+                // IconButton(
+                //   icon: Icon(Icons.arrow_back, color: colorPrimary),
+                //   onPressed: () {
+                //     Navigator.of(context).maybePop();
+                //   },
+                // ),
                 const SizedBox(width: 2),
                 Expanded(
                   child: Text(
@@ -218,7 +218,7 @@ class _PengajuanPageState extends State<PengajuanPage> {
                     child: AbsorbPointer(
                       child: TextFormField(
                         decoration: InputDecoration(
-                          hintText: 'Tanggal Mulai *',
+                          hintText: 'Tanggal Mulai ',
                           prefixIcon: Icon(
                             Icons.calendar_month_rounded,
                             color: colorPrimary,
@@ -246,7 +246,7 @@ class _PengajuanPageState extends State<PengajuanPage> {
                     child: AbsorbPointer(
                       child: TextFormField(
                         decoration: InputDecoration(
-                          hintText: 'Tanggal Akhir *',
+                          hintText: 'Tanggal Akhir ',
                           prefixIcon: Icon(
                             Icons.calendar_today,
                             color: colorPrimary,

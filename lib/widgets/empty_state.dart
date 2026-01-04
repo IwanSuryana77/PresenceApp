@@ -4,11 +4,15 @@ import '../theme/app_theme.dart';
 class EmptyState extends StatelessWidget {
   final String title;
   final String subtitle;
+  final TextStyle? titleStyle;
+  final TextStyle? subtitleStyle;
 
   const EmptyState({
     super.key,
     required this.title,
     required this.subtitle,
+    this.titleStyle,
+    this.subtitleStyle,
   });
 
   @override
@@ -19,19 +23,23 @@ class EmptyState extends StatelessWidget {
         children: [
           Text(
             title,
-            style: const TextStyle(
-              color: AppColors.navy,
-              fontWeight: FontWeight.w800,
-            ),
+            style:
+                titleStyle ??
+                const TextStyle(
+                  color: AppColors.navy,
+                  fontWeight: FontWeight.w800,
+                ),
           ),
           const SizedBox(height: 6),
           Text(
             subtitle,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: AppColors.muted,
-              fontWeight: FontWeight.w600,
-            ),
+            style:
+                subtitleStyle ??
+                const TextStyle(
+                  color: AppColors.muted,
+                  fontWeight: FontWeight.w600,
+                ),
           ),
         ],
       ),

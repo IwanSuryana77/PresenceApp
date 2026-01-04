@@ -7,9 +7,9 @@ class SlipGajiPage extends StatelessWidget {
   Widget build(BuildContext context) {
     // Warna utama dan pendukung
     // const biruLangit = Color(0xFF339CFF);
-    const biruTua = Color(0xFF23325C);
-    const hijau = Color(0xFF7CAC3A);
-    const tileBg = Color(0xFFF3F5F9);
+    const biruTua = Color.fromARGB(255, 0, 68, 255);
+    const hijau = Color.fromARGB(255, 149, 255, 0);
+    const tileBg = Color.fromARGB(255, 229, 241, 252);
 
     final data = [
       {"bulan": "Desember 2025"},
@@ -31,7 +31,7 @@ class SlipGajiPage extends StatelessWidget {
         title: const Text(
           "Slip Gaji",
           style: TextStyle(
-            color: biruTua,
+            color: Color.fromARGB(255, 0, 0, 0),
             fontWeight: FontWeight.bold,
             fontSize: 28,
           ),
@@ -75,7 +75,7 @@ class SlipGajiPage extends StatelessWidget {
                   Text(
                     data[i]["bulan"]!,
                     style: const TextStyle(
-                      color: biruTua,
+                      color: Color.fromARGB(255, 0, 0, 0),
                       fontWeight: FontWeight.bold,
                       fontSize: 19,
                     ),
@@ -111,7 +111,7 @@ class SlipGajiPage extends StatelessWidget {
               const Text(
                 "Gaji Bersih",
                 style: TextStyle(
-                  color: biruTua,
+                  color: Color.fromARGB(255, 0, 0, 0),
                   fontSize: 15.7,
                   fontWeight: FontWeight.w500,
                 ),
@@ -120,7 +120,7 @@ class SlipGajiPage extends StatelessWidget {
               const Text(
                 "Rp.8.500.000",
                 style: TextStyle(
-                  color: biruTua,
+                  color: Color.fromARGB(255, 0, 0, 0),
                   fontWeight: FontWeight.bold,
                   fontSize: 22.5,
                   letterSpacing: 1,

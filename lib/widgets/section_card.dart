@@ -13,7 +13,7 @@ class SectionCard extends StatelessWidget {
     required this.title,
     required this.actionText,
     required this.onActionTap,
-    required this.child,
+    required this.child, required TextStyle titleStyle, required TextStyle actionTextStyle,
   });
 
   @override

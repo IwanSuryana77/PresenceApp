@@ -19,7 +19,7 @@ class _PengajuanReimbursementPageState
   List<PlatformFile> _attachments = [];
   List<_ReimburseItem> _items = [];
 
-  final brightBlue = const Color(0xFF2596FF); 
+  final brightBlue = const Color.fromARGB(255, 0, 67, 250); 
   final blueAccent = const Color(0xFFE3F0FB);
 
   final policies = ['Kesehatan', 'Transportasi', 'Pendidikan', 'Lainnya'];
@@ -113,7 +113,7 @@ class _PengajuanReimbursementPageState
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: brightBlue,
+              backgroundColor: Colors.grey,
               foregroundColor: Colors.white,
             ),
             child: Text("Tambah"),
