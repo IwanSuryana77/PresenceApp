@@ -1,72 +1,106 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:dotted_border/dotted_border.dart';
+import '../../theme/app_theme.dart';
 
-class ReimbursementPage extends StatefulWidget {
-  const ReimbursementPage({super.key});
-
+class PengajuanPage extends StatefulWidget {
+  const PengajuanPage({super.key});
   @override
-  State<ReimbursementPage> createState() =>
-      _PengajuanReimbursementPageState();
+  State<PengajuanPage> createState() => _PengajuanPageState();
 }
 
-class _PengajuanReimbursementPageState
-    extends State<ReimbursementPage> {
-  String? selectedPolicy;
-  DateTime? transactionDate;
-  final TextEditingController _descController = TextEditingController();
-  List<PlatformFile> _attachments = [];
-  List<_ReimburseItem> _items = [];
+class Pengajuan {
+  DateTime start;
+  DateTime end;
+  String reason;
+  String status;
+  Pengajuan({
+    required this.start,
+    required this.end,
+    required this.reason,
+    required this.status,
+  });
+}
 
-  final brightBlue = const Color.fromARGB(255, 0, 67, 250); 
-  final blueAccent = const Color(0xFFE3F0FB);
+class _PengajuanPageState extends State<PengajuanPage> {
+  DateTime? _startDate;
+  DateTime? _endDate;
+  final TextEditingController _reasonController = TextEditingController();
 
-  final policies = ['Kesehatan', 'Transportasi', 'Pendidikan', 'Lainnya'];
+  final List<Pengajuan> _riwayat = [
+    Pengajuan(
+      start: DateTime(2025, 12, 22),
+      end: DateTime(2026, 1, 2),
+      reason: "Acara Keluarga",
+      status: "Proses",
+    ),
+    Pengajuan(
+      start: DateTime(2025, 10, 21),
+      end: DateTime(2025, 10, 23),
+      reason: "Kontrol Sakit",
+      status: "Disetujui",
+    ),
+    Pengajuan(
+      start: DateTime(2025, 9, 25),
+      end: DateTime(2025, 10, 26),
+      reason: "Operasi ringan",
+      status: "Disetujui",
+    ),
+  ];
 
-  Future<void> _pickFile() async {
-    if (_attachments.length >= 5) return;
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      allowMultiple: true,
-      allowedExtensions: [
-        'pdf',
-        'jpg',
-        'png',
-        'jpeg',
-        'doc',
-        'docx',
-        'xls',
-        'xlsx',
-        'txt',
-        'ppt',
-        'pptx',
-      ],
-      type: FileType.custom,
-      withData: true,
-    );
-    if (result != null) {
-      setState(() {
-        _attachments.addAll(result.files.take(5 - _attachments.length));
-      });
-    }
+  late int selectedMonth;
+  late int selectedYear;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedMonth = _riwayat.first.start.month;
+    selectedYear = _riwayat.first.start.year;
   }
 
-  void _removeAttachment(int idx) {
-    setState(() {
-      _attachments.removeAt(idx);
-    });
+  String _formatDate(DateTime d) {
+    const monthNames = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'Mei',
+      'Jun',
+      'Jul',
+      'Agu',
+      'Sep',
+      'Okt',
+      'Nov',
+      'Des',
+    ];
+    return '${d.day} ${monthNames[d.month - 1]} ${d.year}';
   }
 
-  Future<void> _pickDate() async {
+  List<int> _availableMonths() {
+    return _riwayat.map((r) => r.start.month).toSet().toList()..sort();
+  }
+
+  List<int> _availableYears() {
+    return _riwayat.map((r) => r.start.year).toSet().toList()..sort();
+  }
+
+  List<Pengajuan> get _filteredRiwayat {
+    return _riwayat
+        .where(
+          (r) => r.start.month == selectedMonth && r.start.year == selectedYear,
+        )
+        .toList();
+  }
+
+  Future<void> _selectDate(bool isStart) async {
     final picked = await showDatePicker(
       context: context,
-      initialDate: transactionDate ?? DateTime.now(),
-      firstDate: DateTime.now().subtract(const Duration(days: 365 * 5)),
-      lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
+      initialDate: (isStart ? _startDate : _endDate) ?? DateTime.now(),
+      firstDate: DateTime(DateTime.now().year - 5),
+      lastDate: DateTime(DateTime.now().year + 2),
       builder: (context, child) => Theme(
         data: ThemeData(
           colorScheme: ColorScheme.light(
-            primary: brightBlue,
+            primary: AppColors.primary,
             onPrimary: Colors.white,
             onSurface: Colors.black,
           ),
@@ -74,514 +108,420 @@ class _PengajuanReimbursementPageState
         child: child!,
       ),
     );
-    if (picked != null) setState(() => transactionDate = picked);
+    if (picked != null) {
+      setState(() {
+        if (isStart) {
+          _startDate = picked;
+          if (_endDate != null && _endDate!.isBefore(picked)) _endDate = null;
+        } else {
+          _endDate = picked;
+        }
+      });
+    }
   }
 
-  void _showAddItemDialog() {
-    final nameController = TextEditingController();
-    final amountController = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text("Tambah Item"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextFormField(
-              controller: nameController,
-              decoration: InputDecoration(
-                labelText: "Nama item",
-                border: OutlineInputBorder(),
-              ),
-            ),
-            SizedBox(height: 12),
-            TextFormField(
-              controller: amountController,
-              decoration: InputDecoration(
-                labelText: "Nominal (Rp)",
-                prefixText: "Rp ",
-                border: OutlineInputBorder(),
-              ),
-              keyboardType: TextInputType.number,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            child: Text("Batal"),
-            onPressed: () => Navigator.of(ctx).pop(),
+  void _submitPengajuan() {
+    if (_startDate != null &&
+        _endDate != null &&
+        _reasonController.text.trim().isNotEmpty) {
+      setState(() {
+        _riwayat.insert(
+          0,
+          Pengajuan(
+            start: _startDate!,
+            end: _endDate!,
+            reason: _reasonController.text,
+            status: "Proses",
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.grey,
-              foregroundColor: Colors.white,
-            ),
-            child: Text("Tambah"),
-            onPressed: () {
-              if (nameController.text.trim().isNotEmpty &&
-                  num.tryParse(
-                        amountController.text
-                            .replaceAll('.', '')
-                            .replaceAll(',', ''),
-                      ) !=
-                      null) {
-                setState(() {
-                  _items.add(
-                    _ReimburseItem(
-                      name: nameController.text.trim(),
-                      amount: int.parse(
-                        amountController.text
-                            .replaceAll('.', '')
-                            .replaceAll(',', ''),
-                      ),
-                    ),
-                  );
-                });
-                Navigator.of(ctx).pop();
-              }
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  int get total => _items.fold(0, (sum, v) => sum + v.amount);
-
-  void _submit() {
-    // validasi sederhana
-    if (selectedPolicy == null ||
-        transactionDate == null ||
-        _attachments.isEmpty ||
-        _items.isEmpty) {
+        );
+        selectedMonth = _startDate!.month;
+        selectedYear = _startDate!.year;
+        _startDate = null;
+        _endDate = null;
+        _reasonController.clear();
+      });
+      FocusScope.of(context).unfocus();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text(
-            "Semua field wajib diisi dan minimal 1 item serta 1 file lampiran!",
-          ),
-          backgroundColor: Colors.red,
+          content: Text("Pengajuan cuti berhasil dikirim!"),
+          duration: Duration(seconds: 2),
+          backgroundColor: const Color.fromARGB(255, 247, 251, 255),
         ),
       );
-      return;
     }
-    // Submit (mock)
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text("Pengajuan reimbursement berhasil dikirim!"),
-        backgroundColor: brightBlue,
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     final borderRadius = BorderRadius.circular(16);
-    final borderColor = brightBlue.withOpacity(0.25);
+
     return Scaffold(
-      backgroundColor: blueAccent,
+      backgroundColor: AppColors.extraLight,
+      appBar: AppBar(
+        title: const Text('Pengajuan Reimbursement'),
+        backgroundColor: AppColors.primary,
+        elevation: 0,
+      ),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.all(0),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.only(
-                top: 12,
-                left: 12,
-                right: 12,
-                bottom: 5,
-              ),
-              child: Row(
-                children: [
-                  Material(
-                    color: Colors.transparent,
-                    shape: const CircleBorder(),
-                    clipBehavior: Clip.antiAlias,
-                    child: IconButton(
-                      icon: Icon(Icons.arrow_back, color: brightBlue, size: 28),
-                      onPressed: () => Navigator.of(context).maybePop(),
-                    ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      "Pengajuan Reimbursement",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: brightBlue,
-                        letterSpacing: 0.2,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 44),
-                ],
-              ),
-            ),
-            Divider(thickness: 1, height: 2, color: borderColor),
-
-            // Main Form Card
+            // Form Card with Gradient
             Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.primary,
+                    AppColors.primary.withOpacity(0.75),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 borderRadius: borderRadius,
-                boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 6)],
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withOpacity(0.3),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
-              margin: EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-              padding: EdgeInsets.fromLTRB(18, 16, 18, 22),
+              padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Policy Picker
-                  DropdownButtonFormField<String>(
-                    value: selectedPolicy,
-                    items: policies
-                        .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                        .toList(),
-                    onChanged: (value) =>
-                        setState(() => selectedPolicy = value),
-                    decoration: InputDecoration(
-                      label: const Text("Kebijakan reimbursement *"),
-                      filled: true,
-                      fillColor: Colors.grey[100],
-                      border: OutlineInputBorder(
-                        borderSide: BorderSide(color: borderColor),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: borderColor),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 14,
-                      ),
+                  const Text(
+                    "Ajukan Reimbursement",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                      color: Colors.white,
                     ),
                   ),
                   const SizedBox(height: 18),
 
-                  // Tanggal Transaksi
-                  Text(
-                    "Tanggal transaksi *",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 7),
+                  // Tanggal Mulai
                   GestureDetector(
-                    onTap: _pickDate,
+                    onTap: () => _selectDate(true),
                     child: AbsorbPointer(
                       child: TextFormField(
-                        controller: TextEditingController(
-                          text: transactionDate != null
-                              ? DateFormat(
-                                  'dd MMM yyyy',
-                                ).format(transactionDate!)
-                              : '',
-                        ),
                         decoration: InputDecoration(
-                          hintText: "Pilih tanggal",
-                          suffixIcon: Icon(
-                            Icons.calendar_today_rounded,
-                            color: brightBlue,
+                          hintText: 'Tanggal Mulai ',
+                          hintStyle: const TextStyle(color: Colors.black54),
+                          prefixIcon: const Icon(
+                            Icons.calendar_month_rounded,
+                            color: Colors.black54,
                           ),
                           filled: true,
-                          fillColor: Colors.grey[100],
-                          border: UnderlineInputBorder(
-                            borderSide: BorderSide(color: borderColor),
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
                           ),
-                          enabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: borderColor),
+                        ),
+                        controller: TextEditingController(
+                          text: _startDate != null
+                              ? DateFormat('dd MMM yyyy').format(_startDate!)
+                              : '',
+                        ),
+                        style: const TextStyle(color: Colors.black87),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Tanggal Akhir
+                  GestureDetector(
+                    onTap: () => _selectDate(false),
+                    child: AbsorbPointer(
+                      child: TextFormField(
+                        decoration: InputDecoration(
+                          hintText: 'Tanggal Akhir ',
+                          hintStyle: const TextStyle(color: Colors.black54),
+                          prefixIcon: const Icon(
+                            Icons.calendar_today,
+                            color: Colors.black54,
                           ),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        controller: TextEditingController(
+                          text: _endDate != null
+                              ? DateFormat('dd MMM yyyy').format(_endDate!)
+                              : '',
+                        ),
+                        style: const TextStyle(color: Colors.black87),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Alasan/Keterangan
+                  TextFormField(
+                    controller: _reasonController,
+                    minLines: 3,
+                    maxLines: 4,
+                    decoration: InputDecoration(
+                      hintText: 'Misal: Biaya perjalanan dinas',
+                      hintStyle: const TextStyle(color: Colors.black54),
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    style: const TextStyle(color: Colors.black87),
+                  ),
+                  const SizedBox(height: 18),
+
+                  // Tombol Kirim
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      onPressed: _submitPengajuan,
+                      child: const Text(
+                        'Kirim Pengajuan',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                          color: Colors.black87,
                         ),
                       ),
                     ),
                   ),
+                ],
+              ),
+            ),
 
-                  const SizedBox(height: 16),
+            const SizedBox(height: 26),
 
-                  // Lampiran
-                  Text(
-                    "Lampiran",
-                    style: TextStyle(fontWeight: FontWeight.bold),
+            // Filter & Riwayat with Modern Design
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: borderRadius,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withOpacity(0.1),
+                    blurRadius: 12,
+                    offset: const Offset(0, 3),
                   ),
-                  const SizedBox(height: 8),
+                ],
+              ),
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Riwayat Pengajuan Reimbursement",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 17,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Dropdown Filter
                   Row(
                     children: [
-                      GestureDetector(
-                        onTap: _pickFile,
-                        child: DottedBorder(
-                          color: brightBlue,
-                          strokeWidth: 1.6,
-                          dashPattern: [8, 3],
-                          borderType: BorderType.RRect,
-                          radius: Radius.circular(12),
-                          child: Container(
-                            width: 60,
-                            height: 60,
-                            decoration: BoxDecoration(
-                              color: Colors.grey[100],
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Center(
-                              child: Icon(
-                                Icons.add,
-                                color: brightBlue,
-                                size: 32,
-                              ),
-                            ),
-                          ),
-                        ),
+                      Icon(
+                        Icons.calendar_today_rounded,
+                        color: AppColors.primary,
                       ),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: Wrap(
-                          spacing: 6,
-                          children: List.generate(_attachments.length, (idx) {
-                            final f = _attachments[idx];
-                            return Stack(
-                              alignment: Alignment.topRight,
-                              children: [
-                                Container(
-                                  margin: EdgeInsets.only(top: 6, bottom: 6),
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 6,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: blueAccent,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(
-                                    f.name,
-                                    style: TextStyle(
-                                      color: brightBlue,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                                Positioned(
-                                  top: -10,
-                                  right: -8,
-                                  child: GestureDetector(
-                                    onTap: () => _removeAttachment(idx),
-                                    child: CircleAvatar(
-                                      radius: 10,
-                                      backgroundColor: Colors.red,
-                                      child: Icon(
-                                        Icons.close,
-                                        color: Colors.white,
-                                        size: 14,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            );
-                          }),
+                      const SizedBox(width: 10),
+                      DropdownButton<int>(
+                        value: selectedMonth,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          color: Colors.black87,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        dropdownColor: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        underline: SizedBox(),
+                        items: _availableMonths().map((m) {
+                          return DropdownMenuItem<int>(
+                            value: m,
+                            child: Text(
+                              [
+                                'Jan',
+                                'Feb',
+                                'Mar',
+                                'Apr',
+                                'Mei',
+                                'Jun',
+                                'Jul',
+                                'Agu',
+                                'Sep',
+                                'Okt',
+                                'Nov',
+                                'Des',
+                              ][m - 1],
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (val) {
+                          if (val != null) setState(() => selectedMonth = val);
+                        },
+                      ),
+                      const SizedBox(width: 7),
+                      DropdownButton<int>(
+                        value: selectedYear,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          color: Colors.black87,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        dropdownColor: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        underline: SizedBox(),
+                        items: _availableYears().map((y) {
+                          return DropdownMenuItem<int>(
+                            value: y,
+                            child: Text('$y'),
+                          );
+                        }).toList(),
+                        onChanged: (val) {
+                          if (val != null) setState(() => selectedYear = val);
+                        },
+                      ),
+                      const Spacer(),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryLight,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Icon(
+                            Icons.filter_list_rounded,
+                            color: AppColors.primary,
+                            size: 20,
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    "Anda dapat mengunggah maksimal 5 file, dan harus berformat PDF, JPG, PNG, XLSX, XLS, JPEG, DOCX, DOC, TXT, PPT, dan PPTX maksimum 10MB",
-                    style: TextStyle(fontSize: 11, color: Colors.black54),
-                  ),
+                  const SizedBox(height: 18),
 
-                  const SizedBox(height: 14),
-                  TextFormField(
-                    controller: _descController,
-                    minLines: 2,
-                    maxLines: 4,
-                    decoration: InputDecoration(
-                      hintText: "Deskripsi",
-                      border: UnderlineInputBorder(
-                        borderSide: BorderSide(color: borderColor),
+                  // List Riwayat
+                  if (_filteredRiwayat.isEmpty)
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: AppColors.extraLight,
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: borderColor),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Benefit part, bottom card
-            Container(
-              width: double.infinity,
-              margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
-              padding: EdgeInsets.fromLTRB(0, 14, 0, 0),
-              decoration: BoxDecoration(
-                color: blueAccent,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.blue.shade100.withOpacity(0.16),
-                    blurRadius: 6,
-                    offset: Offset(0, -4),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 24, right: 24),
-                    child: Text(
-                      'Item benefit',
-                      style: TextStyle(
-                        color: brightBlue,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 24, right: 24, top: 2),
-                    child: Text(
-                      'Tambahkan rincian benefit yang akan diajukan.',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.black54,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: brightBlue,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          elevation: 0,
-                          padding: EdgeInsets.symmetric(vertical: 13),
-                        ),
-                        onPressed: _showAddItemDialog,
-                        child: Text(
-                          "+ tambahkan item",
-                          style: TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1,
-                          ),
+                      child: Center(
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.inbox_rounded,
+                              size: 48,
+                              color: AppColors.primary.withOpacity(0.5),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              'Tidak ada riwayat pengajuan',
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                  ),
-                  if (_items.isNotEmpty)
-                    Column(
-                      children: List.generate(_items.length, (i) {
-                        final item = _items[i];
-                        return Padding(
+                  ..._filteredRiwayat.map(
+                    (r) => Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.primaryLight,
+                            AppColors.primaryLight.withOpacity(0.6),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primary.withOpacity(0.15),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 12,
+                          horizontal: 16,
+                        ),
+                        title: Text(
+                          '${_formatDate(r.start)} - ${_formatDate(r.end)}',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 14,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        subtitle: Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Text(
+                            '• Keterangan: ${r.reason}',
+                            style: TextStyle(
+                              color: Colors.black.withOpacity(0.65),
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                        trailing: Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 4,
+                            vertical: 6,
+                            horizontal: 14,
                           ),
-                          child: Card(
-                            margin: EdgeInsets.zero,
-                            color: Colors.white,
-                            elevation: 2,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(11),
+                          decoration: BoxDecoration(
+                            color: r.status == "Proses"
+                                ? Colors.orange.shade400
+                                : Colors.green.shade500,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            r.status,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 12,
                             ),
-                            child: ListTile(
-                              title: Text(
-                                item.name,
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              subtitle: Text(
-                                "Rp${item.amount.toString().replaceAllMapped(RegExp(r"\B(?=(\d{3})+(?!\d))"), (match) => ".")}",
-                                style: TextStyle(
-                                  color: brightBlue,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              trailing: IconButton(
-                                icon: Icon(Icons.delete, color: Colors.red),
-                                onPressed: () =>
-                                    setState(() => _items.removeAt(i)),
-                              ),
-                            ),
-                          ),
-                        );
-                      }),
-                    ),
-                  const SizedBox(height: 8),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 8,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "Total jumlah pengajuan",
-                          style: TextStyle(
-                            fontWeight: FontWeight.w500,
-                            fontSize: 16,
-                            color: Colors.black54,
-                          ),
-                        ),
-                        Text(
-                          "Rp${total.toString().replaceAllMapped(RegExp(r"\B(?=(\d{3})+(?!\d))"), (match) => ".")}",
-                          style: TextStyle(
-                            color: brightBlue,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: brightBlue,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          elevation: 0,
-                          padding: EdgeInsets.symmetric(vertical: 15),
-                        ),
-                        onPressed: _submit,
-                        child: Text(
-                          "Kirim",
-                          style: TextStyle(
-                            fontSize: 19,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1,
-                            color: Colors.white,
                           ),
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
                 ],
               ),
             ),
+            const SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
-}
-
-class _ReimburseItem {
-  final String name;
-  final int amount;
-  _ReimburseItem({required this.name, required this.amount});
 }

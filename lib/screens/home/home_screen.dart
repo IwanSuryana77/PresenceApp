@@ -2,17 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:peresenceapp/screens/home/absen_page.dart';
 import 'package:peresenceapp/screens/home/daftarabsen_page.dart';
 import 'package:peresenceapp/screens/home/lembur_page.dart';
-import 'package:peresenceapp/screens/home/reimbursement_page.dart';
+import 'package:peresenceapp/screens/home/pengajuan_page.dart';
 import 'package:peresenceapp/screens/home/selipgaji_page.dart';
 import 'package:peresenceapp/screens/kalender_page.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import '../../theme/app_theme.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/promo_card.dart';
 import '../../widgets/section_card.dart';
 import '../../widgets/surface.dart';
 import '../../widgets/icon_tile.dart';
-
-const Color brightBlue = Color(0xFF2196F3);
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -71,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     effect: WormEffect(
                       dotHeight: 7,
                       dotWidth: 7,
-                      activeDotColor: brightBlue,
+                      activeDotColor: AppColors.primary,
                       dotColor: const Color(0xFFCBD2E1),
                     ),
                   ),
@@ -95,7 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     IconTile(
                       icon: Icons.calendar_today,
-                      iconColor: brightBlue,
+                      iconColor: AppColors.primary,
                       label: 'KALENDER',
                       textColor: Colors.black,
                       labelStyle: const TextStyle(
@@ -114,7 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     IconTile(
                       icon: Icons.receipt_long,
-                      iconColor: brightBlue,
+                      iconColor: AppColors.primary,
                       label: 'SLIP GAJI',
                       textColor: Colors.black,
                       labelStyle: const TextStyle(
@@ -133,7 +132,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     IconTile(
                       icon: Icons.list_alt,
-                      iconColor: brightBlue,
+                      iconColor: AppColors.primary,
                       label: 'DAFTAR ABSEN',
                       textColor: Colors.black,
                       labelStyle: const TextStyle(
@@ -152,7 +151,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     IconTile(
                       icon: Icons.access_time,
-                      iconColor: brightBlue,
+                      iconColor: AppColors.primary,
                       label: 'LEMBUR',
                       textColor: Colors.black,
                       labelStyle: const TextStyle(
@@ -169,7 +168,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     IconTile(
                       icon: Icons.attach_money,
-                      iconColor: brightBlue,
+                      iconColor: AppColors.primary,
                       label: 'REIMBURSEMENT',
                       textColor: Colors.black,
                       labelStyle: const TextStyle(
@@ -181,14 +180,14 @@ class _HomeScreenState extends State<HomeScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const ReimbursementPage(),
+                            builder: (_) => const PengajuanPage(),
                           ),
                         );
                       },
                     ),
                     IconTile(
                       icon: Icons.camera_alt,
-                      iconColor: brightBlue,
+                      iconColor: AppColors.primary,
                       label: 'ABSEN',
                       textColor: Colors.black,
                       labelStyle: const TextStyle(
@@ -319,12 +318,23 @@ class GreetingHeader extends StatelessWidget {
     return Container(
       width: double.infinity,
       height: height,
-      decoration: const BoxDecoration(
-        color: Color.fromARGB(255, 144, 155, 255), // biru muda sesuai gambar
-        borderRadius: BorderRadius.only(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [AppColors.primary, AppColors.primary.withOpacity(0.85)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(28),
           bottomRight: Radius.circular(28),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.2),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Stack(
         children: [
@@ -333,14 +343,14 @@ class GreetingHeader extends StatelessWidget {
             right: 60,
             child: Icon(
               Icons.notifications_none_rounded,
-              color: brightBlue,
+              color: Colors.white,
               size: 26,
             ),
           ),
           Positioned(
             top: 18,
             right: 18,
-            child: Icon(Icons.settings_outlined, color: brightBlue, size: 26),
+            child: Icon(Icons.settings_outlined, color: Colors.white, size: 26),
           ),
           Positioned(
             left: 18,
@@ -356,7 +366,7 @@ class GreetingHeader extends StatelessWidget {
                       const Text(
                         'Hello',
                         style: TextStyle(
-                          color: Colors.black54,
+                          color: Colors.white70,
                           fontWeight: FontWeight.w600,
                           fontSize: 15,
                         ),
@@ -368,7 +378,7 @@ class GreetingHeader extends StatelessWidget {
                         softWrap: false,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          color: Colors.black,
+                          color: Colors.white,
                           fontWeight: FontWeight.w700,
                           fontSize: 21,
                         ),
@@ -381,8 +391,8 @@ class GreetingHeader extends StatelessWidget {
                   backgroundColor: Colors.white,
                   child: Text(
                     getInitials(username),
-                    style: const TextStyle(
-                      color: brightBlue,
+                    style: TextStyle(
+                      color: AppColors.primary,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.5,
@@ -405,15 +415,18 @@ class GreetingHeader extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
                     child: Row(
                       children: [
                         const SizedBox(width: 12),
-                        const Icon(
-                          Icons.search,
-                          color: Colors.black54,
-                          size: 22,
-                        ),
+                        Icon(Icons.search, color: AppColors.primary, size: 22),
                         const SizedBox(width: 8),
                         Expanded(
                           child: TextField(
@@ -426,7 +439,9 @@ class GreetingHeader extends StatelessWidget {
                                 fontSize: 15,
                               ),
                               isDense: true,
-                              contentPadding: EdgeInsets.symmetric(vertical: 8),
+                              contentPadding: const EdgeInsets.symmetric(
+                                vertical: 8,
+                              ),
                             ),
                             style: const TextStyle(
                               fontSize: 15,
@@ -443,10 +458,17 @@ class GreetingHeader extends StatelessWidget {
                   height: 38,
                   width: 38,
                   decoration: BoxDecoration(
-                    color: brightBlue,
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(14),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
-                  child: const Icon(Icons.tune, color: Colors.white, size: 22),
+                  child: Icon(Icons.tune, color: AppColors.primary, size: 22),
                 ),
               ],
             ),
@@ -463,15 +485,15 @@ class AllPengumumanPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.extraLight,
       appBar: AppBar(
         title: const Text(
           'Semua Pengumuman',
-          style: TextStyle(color: Colors.black),
+          style: TextStyle(color: Colors.white),
         ),
-        backgroundColor: Colors.white,
-        iconTheme: const IconThemeData(color: brightBlue),
-        elevation: 1,
+        backgroundColor: AppColors.primary,
+        iconTheme: const IconThemeData(color: Colors.white),
+        elevation: 0,
       ),
       body: const Center(
         child: Text(
@@ -488,12 +510,12 @@ class AllTugasPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.extraLight,
       appBar: AppBar(
-        title: const Text('Semua Tugas', style: TextStyle(color: Colors.black)),
-        backgroundColor: Colors.white,
-        iconTheme: const IconThemeData(color: brightBlue),
-        elevation: 1,
+        title: const Text('Semua Tugas', style: TextStyle(color: Colors.white)),
+        backgroundColor: AppColors.primary,
+        iconTheme: const IconThemeData(color: Colors.white),
+        elevation: 0,
       ),
       body: const Center(
         child: Text(

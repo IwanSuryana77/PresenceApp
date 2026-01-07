@@ -4,21 +4,21 @@ import 'screens/home/home_screen.dart';
 import 'screens/home/pengajuan_page.dart';
 import 'screens/home/inbox_page.dart';
 import 'screens/home/profile_page.dart';
-import 'widgets/bottom_nav.dart'; 
-import 'theme/app_theme.dart'; 
+import 'widgets/bottom_nav.dart';
+import 'theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   if (Firebase.apps.isEmpty) {
-    await Firebase.initializeApp(
-      options: FirebaseOptions(
-        apiKey: "AIzaSyD...EwAELA", 
-        appId: "1:993...b1f9", 
-        messagingSenderId: "993683626108", 
-        projectId: "presenceapp-bb0f5", 
-      ),
-    );
+    // await Firebase.initializeApp(
+    //   options: FirebaseOptions(
+    //     apiKey: "AIzaSyD...EwAELA",
+    //     appId: "1:993...b1f9",
+    //     messagingSenderId: "993683626108",
+    //     projectId: "presenceapp-bb0f5",
+    //   ),
+    // );
   }
 
   runApp(const MyApp());
@@ -52,13 +52,13 @@ class _BottomNavWrapperState extends State<BottomNavWrapper> {
     const HomeScreen(),
     const PengajuanPage(),
     const InboxPage(),
-    const ProfilPage(),
+    const ProfilePage(),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_selectedIndex], // Tampilkan halaman sesuai index
+      body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNav(
         index: _selectedIndex,
         onChanged: (index) {

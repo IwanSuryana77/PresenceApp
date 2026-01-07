@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../../theme/app_theme.dart';
+import '../../models/leave_request.dart';
+import '../../services/api_service.dart';
 
 class PengajuanPage extends StatefulWidget {
   const PengajuanPage({super.key});
@@ -7,44 +10,17 @@ class PengajuanPage extends StatefulWidget {
   State<PengajuanPage> createState() => _PengajuanPageState();
 }
 
-class Pengajuan {
-  DateTime start;
-  DateTime end;
-  String reason;
-  String status;
-  Pengajuan({
-    required this.start,
-    required this.end,
-    required this.reason,
-    required this.status,
-  });
-}
-
 class _PengajuanPageState extends State<PengajuanPage> {
   DateTime? _startDate;
   DateTime? _endDate;
   final TextEditingController _reasonController = TextEditingController();
 
-  final List<Pengajuan> _riwayat = [
-    Pengajuan(
-      start: DateTime(2025, 12, 22),
-      end: DateTime(2026, 1, 2),
-      reason: "Acara Keluarga",
-      status: "Proses",
-    ),
-    Pengajuan(
-      start: DateTime(2025, 10, 21),
-      end: DateTime(2025, 10, 23),
-      reason: "Kontrol Sakit",
-      status: "Disetujui",
-    ),
-    Pengajuan(
-      start: DateTime(2025, 9, 25),
-      end: DateTime(2025, 10, 26),
-      reason: "Operasi ringan",
-      status: "Disetujui",
-    ),
-  ];
+  /// 💾 FIREBASE: Akses API terpusat untuk leave requests (UI -> API -> FIREBASE)
+  final ApiService _api = ApiService.instance;
+
+  /// 💾 FIREBASE: List untuk menyimpan data dari Firestore
+  List<LeaveRequest> _leaveRequests = [];
+  bool _isLoading = false;
 
   late int selectedMonth;
   late int selectedYear;
@@ -52,8 +28,28 @@ class _PengajuanPageState extends State<PengajuanPage> {
   @override
   void initState() {
     super.initState();
-    selectedMonth = _riwayat.first.start.month;
-    selectedYear = _riwayat.first.start.year;
+    selectedMonth = DateTime.now().month;
+    selectedYear = DateTime.now().year;
+
+    /// 💾 FIREBASE: Load leave requests ketika page terbuka
+    _loadLeaveRequests();
+  }
+
+  /// 💾 FIREBASE READ: Load leave requests dari Firestore
+  Future<void> _loadLeaveRequests() async {
+    setState(() => _isLoading = true);
+    try {
+      /// 💾 FIREBASE READ: Ambil semua leave requests via ApiService
+      final requests = await _api.getAllLeaveRequests();
+      setState(() {
+        _leaveRequests = requests;
+        _isLoading = false;
+      });
+      print('✅ Leave requests loaded from Firebase');
+    } catch (e) {
+      setState(() => _isLoading = false);
+      print('❌ Error loading leave requests: $e');
+    }
   }
 
   String _formatDate(DateTime d) {
@@ -75,17 +71,23 @@ class _PengajuanPageState extends State<PengajuanPage> {
   }
 
   List<int> _availableMonths() {
-    return _riwayat.map((r) => r.start.month).toSet().toList()..sort();
+    /// 💾 FIREBASE: Get available months dari Firestore data
+    return _leaveRequests.map((r) => r.startDate.month).toSet().toList()
+      ..sort();
   }
 
   List<int> _availableYears() {
-    return _riwayat.map((r) => r.start.year).toSet().toList()..sort();
+    /// 💾 FIREBASE: Get available years dari Firestore data
+    return _leaveRequests.map((r) => r.startDate.year).toSet().toList()..sort();
   }
 
-  List<Pengajuan> get _filteredRiwayat {
-    return _riwayat
+  List<LeaveRequest> get _filteredRiwayat {
+    /// 💾 FIREBASE: Filter leave requests berdasarkan bulan dan tahun yang dipilih
+    return _leaveRequests
         .where(
-          (r) => r.start.month == selectedMonth && r.start.year == selectedYear,
+          (r) =>
+              r.startDate.month == selectedMonth &&
+              r.startDate.year == selectedYear,
         )
         .toList();
   }
@@ -99,7 +101,7 @@ class _PengajuanPageState extends State<PengajuanPage> {
       builder: (context, child) => Theme(
         data: ThemeData(
           colorScheme: ColorScheme.light(
-            primary: Colors.blue.shade700, // Warna utama biru
+            primary: AppColors.primary,
             onPrimary: Colors.white,
             onSurface: Colors.black,
           ),
@@ -119,86 +121,100 @@ class _PengajuanPageState extends State<PengajuanPage> {
     }
   }
 
-  void _submitPengajuan() {
+  void _submitPengajuan() async {
     if (_startDate != null &&
         _endDate != null &&
         _reasonController.text.trim().isNotEmpty) {
-      setState(() {
-        _riwayat.insert(
-          0,
-          Pengajuan(
-            start: _startDate!,
-            end: _endDate!,
-            reason: _reasonController.text,
-            status: "Proses",
-          ),
+      try {
+        final daysCount = _endDate!.difference(_startDate!).inDays + 1;
+
+        /// 💾 FIREBASE WRITE: Buat LeaveRequest object
+        final leaveRequest = LeaveRequest(
+          employeeId: 'emp_001', // TODO: Get dari logged in user
+          employeeName: 'Ramadhani Hibban', // TODO: Get dari logged in user
+          startDate: _startDate!,
+          endDate: _endDate!,
+          reason: _reasonController.text,
+          status: 'Proses',
+          createdAt: DateTime.now(),
+          daysCount: daysCount,
         );
-        selectedMonth = _startDate!.month;
-        selectedYear = _startDate!.year;
-        _startDate = null;
-        _endDate = null;
-        _reasonController.clear();
-      });
-      FocusScope.of(context).unfocus();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Pengajuan cuti berhasil dikirim!"),
-          duration: Duration(seconds: 2),
-          backgroundColor: Colors.blue.shade600,
-        ),
-      );
+
+        /// 💾 FIREBASE WRITE: Simpan ke Firestore collection 'leave_requests' via ApiService
+        await _api.createLeaveRequest(leaveRequest);
+
+        /// 💾 FIREBASE READ: Refresh data dari Firestore
+        await _loadLeaveRequests();
+
+        /// Reset form
+        setState(() {
+          selectedMonth = _startDate!.month;
+          selectedYear = _startDate!.year;
+          _startDate = null;
+          _endDate = null;
+          _reasonController.clear();
+        });
+
+        FocusScope.of(context).unfocus();
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("✅ Pengajuan cuti berhasil dikirim ke Firebase!"),
+              duration: Duration(seconds: 2),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } catch (e) {
+        print('❌ Error submitting leave request: $e');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("❌ Gagal mengirim pengajuan: $e"),
+              duration: const Duration(seconds: 2),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final colorPrimary = Colors.blue.shade700;
-    final colorAccent = Colors.blue.shade50;
+    final colorPrimary = AppColors.primary;
+    final colorAccent = AppColors.primaryLight;
     final borderRadius = BorderRadius.circular(16);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F8FB),
+      backgroundColor: AppColors.extraLight,
+      appBar: AppBar(
+        title: const Text('Pengajuan Cuti'),
+        backgroundColor: AppColors.primary,
+        elevation: 0,
+      ),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           children: [
-            // AppBar Style
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // IconButton(
-                //   icon: Icon(Icons.arrow_back, color: colorPrimary),
-                //   onPressed: () {
-                //     Navigator.of(context).maybePop();
-                //   },
-                // ),
-                const SizedBox(width: 2),
-                Expanded(
-                  child: Text(
-                    'Pengajuan Cuti',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 23,
-                      fontWeight: FontWeight.w700,
-                      color: colorPrimary,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 44), // Agar judul tetap di tengah
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // Form Card
+            // Form Card with Gradient
             Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.primary,
+                    AppColors.primary.withOpacity(0.75),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 borderRadius: borderRadius,
                 boxShadow: [
                   BoxShadow(
-                    color: colorPrimary.withAlpha((0.09 * 255).round()),
+                    color: AppColors.primary.withOpacity(0.3),
                     blurRadius: 16,
-                    offset: Offset(0, 4),
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
@@ -208,7 +224,11 @@ class _PengajuanPageState extends State<PengajuanPage> {
                 children: [
                   const Text(
                     "Ajukan Cuti",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                      color: Colors.white,
+                    ),
                   ),
                   const SizedBox(height: 18),
 
@@ -219,12 +239,13 @@ class _PengajuanPageState extends State<PengajuanPage> {
                       child: TextFormField(
                         decoration: InputDecoration(
                           hintText: 'Tanggal Mulai ',
-                          prefixIcon: Icon(
+                          hintStyle: const TextStyle(color: Colors.black54),
+                          prefixIcon: const Icon(
                             Icons.calendar_month_rounded,
-                            color: colorPrimary,
+                            color: Colors.black54,
                           ),
                           filled: true,
-                          fillColor: colorAccent,
+                          fillColor: Colors.white,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
@@ -235,6 +256,7 @@ class _PengajuanPageState extends State<PengajuanPage> {
                               ? DateFormat('dd MMM yyyy').format(_startDate!)
                               : '',
                         ),
+                        style: const TextStyle(color: Colors.black87),
                       ),
                     ),
                   ),
@@ -247,12 +269,13 @@ class _PengajuanPageState extends State<PengajuanPage> {
                       child: TextFormField(
                         decoration: InputDecoration(
                           hintText: 'Tanggal Akhir ',
-                          prefixIcon: Icon(
+                          hintStyle: const TextStyle(color: Colors.black54),
+                          prefixIcon: const Icon(
                             Icons.calendar_today,
-                            color: colorPrimary,
+                            color: Colors.black54,
                           ),
                           filled: true,
-                          fillColor: colorAccent,
+                          fillColor: Colors.white,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
@@ -263,6 +286,7 @@ class _PengajuanPageState extends State<PengajuanPage> {
                               ? DateFormat('dd MMM yyyy').format(_endDate!)
                               : '',
                         ),
+                        style: const TextStyle(color: Colors.black87),
                       ),
                     ),
                   ),
@@ -275,37 +299,38 @@ class _PengajuanPageState extends State<PengajuanPage> {
                     maxLines: 4,
                     decoration: InputDecoration(
                       hintText: 'Misal: acara keluarga',
+                      hintStyle: const TextStyle(color: Colors.black54),
                       filled: true,
-                      fillColor: colorAccent,
+                      fillColor: Colors.white,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
                       ),
                     ),
+                    style: const TextStyle(color: Colors.black87),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 18),
 
                   // Tombol Kirim
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: colorPrimary,
+                        backgroundColor: Colors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        padding: EdgeInsets.symmetric(vertical: 14),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       onPressed: _submitPengajuan,
-                      child: Text(
-                        'Kirim',
+                      child: const Text(
+                        'Kirim Pengajuan',
                         style: TextStyle(
-                          fontSize: 17,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          letterSpacing: 1.1,
-                          color:
-                              Colors.white, // <--- UBAH WARNA SESUAI KEINGINAN
+                          letterSpacing: 0.5,
+                          color: Colors.black87,
                         ),
                       ),
                     ),
@@ -316,16 +341,16 @@ class _PengajuanPageState extends State<PengajuanPage> {
 
             const SizedBox(height: 26),
 
-            // Filter & Riwayat
+            // Filter & Riwayat with Gradient
             Container(
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: borderRadius,
                 boxShadow: [
                   BoxShadow(
-                    color: colorPrimary.withAlpha((0.07 * 255).round()),
-                    blurRadius: 10,
-                    offset: Offset(0, 3),
+                    color: colorPrimary.withOpacity(0.1),
+                    blurRadius: 12,
+                    offset: const Offset(0, 3),
                   ),
                 ],
               ),
@@ -338,7 +363,7 @@ class _PengajuanPageState extends State<PengajuanPage> {
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 17,
-                      color: colorPrimary,
+                      color: AppColors.primary,
                     ),
                   ),
                   const SizedBox(height: 14),
@@ -346,7 +371,10 @@ class _PengajuanPageState extends State<PengajuanPage> {
                   // Dropdown Filter
                   Row(
                     children: [
-                      Icon(Icons.calendar_today_rounded, color: colorPrimary),
+                      Icon(
+                        Icons.calendar_today_rounded,
+                        color: AppColors.primary,
+                      ),
                       const SizedBox(width: 10),
                       DropdownButton<int>(
                         value: selectedMonth,
@@ -403,16 +431,17 @@ class _PengajuanPageState extends State<PengajuanPage> {
                         },
                       ),
                       const Spacer(),
-                      Material(
-                        color: colorAccent,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(9),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryLight,
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         child: Padding(
-                          padding: const EdgeInsets.all(6.0),
+                          padding: const EdgeInsets.all(8.0),
                           child: Icon(
                             Icons.filter_list_rounded,
-                            color: colorPrimary,
+                            color: AppColors.primary,
+                            size: 20,
                           ),
                         ),
                       ),
@@ -452,7 +481,7 @@ class _PengajuanPageState extends State<PengajuanPage> {
                           horizontal: 14,
                         ),
                         title: Text(
-                          '${_formatDate(r.start)} - ${_formatDate(r.end)}',
+                          '${_formatDate(r.startDate)} - ${_formatDate(r.endDate)}',
                           style: const TextStyle(
                             fontWeight: FontWeight.w800,
                             fontSize: 15,

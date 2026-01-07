@@ -131,8 +131,8 @@ class _LemburPageState extends State<LemburPage> {
                       borderRadius: BorderRadius.circular(24),
                       onTap: () => Navigator.pop(context),
                       child: CircleAvatar(
-                        backgroundColor: primaryBlue.withOpacity(0.09),
-                        child: Icon(Icons.arrow_back, color: primaryBlue, size: 26),
+                        backgroundColor: const Color.fromARGB(255, 249, 252, 255).withOpacity(0.09),
+                        child: Icon(Icons.arrow_back, color: const Color.fromARGB(255, 0, 0, 0), size: 26),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -205,7 +205,7 @@ class _LemburPageState extends State<LemburPage> {
                           decoration: InputDecoration(
                             labelText: "Shift *",
                             labelStyle: TextStyle(color: Colors.black),
-                            suffixIcon: Icon(Icons.keyboard_arrow_down, color: primaryBlue),
+                            suffixIcon: Icon(Icons.keyboard_arrow_down, color: const Color.fromARGB(255, 255, 255, 255)),
                             filled: true,
                             fillColor: boxWhite,
                             border: OutlineInputBorder(
@@ -395,7 +395,7 @@ class _LemburPageState extends State<LemburPage> {
     margin: EdgeInsets.only(bottom: 2),
     padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
-      color: boxWhite,
+      color: const Color.fromARGB(255, 238, 238, 238),
       borderRadius: BorderRadius.circular(17),
       boxShadow: [
         BoxShadow(color: Colors.blue.withOpacity(0.03), blurRadius: 5, offset: Offset(0,2))

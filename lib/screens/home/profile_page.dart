@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
+import '../Profile/profile_screen.dart';
 
-class ProfilPage extends StatelessWidget {
-  const ProfilPage({super.key});
+class ProfilePage extends StatelessWidget {
+  const ProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        'Halaman Profil',
-        style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-      ),
-    );
+    return const ProfilScreen();
   }
 }

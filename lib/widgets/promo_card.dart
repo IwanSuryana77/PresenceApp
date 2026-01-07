@@ -1,12 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 
-// ==== Simulasi Theme Sederhana ====
-class AppColors {
-  static const Color surface = Color(0xFFFFFFFF);
-  static const Color navy = Color(0xFF1B1E6D);
-}
-
 // ==== PromoCard dengan Background Image Asset ====
 class PromoCard extends StatelessWidget {
   final String imageAsset;
@@ -31,61 +25,61 @@ class PromoCard extends StatelessWidget {
               offset: Offset(0, 10),
             ),
           ],
-        
         ),
-      ),    );
-        // Jika ingin overlay gelap untuk konten: aktifkan Container berikut!
-        /* 
+      ),
+    );
+    // Jika ingin overlay gelap untuk konten: aktifkan Container berikut!
+    /* 
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
             color: Colors.black.withOpacity(0.08),
           ),
         */
-        // child: Row(
-        //   children: [
-        //     const SizedBox(width: 14),
-        //     // Jika ingin bisa isi widget/icon di atas gambar, tambah di sini
-        //     Expanded(
-        //       child: Padding(
-        //         padding: const EdgeInsets.fromLTRB(0, 16, 14, 16),
-        //         child: Column(
-        //           crossAxisAlignment: CrossAxisAlignment.start,
-        //           children: [
-        //             Container(
-        //               height: 10,
-        //               width: double.infinity,
-        //               decoration: BoxDecoration(
-        //                 color: AppColors.navy.withOpacity(0.8),
-        //                 borderRadius: BorderRadius.circular(99),
-        //               ),
-        //             ),
-                    // const SizedBox(height: 10),
-                    // Container(
-                    //   height: 8,
-                    //   width: 180,
-                    //   decoration: BoxDecoration(
-                    //     color: const Color(0xFFD8DDEA).withOpacity(0.8),
-                    //     borderRadius: BorderRadius.circular(99),
-                    //   ),
-                    // ),
-                //     const SizedBox(height: 10),
-                //     Row(
-                //       children: List.generate(
-                //         5,
-                //         (i) => const Padding(
-                //           padding: EdgeInsets.only(right: 4),
-                //           child: Icon(
-                //             Icons.star_border,
-                //             size: 14,
-                //             color: AppColors.navy,
-                //           ),
-                //         ),
-                //       ),
-                //     ),
-                //   // ],
-                // ),
-              // ),
+    // child: Row(
+    //   children: [
+    //     const SizedBox(width: 14),
+    //     // Jika ingin bisa isi widget/icon di atas gambar, tambah di sini
+    //     Expanded(
+    //       child: Padding(
+    //         padding: const EdgeInsets.fromLTRB(0, 16, 14, 16),
+    //         child: Column(
+    //           crossAxisAlignment: CrossAxisAlignment.start,
+    //           children: [
+    //             Container(
+    //               height: 10,
+    //               width: double.infinity,
+    //               decoration: BoxDecoration(
+    //                 color: AppColors.navy.withOpacity(0.8),
+    //                 borderRadius: BorderRadius.circular(99),
+    //               ),
+    //             ),
+    // const SizedBox(height: 10),
+    // Container(
+    //   height: 8,
+    //   width: 180,
+    //   decoration: BoxDecoration(
+    //     color: const Color(0xFFD8DDEA).withOpacity(0.8),
+    //     borderRadius: BorderRadius.circular(99),
+    //   ),
+    // ),
+    //     const SizedBox(height: 10),
+    //     Row(
+    //       children: List.generate(
+    //         5,
+    //         (i) => const Padding(
+    //           padding: EdgeInsets.only(right: 4),
+    //           child: Icon(
+    //             Icons.star_border,
+    //             size: 14,
+    //             color: AppColors.navy,
+    //           ),
+    //         ),
+    //       ),
+    //     ),
+    //   // ],
+    // ),
+    // ),
     //         ),
     //       ],
     //     ),
