@@ -129,7 +129,7 @@ class AttendanceService {
           .child(fileName);
 
       final file = File(filePath);
-      final uploadTask = await ref.putFile(file);
+      await ref.putFile(file);
 
       final downloadUrl = await ref.getDownloadURL();
       print('✅ Photo uploaded successfully: $downloadUrl');

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'screens/auth/login_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/home/pengajuan_page.dart';
 import 'screens/home/inbox_page.dart';
@@ -11,14 +13,14 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   if (Firebase.apps.isEmpty) {
-    // await Firebase.initializeApp(
-    //   options: FirebaseOptions(
-    //     apiKey: "AIzaSyD...EwAELA",
-    //     appId: "1:993...b1f9",
-    //     messagingSenderId: "993683626108",
-    //     projectId: "presenceapp-bb0f5",
-    //   ),
-    // );
+    await Firebase.initializeApp(
+      options: FirebaseOptions(
+        apiKey: "AIzaSyD...EwAELA",
+        appId: "1:993...b1f9",
+        messagingSenderId: "993683626108",
+        projectId: "presenceapp-bb0f5",
+      ),
+    );
   }
 
   runApp(const MyApp());
@@ -33,7 +35,32 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Modern HR UI',
       theme: AppTheme.light(), // Pastikan ada AppTheme
-      home: const BottomNavWrapper(), // Mulai dari navbar wrapper
+      home: const AuthGate(), // Gate ke login jika belum auth
+    );
+  }
+}
+
+// Gate untuk login vs home berdasarkan status autentikasi Firebase
+class AuthGate extends StatelessWidget {
+  const AuthGate({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        if (snapshot.data == null) {
+          // Belum login -> tampilkan layar login modern
+          return const ModernLoginScreen();
+        }
+        // Sudah login -> lanjut ke aplikasi utama
+        return const BottomNavWrapper();
+      },
     );
   }
 }

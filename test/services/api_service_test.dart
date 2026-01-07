@@ -30,6 +30,19 @@ class FakeAttendanceService extends AttendanceService {
   final _attendanceStreamController = StreamController<List<Attendance>>.broadcast();
   String? lastAttendanceStreamEmployeeId;
 
+  // New: support more API methods
+  Attendance? getByDateReturn;
+  String? lastGetByDateEmployeeId;
+  DateTime? lastGetByDateDate;
+
+  Attendance? getByIdReturn;
+  String? lastGetById;
+
+  String? lastUpdateAttendanceId;
+  Attendance? lastUpdatedAttendance;
+
+  String? lastDeletedAttendanceId;
+
   @override
   Future<String> recordAttendance(Attendance attendance) async {
     lastRecorded = attendance;
@@ -49,9 +62,33 @@ class FakeAttendanceService extends AttendanceService {
   }
 
   @override
+  Future<Attendance?> getAttendanceByDate(String employeeId, DateTime date) async {
+    lastGetByDateEmployeeId = employeeId;
+    lastGetByDateDate = date;
+    return getByDateReturn;
+  }
+
+  @override
+  Future<Attendance?> getAttendanceById(String id) async {
+    lastGetById = id;
+    return getByIdReturn;
+  }
+
+  @override
+  Future<void> updateAttendance(String id, Attendance updatedAttendance) async {
+    lastUpdateAttendanceId = id;
+    lastUpdatedAttendance = updatedAttendance;
+  }
+
+  @override
   Future<void> updateCheckOutTime(String id, String checkOutTime) async {
     lastUpdateCheckOutId = id;
     lastCheckOutTime = checkOutTime;
+  }
+
+  @override
+  Future<void> deleteAttendance(String id) async {
+    lastDeletedAttendanceId = id;
   }
 
   @override
@@ -84,6 +121,10 @@ class FakeLeaveRequestService extends LeaveRequestService {
   String? lastNewStatus;
   String? lastApprovedBy;
 
+  // New: creation capture
+  String createReturnId = 'lr-1';
+  LeaveRequest? lastCreatedLeave;
+
   @override
   Future<void> updateLeaveRequestStatus(
     String id,
@@ -94,6 +135,12 @@ class FakeLeaveRequestService extends LeaveRequestService {
     lastNewStatus = newStatus;
     lastApprovedBy = approvedBy;
   }
+
+  @override
+  Future<String> createLeaveRequest(LeaveRequest request) async {
+    lastCreatedLeave = request;
+    return createReturnId;
+  }
 }
 
 class FakeMessageService extends MessageService {
@@ -102,6 +149,13 @@ class FakeMessageService extends MessageService {
 
   final _messagesStreamController = StreamController<List<Message>>.broadcast();
   String? lastMessagesStreamRecipientId;
+
+  // New: unread stream and send/mark capture
+  final _unreadMessagesStreamController = StreamController<List<Message>>.broadcast();
+  String? lastUnreadMessagesStreamRecipientId;
+  String sendReturnId = 'msg-1';
+  Message? lastSentMessage;
+  String? lastMarkMessageId;
 
   @override
   Future<void> markAllMessagesAsRead(String recipientId) async {
@@ -119,12 +173,34 @@ class FakeMessageService extends MessageService {
     return _messagesStreamController.stream;
   }
 
+  @override
+  Stream<List<Message>> getUnreadMessagesStream(String recipientId) {
+    lastUnreadMessagesStreamRecipientId = recipientId;
+    return _unreadMessagesStreamController.stream;
+  }
+
+  @override
+  Future<String> sendMessage(Message message) async {
+    lastSentMessage = message;
+    return sendReturnId;
+  }
+
+  @override
+  Future<void> markMessageAsRead(String messageId) async {
+    lastMarkMessageId = messageId;
+  }
+
   void emitMessagesStream(List<Message> data) {
     _messagesStreamController.add(data);
   }
 
+  void emitUnreadMessagesStream(List<Message> data) {
+    _unreadMessagesStreamController.add(data);
+  }
+
   Future<void> close() async {
     await _messagesStreamController.close();
+    await _unreadMessagesStreamController.close();
   }
 }
 
@@ -260,6 +336,40 @@ void main() {
       await futureExpectation;
       expect(fakeAttendance.lastAttendanceStreamEmployeeId, 'emp4');
     });
+
+    // New behaviors for Attendance
+    test('getAttendanceByDate returns value and forwards parameters', () async {
+      final date = DateTime(2024, 4, 10);
+      fakeAttendance.getByDateReturn = Attendance(
+        id: 'ad-1',
+        employeeId: 'emp5',
+        employeeName: 'Dina',
+        date: date,
+      );
+
+      final res = await ApiService.instance.getAttendanceByDate('emp5', date);
+
+      expect(res, isNotNull);
+      expect(res!.id, 'ad-1');
+      expect(fakeAttendance.lastGetByDateEmployeeId, 'emp5');
+      expect(fakeAttendance.lastGetByDateDate, date);
+    });
+
+    test('updateAttendance delegates with correct id and data', () async {
+      final updated = Attendance(
+        employeeId: 'emp6',
+        employeeName: 'Evan',
+        date: DateTime(2024, 5, 1),
+        checkInTime: '09:00',
+        checkOutTime: '17:00',
+      );
+
+      await ApiService.instance.updateAttendance('att-55', updated);
+
+      expect(fakeAttendance.lastUpdateAttendanceId, 'att-55');
+      expect(fakeAttendance.lastUpdatedAttendance, isNotNull);
+      expect(fakeAttendance.lastUpdatedAttendance!.employeeName, 'Evan');
+    });
   });
 
   group('ApiService - Leave Requests', () {
@@ -272,6 +382,27 @@ void main() {
       expect(fakeLeave.lastUpdateId, 'lr-10');
       expect(fakeLeave.lastNewStatus, 'Disetujui');
       expect(fakeLeave.lastApprovedBy, 'manager1');
+    });
+
+    // New behavior for Leave Request
+    test('createLeaveRequest delegates and returns id', () async {
+      final request = LeaveRequest(
+        employeeId: 'emp7',
+        employeeName: 'Fina',
+        startDate: DateTime(2024, 6, 1),
+        endDate: DateTime(2024, 6, 5),
+        reason: 'Vacation',
+        status: 'Menunggu',
+        createdAt: DateTime(2024, 5, 20),
+        daysCount: 5,
+      );
+      fakeLeave.createReturnId = 'lr-77';
+
+      final id = await ApiService.instance.createLeaveRequest(request);
+
+      expect(id, 'lr-77');
+      expect(fakeLeave.lastCreatedLeave, isNotNull);
+      expect(fakeLeave.lastCreatedLeave!.employeeId, 'emp7');
     });
   });
 
@@ -322,6 +453,54 @@ void main() {
 
       await futureExpectation;
       expect(fakeMessage.lastMessagesStreamRecipientId, 'u-300');
+    });
+
+    // New behaviors for Messages
+    test('sendMessage delegates to service and returns id', () async {
+      final msg = Message(
+        senderId: 's1',
+        senderName: 'Alice',
+        recipientId: 'u-500',
+        title: 'Greetings',
+        body: 'Hello there',
+        sentAt: DateTime(2024, 7, 1),
+      );
+      fakeMessage.sendReturnId = 'msg-999';
+
+      final id = await ApiService.instance.sendMessage(msg);
+
+      expect(id, 'msg-999');
+      expect(fakeMessage.lastSentMessage, isNotNull);
+      expect(fakeMessage.lastSentMessage!.recipientId, 'u-500');
+    });
+
+    test('getUnreadMessagesStream emits real-time unread lists', () async {
+      final stream = ApiService.instance.getUnreadMessagesStream('u-600');
+
+      final futureExpectation = expectLater(
+        stream,
+        emitsInOrder([
+          predicate<List<Message>>((list) => list.isEmpty),
+          predicate<List<Message>>((list) => list.length == 1 && list.first.isRead == false),
+        ]),
+      );
+
+      fakeMessage.emitUnreadMessagesStream([]);
+      fakeMessage.emitUnreadMessagesStream([
+        Message(
+          id: 'um1',
+          senderId: 's9',
+          senderName: 'Notifier',
+          recipientId: 'u-600',
+          title: 'Alert',
+          body: 'Please read',
+          isRead: false,
+          sentAt: DateTime(2024, 7, 2),
+        ),
+      ]);
+
+      await futureExpectation;
+      expect(fakeMessage.lastUnreadMessagesStreamRecipientId, 'u-600');
     });
   });
 
