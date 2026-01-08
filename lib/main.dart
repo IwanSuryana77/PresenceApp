@@ -14,11 +14,12 @@ void main() async {
 
   if (Firebase.apps.isEmpty) {
     await Firebase.initializeApp(
-      options: FirebaseOptions(
-        apiKey: "AIzaSyD...EwAELA",
-        appId: "1:993...b1f9",
+      options: const FirebaseOptions(
+        apiKey: "AIzaSyDzYZzOvPh6SECJMJhXPfM_TpgPOewAELA",
+        appId: "1:993683626108:android:7af88d2abb86f784bb11f9",
         messagingSenderId: "993683626108",
         projectId: "presenceapp-bb0f5",
+        storageBucket: "presenceapp-bb0f5.firebasestorage.app",
       ),
     );
   }

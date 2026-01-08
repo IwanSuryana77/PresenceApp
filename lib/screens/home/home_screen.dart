@@ -3,6 +3,7 @@ import 'package:peresenceapp/screens/home/absen_page.dart';
 import 'package:peresenceapp/screens/home/daftarabsen_page.dart';
 import 'package:peresenceapp/screens/home/lembur_page.dart';
 import 'package:peresenceapp/screens/home/pengajuan_page.dart';
+import 'package:peresenceapp/screens/home/reimbursement_page.dart';
 import 'package:peresenceapp/screens/home/selipgaji_page.dart';
 import 'package:peresenceapp/screens/kalender_page.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
@@ -180,7 +181,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const PengajuanPage(),
+                            builder: (_) => const ReimbursementListPage(),
                           ),
                         );
                       },
