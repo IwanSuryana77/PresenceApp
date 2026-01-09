@@ -1,300 +1,247 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:peresenceapp/face_Kamera/clock_in_page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:async';
 
+import 'package:peresenceapp/screens/home/clockin_page.dart';
 
-// Ganti ini dengan the real Place/Location & Photo kalau sudah terisi actual
-class AbsenLog {
-  final DateTime waktu;
-  final String type; // "Clock In" / "Clock Out"
-  final String lokasi;
-  final String foto;
-  AbsenLog({required this.waktu, required this.type, this.lokasi = "-", this.foto = ""});
-}
+const primaryPurple = Color(0xFF242484);
 
-class AbsenPage extends StatefulWidget {
-  const AbsenPage({super.key});
+class AbsensiDashboardPage extends StatefulWidget {
+  final String userId;
+  const AbsensiDashboardPage({required this.userId, super.key});
 
   @override
-  State<AbsenPage> createState() => _AbsenPageState();
+  State<AbsensiDashboardPage> createState() => _AbsensiDashboardPageState();
 }
 
-class _AbsenPageState extends State<AbsenPage> {
+class _AbsensiDashboardPageState extends State<AbsensiDashboardPage> {
+  // Untuk jam real time digital
   late Timer _timer;
-  DateTime _now = DateTime.now();
-
-  List<AbsenLog> aktivitasHariIni = [];
+  String _timeNow = DateFormat('HH.mm.ss').format(DateTime.now());
+  DateTime _today = DateTime.now();
 
   @override
   void initState() {
     super.initState();
-    _now = DateTime.now();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      setState(() {
-        _now = DateTime.now();
-      });
+      setState(() =>
+        _timeNow = DateFormat('HH.mm.ss').format(DateTime.now()));
     });
   }
-
   @override
   void dispose() {
     _timer.cancel();
     super.dispose();
   }
 
-  // Simulasi navigasi & absen:
-  void _doAbsen(String jenis) async {
-    // TODO: Setelah real, pindah ke halaman selfie/location/foto
-    // Simulasi data absen dikirim dari page lain:
-    // Setelah selesai proses absen di halaman berikutnya, tambah data di bawah
-    final fakeLokasi = "Jl. Contoh, Bandung";
-    final fakeFoto = ""; // Could be File.path or network photo url
-    setState(() {
-      aktivitasHariIni.add(
-        AbsenLog(
-          waktu: DateTime.now(),
-          type: jenis,
-          lokasi: fakeLokasi,
-          foto: fakeFoto,
-        ),
-      );
-    });
-   // Untuk navigasi Clock In
-Navigator.push(
-  context,
-  MaterialPageRoute(
-    builder: (_) => const ClockInOutPage(absenType: 'Clock In'),
-  ),
-);
-
-// Untuk navigasi Clock Out
-Navigator.push(
-  context,
-  MaterialPageRoute(
-    builder: (_) => const ClockInOutPage(absenType: 'Clock Out'),
-  ),
-
-);
+  // Get status absen hari ini dari Firebase
+  Stream<DocumentSnapshot> getTodayAbsence() {
+    final todayKey = DateFormat('yyyy-MM-dd').format(_today);
+    // Data absensi tersimpan di collection absensi/userId/YYYY-MM-DD
+    return FirebaseFirestore.instance
+      .collection('absensi').doc(widget.userId).collection('hari')
+      .doc(todayKey)
+      .snapshots();
   }
 
   @override
   Widget build(BuildContext context) {
-    const navy = Color(0xFF1B1E6D);
-    const biruMuda = Color(0xFFE8F1FF);
-    const cardBg = Color(0xFFF2F3F8);
-
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: navy, size: 28),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        elevation: 0,
-        title: const Text(
-          "Absen",
-          style: TextStyle(
-            color: navy,
-            fontWeight: FontWeight.bold,
-            fontSize: 28,
-          ),
-        ),
+        title: const Text('Hadir'),
         centerTitle: true,
-        toolbarHeight: 65,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        actions: [
+          IconButton(icon: Icon(Icons.more_vert, color: primaryPurple), onPressed: () {}),
+        ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 3),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Jam real time
-            Center(
-              child: Column(
-                children: [
-                  const SizedBox(height:6),
-                  Text(
-                    DateFormat.Hm().format(_now),
-                    style: const TextStyle(
-                      color: navy,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 48,
-                      letterSpacing: 2,
-                    ),
-                  ),
-                  Text(
-                    DateFormat('EEE, dd MMM yyyy').format(_now),
-                    style: const TextStyle(
-                      color: navy,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                ],
-              ),
+      body: ListView(
+        padding: const EdgeInsets.all(18),
+        children: [
+          // Kartu jam digital & status absen
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8)],
             ),
-            // Jadwal dan Button
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 23, horizontal: 14),
-              margin: const EdgeInsets.only(bottom: 22),
-              decoration: BoxDecoration(
-                color: cardBg,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                children: [
-                  Text(
-                    "jadwal: ${DateFormat('dd MMM yyyy').format(_now)}",
-                    style: const TextStyle(
-                      color: navy,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  const Text(
-                    "DayOn",
-                    style: TextStyle(
-                      color: navy,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () => _doAbsen('Clock In'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: navy,
-                            foregroundColor: Colors.white,
-                            textStyle: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16
-                            ),
-                            padding: const EdgeInsets.symmetric(vertical: 13),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(11),
-                            ),
-                          ),
-                          child: const Text("Clock In"),
-                        ),
-                      ),
-                      const SizedBox(width: 22),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () => _doAbsen('Clock Out'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: navy,
-                            foregroundColor: Colors.white,
-                            textStyle: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16
-                            ),
-                            padding: const EdgeInsets.symmetric(vertical: 13),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(11),
-                            ),
-                          ),
-                          child: const Text("Clock Out"),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 5),
-            const Text(
-              "Daftar Absensi",
-              style: TextStyle(
-                color: navy,
-                fontWeight: FontWeight.bold,
-                fontSize: 21,
-              ),
-            ),
-            const SizedBox(height: 5),
-
-            // Aktifitas Hari Ini
-            aktivitasHariIni.isEmpty
-                ? Padding(
-                    padding: const EdgeInsets.only(top: 23),
-                    child: Column(
-                      children: const [
-                        Text(
-                          "tidak ada log aktivitas hari ini",
-                          style: TextStyle(
-                            color: navy,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 15.5,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(DateFormat('EEEE, d MMMM yyyy', 'id_ID').format(_today),
+                  style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w600, fontSize: 16)),
+                const SizedBox(height: 8),
+                Text(_timeNow, style: TextStyle(fontSize: 34, fontWeight: FontWeight.bold, color: primaryPurple)),
+                const SizedBox(height: 2),
+                Text('Jam Normal: 08:00 - 17:00', style: TextStyle(color: Colors.black54)),
+                // Status hari ini
+                StreamBuilder<DocumentSnapshot>(
+                  stream: getTodayAbsence(),
+                  builder: (ctx, snap) {
+                    final data = snap.data?.data() as Map<String, dynamic>? ?? {};
+                    final checkIn = data['checkIn'] as Map<String,dynamic>?;
+                    final checkOut = data['checkOut'] as Map<String,dynamic>?;
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: AbsenceButton(
+                            label: 'Jam Masuk',
+                            filled: checkIn == null,
+                            onTap: checkIn == null ? () {
+                              Navigator.push(context, MaterialPageRoute(
+                                builder: (_) => ClockInPage(userId: widget.userId, isCheckOut: false),
+                              ));
+                            } : null,
+                            info: checkIn == null ? 'Belum Absen' : 'Sudah Absen',
                           ),
                         ),
-                        SizedBox(height: 3),
-                        Text(
-                          "Aktivasi Clock In/Out anda akan tampil disini",
-                          style: TextStyle(
-                            color: navy,
-                            fontSize: 12.6,
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: AbsenceButton(
+                            label: 'Jam Pulang',
+                            filled: checkOut == null,
+                            onTap: checkOut == null ? () {
+                              Navigator.push(context, MaterialPageRoute(
+                                builder: (_) => ClockInPage(userId: widget.userId, isCheckOut: true),
+                              ));
+                            } : null,
+                            info: checkOut == null ? 'Belum Absen' : 'Sudah Pulang',
                           ),
                         ),
                       ],
+                    );
+                  }
+                ),
+              ],
+            ),
+          ),
+
+          // Statistik harian
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Colors.white, borderRadius: BorderRadius.circular(16),
+              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)]
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Statistik Harian', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 6),
+                Text('Total Jam Kerja: 0 Jam'),
+                const SizedBox(height: 2),
+                Text('Status Hari Ini: Tidak Ada Data'),
+              ],
+            ),
+          ),
+
+          // Riwayat hari ini
+          const SizedBox(height: 16),
+          Text('Riwayat Hari Ini', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          StreamBuilder<DocumentSnapshot>(
+            stream: getTodayAbsence(),
+            builder: (ctx, snap) {
+              final data = snap.data?.data() as Map<String, dynamic>? ?? {};
+              final checkIn = data['checkIn'] as Map<String,dynamic>?;
+              final checkOut = data['checkOut'] as Map<String,dynamic>?;
+              return Column(
+                children: [
+                  if (checkIn != null) ...[
+                    _AbsenceHistoryCard(
+                      title: 'Check-in',
+                      icon: Icons.login_rounded,
+                      time: checkIn['waktu'],
+                      lokasi: checkIn['lokasi'],
+                      note: checkIn['catatan'] ?? '-',
                     ),
-                  )
-                : ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: aktivitasHariIni.length,
-                    itemBuilder: (context, i) {
-                      final log = aktivitasHariIni[aktivitasHariIni.length -1- i]; // Show newest at top
-                      return Card(
-                        color: biruMuda,
-                        margin: const EdgeInsets.symmetric(vertical: 5),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(13),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(10),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "${log.type} - ${DateFormat.Hm().format(log.waktu)}",
-                                style: const TextStyle(
-                                  color: navy,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                "Lokasi: ${log.lokasi}",
-                                style: const TextStyle(
-                                  color: navy,
-                                  fontSize: 13,
-                                ),
-                              ),
-                              if (log.foto.isNotEmpty)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 5),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(7),
-                                    child: Image.network(
-                                      log.foto, // untuk network, atau FileImage kalau file lokal
-                                      width: 85, height: 85, fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-          ],
-        ),
+                  ],
+                  if (checkOut != null) ...[
+                    _AbsenceHistoryCard(
+                      title: 'Check-out',
+                      icon: Icons.logout_rounded,
+                      time: checkOut['waktu'],
+                      lokasi: checkOut['lokasi'],
+                      note: checkOut['catatan'] ?? '-',
+                    ),
+                  ]
+                ],
+              );
+            }
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Tombol absen modern
+class AbsenceButton extends StatelessWidget {
+  final String label;
+  final bool filled;
+  final VoidCallback? onTap;
+  final String info;
+  const AbsenceButton({required this.label, required this.filled, this.onTap, this.info = ''});
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: filled ? primaryPurple : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        elevation: 0,
+        side: filled ? null : BorderSide(color: primaryPurple, width: 1.1),
+        padding: const EdgeInsets.symmetric(vertical: 20),
+      ),
+      onPressed: onTap,
+      child: Column(
+        children:[
+          Text(label, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: filled ? Colors.white : primaryPurple)),
+          Text(info, style: TextStyle(fontSize: 13, color: filled ? Colors.white : primaryPurple)),
+        ],
+      ),
+    );
+  }
+}
+
+// Card riwayat
+class _AbsenceHistoryCard extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final String? time;
+  final String? lokasi;
+  final String? note;
+  const _AbsenceHistoryCard({required this.title, required this.icon, this.time, this.lokasi, this.note});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical:7),
+      padding: const EdgeInsets.all(13),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        boxShadow:[BoxShadow(color: Colors.black12, blurRadius: 3)]
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.blueAccent, size: 31),
+          const SizedBox(width:10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize:15)),
+                Text(time??'-', style: TextStyle(color:Colors.black, fontWeight: FontWeight.w500)),
+                Text('Lokasi: ${lokasi??'-'}', style: TextStyle(fontSize:13)),
+                Text('Catatan: ${note??''}', style: TextStyle(fontSize:13))
+              ],
+            ),
+          ),
+          Icon(Icons.refresh, size:18)
+        ],
       ),
     );
   }

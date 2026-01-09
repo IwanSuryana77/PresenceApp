@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:peresenceapp/screens/home/absen_page.dart';
 import 'package:peresenceapp/screens/home/daftarabsen_page.dart';
 import 'package:peresenceapp/screens/home/lembur_page.dart';
-import 'package:peresenceapp/screens/home/pengajuan_page.dart';
 import 'package:peresenceapp/screens/home/reimbursement_page.dart';
 import 'package:peresenceapp/screens/home/selipgaji_page.dart';
 import 'package:peresenceapp/screens/kalender_page.dart';
@@ -197,9 +197,14 @@ class _HomeScreenState extends State<HomeScreen> {
                         fontSize: 12,
                       ),
                       onTap: () {
+                        final userId =
+                            FirebaseAuth.instance.currentUser?.uid ?? 'guest';
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => const AbsenPage()),
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                AbsensiDashboardPage(userId: userId),
+                          ),
                         );
                       },
                     ),

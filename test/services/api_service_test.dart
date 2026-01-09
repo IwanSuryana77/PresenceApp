@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:peresenceapp/models/attendance.dart';
 import 'package:peresenceapp/models/leave_request.dart';
@@ -27,7 +28,8 @@ class FakeAttendanceService extends AttendanceService {
   Map<String, int> attendanceStatsReturn = const {'Hadir': 3, 'Izin': 1};
   String? lastStatsEmployeeId;
 
-  final _attendanceStreamController = StreamController<List<Attendance>>.broadcast();
+  final _attendanceStreamController =
+      StreamController<List<Attendance>>.broadcast();
   String? lastAttendanceStreamEmployeeId;
 
   // New: support more API methods
@@ -62,7 +64,10 @@ class FakeAttendanceService extends AttendanceService {
   }
 
   @override
-  Future<Attendance?> getAttendanceByDate(String employeeId, DateTime date) async {
+  Future<Attendance?> getAttendanceByDate(
+    String employeeId,
+    DateTime date,
+  ) async {
     lastGetByDateEmployeeId = employeeId;
     lastGetByDateDate = date;
     return getByDateReturn;
@@ -151,7 +156,8 @@ class FakeMessageService extends MessageService {
   String? lastMessagesStreamRecipientId;
 
   // New: unread stream and send/mark capture
-  final _unreadMessagesStreamController = StreamController<List<Message>>.broadcast();
+  final _unreadMessagesStreamController =
+      StreamController<List<Message>>.broadcast();
   String? lastUnreadMessagesStreamRecipientId;
   String sendReturnId = 'msg-1';
   Message? lastSentMessage;
@@ -211,7 +217,6 @@ class FakeReimbursementService extends ReimbursementService {
   String? lastRejectionReason;
   String? lastDeletedId;
 
-  @override
   Future<void> updateReimbursementStatus(
     String id,
     String newStatus, {
@@ -224,7 +229,6 @@ class FakeReimbursementService extends ReimbursementService {
     lastRejectionReason = rejectionReason;
   }
 
-  @override
   Future<void> deleteReimbursement(String id) async {
     lastDeletedId = id;
   }
@@ -236,19 +240,18 @@ void main() {
   late FakeMessageService fakeMessage;
   late FakeReimbursementService fakeReimb;
 
+  setUpAll(() async {
+    // Initialize Firebase for tests if not already initialized
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp();
+    }
+  });
+
   setUp(() {
     fakeAttendance = FakeAttendanceService();
     fakeLeave = FakeLeaveRequestService();
     fakeMessage = FakeMessageService();
     fakeReimb = FakeReimbursementService();
-
-    // Inject fakes into the singleton ApiService for isolation
-    ApiService.instance.injectServicesForTesting(
-      attendanceService: fakeAttendance,
-      leaveRequestService: fakeLeave,
-      messageService: fakeMessage,
-      reimbursementService: fakeReimb,
-    );
   });
 
   tearDown(() async {
@@ -319,7 +322,9 @@ void main() {
         stream,
         emitsInOrder([
           predicate<List<Attendance>>((list) => list.isEmpty),
-          predicate<List<Attendance>>((list) => list.length == 1 && list.first.employeeId == 'emp4'),
+          predicate<List<Attendance>>(
+            (list) => list.length == 1 && list.first.employeeId == 'emp4',
+          ),
         ]),
       );
 
@@ -330,7 +335,7 @@ void main() {
           employeeId: 'emp4',
           employeeName: 'Cara',
           date: DateTime(2024, 3, 5),
-        )
+        ),
       ]);
 
       await futureExpectation;
@@ -425,7 +430,9 @@ void main() {
         stream,
         emitsInOrder([
           predicate<List<Message>>((list) => list.isEmpty),
-          predicate<List<Message>>((list) => list.length == 2 && list[0].title == 'Hello'),
+          predicate<List<Message>>(
+            (list) => list.length == 2 && list[0].title == 'Hello',
+          ),
         ]),
       );
 
@@ -481,7 +488,9 @@ void main() {
         stream,
         emitsInOrder([
           predicate<List<Message>>((list) => list.isEmpty),
-          predicate<List<Message>>((list) => list.length == 1 && list.first.isRead == false),
+          predicate<List<Message>>(
+            (list) => list.length == 1 && list.first.isRead == false,
+          ),
         ]),
       );
 

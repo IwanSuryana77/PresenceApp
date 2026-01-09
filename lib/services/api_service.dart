@@ -24,32 +24,21 @@ import '../models/reimbursement_request.dart';
 /// database (Firestore / Storage) melalui service-service yang sudah ada.
 /// ============================================================================
 class ApiService {
+  // Singleton pattern
+  static final ApiService _instance = ApiService._internal();
+
   ApiService._internal() {
     _attendanceService = AttendanceService();
     _leaveRequestService = LeaveRequestService();
     _messageService = MessageService();
-    _reimbursementService = ReimbursementService();
   }
-  static final ApiService instance = ApiService._internal();
 
-  // Service Firebase yang sudah ada
-  late AttendanceService _attendanceService;
-  late LeaveRequestService _leaveRequestService;
-  late MessageService _messageService;
-  late ReimbursementService _reimbursementService;
+  static ApiService get instance => _instance;
 
-  /// Untuk keperluan testing: inject service mock agar tidak mengakses Firebase langsung
-  void injectServicesForTesting({
-    AttendanceService? attendanceService,
-    LeaveRequestService? leaveRequestService,
-    MessageService? messageService,
-    ReimbursementService? reimbursementService,
-  }) {
-    if (attendanceService != null) _attendanceService = attendanceService;
-    if (leaveRequestService != null) _leaveRequestService = leaveRequestService;
-    if (messageService != null) _messageService = messageService;
-    if (reimbursementService != null) _reimbursementService = reimbursementService;
-  }
+  // Service instances
+  late final AttendanceService _attendanceService;
+  late final LeaveRequestService _leaveRequestService;
+  late final MessageService _messageService;
 
   // ---------------------------------------------------------------------------
   // 📌 ATTENDANCE (ABSEN)
@@ -77,10 +66,7 @@ class ApiService {
 
   /// Mengambil kehadiran berdasarkan tanggal
   /// [API -> FIREBASE READ]
-  Future<Attendance?> getAttendanceByDate(
-    String employeeId,
-    DateTime date,
-  ) {
+  Future<Attendance?> getAttendanceByDate(String employeeId, DateTime date) {
     return _attendanceService.getAttendanceByDate(employeeId, date);
   }
 
@@ -253,27 +239,25 @@ class ApiService {
   /// Membuat reimbursement baru
   /// [API -> FIREBASE WRITE]
   Future<String> createReimbursement(ReimbursementRequest request) {
-    return _reimbursementService.createReimbursement(request);
+    return ReimbursementService.createReimbursement(request);
   }
 
   /// Mengambil reimbursement user
   /// [API -> FIREBASE READ]
-  Future<List<ReimbursementRequest>> getUserReimbursements(
-    String employeeId,
-  ) {
-    return _reimbursementService.getUserReimbursements(employeeId);
+  Future<List<ReimbursementRequest>> getUserReimbursements(String employeeId) {
+    return ReimbursementService.getUserReimbursements(employeeId);
   }
 
   /// Mengambil semua reimbursement (admin)
   /// [API -> FIREBASE READ]
   Future<List<ReimbursementRequest>> getAllReimbursements() {
-    return _reimbursementService.getAllReimbursements();
+    return ReimbursementService.getAllReimbursements();
   }
 
   /// Mengambil reimbursement berdasarkan ID
   /// [API -> FIREBASE READ]
   Future<ReimbursementRequest?> getReimbursementById(String id) {
-    return _reimbursementService.getReimbursementById(id);
+    return ReimbursementService.getReimbursementById(id);
   }
 
   /// Update status reimbursement
@@ -284,7 +268,7 @@ class ApiService {
     String? approvedBy,
     String? rejectionReason,
   }) {
-    return _reimbursementService.updateReimbursementStatus(
+    return ReimbursementService.updateReimbursementStatus(
       id,
       newStatus,
       approvedBy: approvedBy,
@@ -295,7 +279,7 @@ class ApiService {
   /// Hapus reimbursement
   /// [API -> FIREBASE DELETE]
   Future<void> deleteReimbursement(String id) {
-    return _reimbursementService.deleteReimbursement(id);
+    return ReimbursementService.deleteReimbursement(id);
   }
 
   /// Stream reimbursement user
@@ -303,6 +287,6 @@ class ApiService {
   Stream<List<ReimbursementRequest>> getUserReimbursementsStream(
     String employeeId,
   ) {
-    return _reimbursementService.getUserReimbursementsStream(employeeId);
+    return ReimbursementService.getUserReimbursementsStream(employeeId);
   }
 }

@@ -134,8 +134,6 @@ class _PengajuanPageState extends State<PengajuanPage> {
 
         // 🔐 Ambil data user dari Firebase Auth
         final userId = FirebaseAuth.instance.currentUser?.uid ?? 'unknown';
-        final userEmail =
-            FirebaseAuth.instance.currentUser?.email ?? 'user@example.com';
         final userName = await AuthHelper.getCurrentUserName();
 
         /// 💾 FIREBASE WRITE: Buat LeaveRequest object dengan data user real
@@ -205,8 +203,6 @@ class _PengajuanPageState extends State<PengajuanPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colorPrimary = AppColors.primary;
-    final colorAccent = AppColors.primaryLight;
     final borderRadius = BorderRadius.circular(16);
 
     return Scaffold(
