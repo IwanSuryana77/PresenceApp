@@ -38,7 +38,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Modern HR UI',
+      title: 'Presence App',
       theme: AppTheme.light(),
       home: const AuthGate(),
     );

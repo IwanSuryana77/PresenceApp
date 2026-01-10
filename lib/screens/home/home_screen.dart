@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:io';
 import 'package:peresenceapp/screens/home/absen_page.dart';
 import 'package:peresenceapp/screens/home/daftarabsen_page.dart';
 import 'package:peresenceapp/screens/home/lembur_page.dart';
 import 'package:peresenceapp/screens/home/reimbursement_page.dart';
 import 'package:peresenceapp/screens/home/selipgaji_page.dart';
 import 'package:peresenceapp/screens/kalender_page.dart';
-import 'package:peresenceapp/screens/Profile/edit_profile_screen.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/empty_state.dart';

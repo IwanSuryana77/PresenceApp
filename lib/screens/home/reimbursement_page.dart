@@ -979,25 +979,26 @@ class _ReimbursementFormPageState extends State<ReimbursementFormPage> {
                             ),
                             onDeleted: () => setState(() => _files.remove(f)),
                           ),
-                        GestureDetector(
-                          onTap: _pickFiles,
-                          child: DottedBorder(
-                            color: _primaryBlue,
-                            dashPattern: const [3, 6],
-                            borderType: BorderType.RRect,
-                            radius: const Radius.circular(8),
-                            child: Container(
-                              width: 56,
-                              height: 56,
-                              color: _greyBg,
-                              child: const Icon(
-                                Icons.add,
-                                size: 27,
-                                color: _primaryBlue,
-                              ),
-                            ),
-                          ),
-                        ),
+                      //   GestureDetector(
+                      //   onTap: _pickFiles,
+                      //   child: DottedBorder(
+                      //     strokeColor: _primaryBlue, // GUNAKAN strokeColor, BUKAN color
+                      //     dashPattern: const [3, 6],
+                      //     borderType: BorderType.RRect,
+                      //     radius: const Radius.circular(8),
+                      //     strokeWidth: 1.5,
+                      //     child: Container(
+                      //       width: 56,
+                      //       height: 56,
+                      //       color: _greyBg,
+                      //       child: const Icon(
+                      //         Icons.add,
+                      //         size: 27,
+                      //         color: _primaryBlue,
+                      //       ),
+                      //     ),
+                      //   ),
+                      // ),
                       ],
                     ),
                     const SizedBox(height: 8),
