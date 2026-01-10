@@ -51,6 +51,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   firebase_auth: ^4.20.0
   image_picker: ^1.0.7
+  shared_preferences: ^2.2.2
   flutter_localizations:
     sdk: flutter
 

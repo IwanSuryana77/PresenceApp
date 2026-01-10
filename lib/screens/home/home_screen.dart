@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:io';
 import 'package:peresenceapp/screens/home/absen_page.dart';
 import 'package:peresenceapp/screens/home/daftarabsen_page.dart';
 import 'package:peresenceapp/screens/home/lembur_page.dart';
 import 'package:peresenceapp/screens/home/reimbursement_page.dart';
 import 'package:peresenceapp/screens/home/selipgaji_page.dart';
 import 'package:peresenceapp/screens/kalender_page.dart';
+import 'package:peresenceapp/screens/Profile/edit_profile_screen.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/empty_state.dart';
@@ -30,8 +33,6 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  final String username = 'Ramadhani Hibban';
-
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -39,47 +40,44 @@ class _HomeScreenState extends State<HomeScreen> {
         slivers: [
           // ---- HEADER GREETING BAR ----
           SliverToBoxAdapter(
-            child: GreetingHeader(
-              username: username,
-              assetImage: 'assets/images/header.jpg',
-            ),
+            child: GreetingHeader(),
           ),
 
-          SliverToBoxAdapter(child: SizedBox(height: 18)),
-
+          SliverToBoxAdapter(child: SizedBox(height: 3)), // Jarak antara header dan carousel
           // ---- CAROUSEL ----
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            sliver: SliverToBoxAdapter(
-              child: Column(
-                children: [
-                  SizedBox(
-                    height: 150,
-                    child: PageView(
-                      controller: _pageController,
-                      children: const [
-                        PromoCard(imageAsset: 'assets/images/safety.jpg'),
-                        PromoCard(imageAsset: 'assets/images/work.jpg'),
-                        PromoCard(imageAsset: 'assets/images/fokus.jpg'),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  SmoothPageIndicator(
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 12), // lebar & tinggi carousel
+          sliver: SliverToBoxAdapter(
+            child: Column(
+              children: [
+                const SizedBox(height:3),   // Jarak atas sebelum carousel
+                SizedBox(
+                  height: 150,
+                  child: PageView(
                     controller: _pageController,
-                    count: 3,
-                    effect: WormEffect(
-                      dotHeight: 7,
-                      dotWidth: 7,
-                      activeDotColor: AppColors.primary,
-                      dotColor: const Color(0xFFCBD2E1),
-                    ),
+                    children: const [
+                      PromoCard(imageAsset: 'assets/images/safety.jpg'),
+                      PromoCard(imageAsset: 'assets/images/work.jpg'),
+                      PromoCard(imageAsset: 'assets/images/fokus.jpg'),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 16),    // Jarak bawah antara carousel dan indicator
+                SmoothPageIndicator(
+                  controller: _pageController,
+                  count: 3,
+                  effect: WormEffect(
+                    dotHeight: 7,
+                    dotWidth: 7,
+                    activeDotColor: AppColors.primary,
+                    dotColor: const Color(0xFFCBD2E1),
+                  ),
+                ),
+                const SizedBox(height: 6),    // Jarak bawah antara indicator dan menu grid
+              ],
             ),
           ),
-
+        ),
           // ---- MENU GRID ----
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 14),
@@ -291,196 +289,136 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// HEADER GREETINGS
-class GreetingHeader extends StatelessWidget {
-  final String username;
-  final String assetImage;
-  final double height;
+// --- HEADER PROFILES, AUTO-DATA FROM FIREBASE AUTH ---
+class GreetingHeader extends StatefulWidget {
+  const GreetingHeader({super.key});
 
-  const GreetingHeader({
-    super.key,
-    required this.username,
-    required this.assetImage,
-    this.height = 170,
-  });
+  @override
+  State<GreetingHeader> createState() => _GreetingHeaderState();
+}
+
+class _GreetingHeaderState extends State<GreetingHeader> {
+  late Future<Map<String, dynamic>> _userDataFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _userDataFuture = _fetchUserData();
+  }
+
+  Future<Map<String, dynamic>> _fetchUserData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    String displayName = user?.displayName ?? 'User';
+    String email = user?.email ?? 'Username';
+    String photoUrl = user?.photoURL ?? '';
+
+    // Simpan ke SharedPreferences biar persistent (opsional)
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('user_name', displayName);
+    await prefs.setString('user_email', email);
+    await prefs.setString('user_photo', photoUrl);
+
+    return {
+      'name': displayName,
+      'email': email,
+      'photoUrl': photoUrl,
+    };
+  }
 
   String getInitials(String name) {
     final parts = name.trim().split(' ');
+    if (parts.isEmpty) return '?';
     if (parts.length == 1) return parts[0][0].toUpperCase();
     return (parts[0][0] + parts.last[0]).toUpperCase();
   }
 
-  String getGreeting(DateTime now) {
-    final hour = now.hour;
-    if (hour >= 5 && hour < 12) return 'Selamat pagi';
-    if (hour >= 12 && hour < 16) return 'Selamat siang';
-    if (hour >= 16 && hour < 19) return 'Selamat sore';
-    if (hour >= 19 && hour <= 23) return 'Selamat malam';
-    return 'Selamat dini hari';
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      height: height,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppColors.primary, AppColors.primary.withOpacity(0.85)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(28),
-          bottomRight: Radius.circular(28),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withOpacity(0.2),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            top: 18,
-            right: 60,
-            child: Icon(
-              Icons.notifications_none_rounded,
-              color: Colors.white,
-              size: 26,
-            ),
-          ),
-          Positioned(
-            top: 18,
-            right: 18,
-            child: Icon(Icons.settings_outlined, color: Colors.white, size: 26),
-          ),
-          Positioned(
-            left: 18,
-            top: 54,
-            right: 18,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Hello',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 15,
+    return FutureBuilder<Map<String, dynamic>>(
+      future: _userDataFuture,
+      builder: (context, snapshot) {
+        final userName = snapshot.hasData ? snapshot.data!['name'] as String : 'User';
+        final userEmail = snapshot.hasData ? snapshot.data!['email'] as String : 'Username';
+        final photoUrl = snapshot.hasData ? snapshot.data!['photoUrl'] as String : '';
+
+        return Container(
+          width: double.infinity,
+          color: AppColors.extraLight, // soft blue bg (update di app_theme.dart kalau mau biru lain)
+          padding: const EdgeInsets.only(top: 16, left: 0, right: 0, bottom: 8),
+          child: Center(
+            child: Container(
+              height: 58,
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: AppColors.primary, // utama biru
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(width: 10),
+                  // Avatar - Kiri
+                  photoUrl.isNotEmpty
+                    ? CircleAvatar(
+                        radius: 20,
+                        backgroundColor: Colors.white,
+                        backgroundImage: NetworkImage(photoUrl),
+                      )
+                    : CircleAvatar(
+                        radius: 20,
+                        backgroundColor: Colors.white,
+                        child: Text(
+                          getInitials(userName),
+                          style: TextStyle(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16),
                         ),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        username,
-                        maxLines: 1,
-                        softWrap: false,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 21,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                CircleAvatar(
-                  radius: 24,
-                  backgroundColor: Colors.white,
-                  child: Text(
-                    getInitials(username),
-                    style: TextStyle(
-                      color: AppColors.primary,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.5,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // Search bar
-          Positioned(
-            left: 18,
-            right: 18,
-            top: 108,
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    height: 38,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(14),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Row(
+                  SizedBox(width: 14),
+                  // Name & Label (email) - Tengah
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const SizedBox(width: 12),
-                        Icon(Icons.search, color: AppColors.primary, size: 22),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: TextField(
-                            decoration: InputDecoration(
-                              hintText: 'Search',
-                              border: InputBorder.none,
-                              hintStyle: TextStyle(
-                                color: Colors.black54,
-                                fontWeight: FontWeight.w500,
-                                fontSize: 15,
-                              ),
-                              isDense: true,
-                              contentPadding: const EdgeInsets.symmetric(
-                                vertical: 8,
-                              ),
-                            ),
-                            style: const TextStyle(
-                              fontSize: 15,
-                              color: Colors.black,
-                            ),
+                        Text(
+                          userName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          userEmail,
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.85),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400,
                           ),
                         ),
                       ],
                     ),
                   ),
-                ),
-                const SizedBox(width: 10),
-                Container(
-                  height: 38,
-                  width: 38,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+                  // Bell icon (kanan)
+                  IconButton(
+                    icon: Icon(Icons.notifications_none_rounded,
+                        color: Colors.white, size: 22),
+                    onPressed: () {
+                      // TODO: Ke halaman notifikasi
+                    },
                   ),
-                  child: Icon(Icons.tune, color: AppColors.primary, size: 22),
-                ),
-              ],
+                  SizedBox(width: 8),
+                ],
+              ),
             ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
