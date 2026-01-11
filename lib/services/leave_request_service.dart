@@ -5,7 +5,7 @@ import '../models/leave_request.dart';
 /// 💾 FIREBASE: Mengelola CRUD operations di collection 'leave_requests'
 class LeaveRequestService {
   static final _firestore = FirebaseFirestore.instance;
-  static const _collectionName = 'leave_requests';
+  static const _collectionName = 'PengajuanCuti';
 
   /// ➕ Tambah data permintaan cuti ke Firebase
   /// 💾 FIREBASE WRITE: Menyimpan dokumen baru ke Firestore

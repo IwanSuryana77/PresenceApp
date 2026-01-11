@@ -2,22 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:intl/intl.dart'; // Penting untuk format tanggal
 
 // ===== COLORS =====
-const primaryBlue = Color(0xFF2196F3);   // Bright blue
-const boxWhite = Colors.white;
+const primaryBlue = Color(0xFF2196F3);
+const lightBg = Color(0xFFF6F7FB);
+const borderGrey = Color(0xFFE1E4EF);
 
 class LemburPage extends StatefulWidget {
   const LemburPage({super.key});
-
   @override
   State<LemburPage> createState() => _LemburPageState();
 }
 
 class _LemburPageState extends State<LemburPage> {
   final _formKey = GlobalKey<FormState>();
-
-  // Form controllers/variables
   DateTime? tanggalLembur;
   String shift = '';
   String sebelumLembur = '';
@@ -29,7 +28,6 @@ class _LemburPageState extends State<LemburPage> {
   List<PlatformFile> attachments = [];
   bool loading = false;
 
-  // PICK DATE
   Future<void> _pickDate() async {
     final now = DateTime.now();
     final picked = await showDatePicker(
@@ -49,12 +47,9 @@ class _LemburPageState extends State<LemburPage> {
         child: child!,
       ),
     );
-    if (picked != null) {
-      setState(() => tanggalLembur = picked);
-    }
+    if (picked != null) setState(() => tanggalLembur = picked);
   }
 
-  // PICK FILES
   Future<void> _pickFiles() async {
     if (attachments.length >= 5) return;
     final result = await FilePicker.platform.pickFiles(
@@ -71,12 +66,10 @@ class _LemburPageState extends State<LemburPage> {
     }
   }
 
-  // UPLOAD TO FIREBASE
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => loading = true);
 
-    // 1. Upload files to Firebase Storage
     List<String> uploadedFiles = [];
     for (final file in attachments) {
       final ref = FirebaseStorage.instance.ref().child(
@@ -87,7 +80,6 @@ class _LemburPageState extends State<LemburPage> {
       uploadedFiles.add(url);
     }
 
-    // 2. Save form data to Firestore
     await FirebaseFirestore.instance.collection('lembur').add({
       'tanggal_lembur': tanggalLembur?.toIso8601String(),
       'shift': shift,
@@ -101,327 +93,327 @@ class _LemburPageState extends State<LemburPage> {
       'created_at': FieldValue.serverTimestamp(),
     });
 
-    setState(() {
-      loading = false;
-    });
+    setState(() => loading = false);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Pengajuan lembur berhasil dikirim!')),
     );
-    Navigator.pop(context); // Balik ke home
+    Navigator.pop(context);
   }
+
+  InputDecoration modernInput({
+    String? label,
+    IconData? icon,
+    bool isRequired = false,
+    String? helper,
+  }) => InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(
+          color: Colors.black,
+          fontWeight: FontWeight.w600,
+          fontSize: 14,
+        ),
+        prefixIcon: icon != null ? Icon(icon, color: primaryBlue, size: 22) : null,
+        helperText: helper,
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: borderGrey, width: 1.3),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: borderGrey, width: 1.3),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 17),
+        isDense: true,
+      );
+
+  Widget _modernCard({required Widget child}) => Container(
+        width: double.infinity,
+        margin: const EdgeInsets.only(bottom: 17),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: borderGrey, width: 1.4),
+          borderRadius: BorderRadius.circular(17),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12.withOpacity(.02),
+              offset: const Offset(0, 2),
+              blurRadius: 3,
+            )
+          ],
+        ),
+        child: child,
+      );
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: lightBg,
       body: SafeArea(
         child: Form(
           key: _formKey,
-          child: Column(
+          child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             children: [
               // Header
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                child: Row(
-                  children: [
-                    InkWell(
-                      borderRadius: BorderRadius.circular(24),
-                      onTap: () => Navigator.pop(context),
-                      child: CircleAvatar(
-                        backgroundColor: const Color.fromARGB(255, 249, 252, 255).withOpacity(0.09),
-                        child: Icon(Icons.arrow_back, color: const Color.fromARGB(255, 0, 0, 0), size: 26),
-                      ),
+              Row(
+                children: [
+                  InkWell(
+                    borderRadius: BorderRadius.circular(24),
+                    onTap: () => Navigator.pop(context),
+                    child: const Padding(
+                      padding: EdgeInsets.all(4.0),
+                      child: Icon(Icons.arrow_back, color: Colors.black, size: 25),
                     ),
-                    const SizedBox(width: 12),
-                    const Text(
-                      "Pengajuan Lembur",
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                        letterSpacing: 0.5,
-                      ),
+                  ),
+                  const SizedBox(width: 13),
+                  const Text(
+                    "Pengajuan Lembur",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 21,
+                      color: Colors.black,
+                      letterSpacing: 0.2,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              const Divider(),
+              const SizedBox(height: 11),
 
-              // FORM
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 18),
+              /// ============= JADWAL LEMBUR CARD =============
+              _modernCard(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 17, bottom: 3, left: 17, right: 17),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      sectionTitle("Jadwal lembur"),
-                      // Tanggal lembur
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: GestureDetector(
-                          onTap: _pickDate,
-                          child: AbsorbPointer(
-                            child: TextFormField(
-                              decoration: InputDecoration(
-                                labelText: "Tanggal lembur *",
-                                labelStyle: TextStyle(color: Colors.black),
-                                suffixIcon: Icon(Icons.calendar_today, color: primaryBlue),
-                                filled: true,
-                                fillColor: boxWhite,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide.none,
-                                ),
-                                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                              ),
-                              validator: (_) =>
-                                  tanggalLembur == null ? "Wajib diisi" : null,
-                              controller: TextEditingController(
-                                text: tanggalLembur == null
-                                    ? ""
-                                    : "${tanggalLembur!.day.toString().padLeft(2, '0')}-${tanggalLembur!.month.toString().padLeft(2, '0')}-${tanggalLembur!.year}",
-                              ),
-                              readOnly: true,
-                              style: TextStyle(color: Colors.black),
-                            ),
-                          ),
-                        ),
-                      ),
-                      // Shift
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: DropdownButtonFormField<String>(
-                          value: shift.isEmpty ? null : shift,
-                          items: ['Pagi', 'Siang', 'Malam']
-                              .map(
-                                (e) =>
-                                    DropdownMenuItem(value: e, child: Text(e, style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black))),
-                              )
-                              .toList(),
-                          onChanged: (v) => setState(() => shift = v ?? ''),
-                          decoration: InputDecoration(
-                            labelText: "Shift *",
-                            labelStyle: TextStyle(color: Colors.black),
-                            suffixIcon: Icon(Icons.keyboard_arrow_down, color: const Color.fromARGB(255, 255, 255, 255)),
-                            filled: true,
-                            fillColor: boxWhite,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
-                            ),
-                            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                          ),
-                          validator: (v) =>
-                              (v == null || v.isEmpty) ? "Wajib diisi" : null,
-                          style: TextStyle(color: Colors.black),
-                        ),
-                      ),
-
-                      sectionTitle("Lembur sebelum shift"),
-                      whiteCard([
-                        inputField(
-                          "Durasi lembur",
-                          (v) => setState(() => sebelumLembur = v),
-                          icon: Icons.timelapse,
-                        ),
-                        inputField(
-                          "Durasi istirahat lembur",
-                          (v) => setState(() => sebelumIstirahat = v),
-                          helper: "opsional",
-                          icon: Icons.self_improvement_rounded,
-                        ),
-                      ]),
-
-                      sectionTitle("Lembur setelah shift"),
-                      whiteCard([
-                        inputField(
-                          "Durasi lembur",
-                          (v) => setState(() => sesudahLembur = v),
-                          icon: Icons.timelapse,
-                        ),
-                        inputField(
-                          "Durasi istirahat lembur",
-                          (v) => setState(() => sesudahIstirahat = v),
-                          helper: "opsional",
-                          icon: Icons.self_improvement_rounded,
-                        ),
-                      ]),
-
-                      sectionTitle("Informasi tambahan"),
-                      whiteCard([
-                        inputField(
-                          "Kompensasi ",
-                          (v) => setState(() => kompensasi = v),
-                          isRequired: true,
-                          icon: Icons.monetization_on_rounded,
-                        ),
-                        inputField("Alasan", (v) => setState(() => alasan = v), icon: Icons.sticky_note_2_outlined),
-                        const SizedBox(height: 12),
-                        const Text(
-                          "Lampiran",
-                          style: TextStyle(fontWeight: FontWeight.w600, color: Colors.black),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            InkWell(onTap: _pickFiles, child: uploadBox()),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "Upload maksimal 5 file:\nPDF, JPG, PNG, XLSX, DOCX (max 10MB)",
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.black54,
-                                    ),
-                                  ),
-                                  if (attachments.isNotEmpty) ...[
-                                    const SizedBox(height: 8),
-                                    Wrap(
-                                      spacing: 6,
-                                      children: attachments.map(
-                                        (a) => Chip(
-                                          label: Text(a.name, style: TextStyle(fontSize: 12, color: Colors.black)),
-                                          backgroundColor: boxWhite,
-                                          deleteIcon: const Icon(Icons.close, size: 18, color: Colors.red),
-                                          onDeleted: () {
-                                            setState(() => attachments.remove(a));
-                                          },
-                                        ),
-                                      ).toList(),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ]),
-
-                      const SizedBox(height: 30),
-
-                      //button
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color.fromARGB(255, 0, 46, 250),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(18),
-                            ),
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                          ),
-                          onPressed: loading ? null : _submit,
-                          child: loading
-                              ? const SizedBox(
-                                  height: 24,
-                                  width: 24,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 3,
-                                    color: Colors.white,
-                                  ),
-                                )
-                              : const Text(
-                                  "Kirim",
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                      const Text("Jadwal lembur",
+                          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15.2, color: Colors.black)),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          // Tanggal lembur
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: _pickDate,
+                              child: AbsorbPointer(
+                                child: TextFormField(
+                                  readOnly: true,
+                                  decoration: modernInput(
+                                      label: "Tanggal lembur",
+                                      icon: Icons.calendar_today,
+                                      isRequired: true),
+                                  validator: (_) =>
+                                      tanggalLembur == null ? "Wajib diisi" : null,
+                                  controller: TextEditingController(
+                                    text: tanggalLembur != null
+                                        ? DateFormat('dd MMMM yyyy', 'id_ID').format(tanggalLembur!)
+                                        : "",
                                   ),
                                 ),
-                        ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 13),
+                          // Shift
+                          Expanded(
+                            child: DropdownButtonFormField<String>(
+                              value: shift.isEmpty ? null : shift,
+                              items: ['Pagi', 'Siang', 'Malam']
+                                  .map((e) => DropdownMenuItem(
+                                        value: e,
+                                        child: Text(e, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
+                                      ))
+                                  .toList(),
+                              onChanged: (v) => setState(() => shift = v ?? ''),
+                              decoration: modernInput(label: "Shift", icon: Icons.access_time),
+                              validator: (v) => (v == null || v.isEmpty) ? "Wajib diisi" : null,
+                              style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w500),
+                            ),
+                          )
+                        ],
                       ),
-                      const SizedBox(height: 24),
                     ],
                   ),
                 ),
               ),
+
+              /// ============= LEMBUR SEBELUM SHIFT CARD =============
+              _modernCard(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 17),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text("Lembur sebelum shift", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        decoration: modernInput(label: "Durasi lembur", icon: Icons.access_time_rounded),
+                        style: const TextStyle(fontSize: 15),
+                        onChanged: (v) => setState(() => sebelumLembur = v),
+                      ),
+                      const SizedBox(height: 13),
+                      TextFormField(
+                        decoration: modernInput(label: "Durasi istirahat lembur", icon: Icons.self_improvement, helper: "opsional"),
+                        style: const TextStyle(fontSize: 15),
+                        onChanged: (v) => setState(() => sebelumIstirahat = v),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              /// ============= LEMBUR SETELAH SHIFT CARD =============
+              _modernCard(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 17),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text("Lembur setelah shift", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        decoration: modernInput(label: "Durasi lembur", icon: Icons.access_time_rounded),
+                        style: const TextStyle(fontSize: 15),
+                        onChanged: (v) => setState(() => sesudahLembur = v),
+                      ),
+                      const SizedBox(height: 13),
+                      TextFormField(
+                        decoration: modernInput(label: "Durasi istirahat lembur", icon: Icons.self_improvement, helper: "opsional"),
+                        style: const TextStyle(fontSize: 15),
+                        onChanged: (v) => setState(() => sesudahIstirahat = v),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              /// ============= INFO TAMBAHAN CARD =============
+              _modernCard(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 17),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text("Informasi tambahan", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                      const SizedBox(height: 7),
+                      TextFormField(
+                        decoration: modernInput(label: "Kompensasi", icon: Icons.monetization_on_rounded, isRequired: true),
+                        style: const TextStyle(fontSize: 15),
+                        validator: (v) => (v == null || v.isEmpty) ? "Wajib diisi" : null,
+                        onChanged: (v) => setState(() => kompensasi = v),
+                      ),
+                      const SizedBox(height: 13),
+                      TextFormField(
+                        decoration: modernInput(label: "Alasan", icon: Icons.sticky_note_2_outlined),
+                        style: const TextStyle(fontSize: 15),
+                        onChanged: (v) => setState(() => alasan = v),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              /// ============= LAMPIRAN CARD =============
+              _modernCard(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 17),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text("Lampiran", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                      const SizedBox(height: 12),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          InkWell(
+                            onTap: _pickFiles,
+                            borderRadius: BorderRadius.circular(11),
+                            child: Container(
+                              width: 57,
+                              height: 57,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(13),
+                                border: Border.all(
+                                  color: primaryBlue,
+                                  style: BorderStyle.solid,
+                                  width: 1.7,
+                                ),
+                                color: Colors.white,
+                              ),
+                              child: const Center(
+                                child: Icon(Icons.add, color: primaryBlue, size: 30),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 13),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  "Upload maksimal 5 file:\nPDF, JPG, PNG, XLSX, DOCX (max 10MB)",
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.black54,
+                                  ),
+                                ),
+                                if (attachments.isNotEmpty) ...[
+                                  const SizedBox(height: 8),
+                                  Wrap(
+                                    spacing: 6,
+                                    children: attachments
+                                        .map((a) => Chip(
+                                              label: Text(a.name, style: const TextStyle(fontSize: 12, color: Colors.black)),
+                                              backgroundColor: Colors.white,
+                                              deleteIcon: const Icon(Icons.close, size: 18, color: Colors.red),
+                                              onDeleted: () => setState(() => attachments.remove(a)),
+                                            ))
+                                        .toList(),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Kirim Button
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryBlue,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(13)),
+                    padding: const EdgeInsets.symmetric(vertical: 17),
+                  ),
+                  onPressed: loading ? null : _submit,
+                  child: loading
+                      ? const SizedBox(
+                          height: 25,
+                          width: 25,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 3,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text(
+                          "Kirim",
+                          style: TextStyle(fontSize: 16.5, fontWeight: FontWeight.bold, color: Colors.white),
+                        ),
+                ),
+              ),
+              const SizedBox(height: 15),
             ],
           ),
         ),
       ),
     );
   }
-
-  // ===== WIDGET KECIL =====
-  static Widget sectionTitle(String text) => Padding(
-    padding: const EdgeInsets.only(top: 28, bottom: 12),
-    child: Text(
-      text,
-      style: const TextStyle(
-        fontSize: 18,
-        fontWeight: FontWeight.w700,
-        color: Colors.black,
-      ),
-    ),
-  );
-
-  static Widget inputField(
-    String label,
-    void Function(String) onChanged, {
-    String? helper,
-    bool isRequired = false,
-    IconData? icon,
-  }) => Padding(
-    padding: const EdgeInsets.only(bottom: 12),
-    child: TextFormField(
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: TextStyle(color: Colors.black),
-        prefixIcon: icon != null ? Icon(icon, color: primaryBlue) : null,
-        helperText: helper,
-        filled: true,
-        fillColor: boxWhite,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(11),
-          borderSide: BorderSide.none,
-        ),
-        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      ),
-      style: TextStyle(fontSize: 16, color: Colors.black),
-      validator: isRequired
-          ? (v) => v == null || v.isEmpty ? "Wajib diisi" : null
-          : null,
-      onChanged: onChanged,
-    ),
-  );
-
-  static Widget whiteCard(List<Widget> children) => Container(
-    margin: EdgeInsets.only(bottom: 2),
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: const Color.fromARGB(255, 238, 238, 238),
-      borderRadius: BorderRadius.circular(17),
-      boxShadow: [
-        BoxShadow(color: Colors.blue.withOpacity(0.03), blurRadius: 5, offset: Offset(0,2))
-      ],
-    ),
-    child: Column(children: children),
-  );
-
-  static Widget uploadBox() => Container(
-    width: 60,
-    height: 60,
-    decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(13),
-      border: Border.all(
-        color: primaryBlue,
-        width: 1.5,
-        style: BorderStyle.solid,
-      ),
-      color: boxWhite,
-      boxShadow: [
-        BoxShadow(
-          color: primaryBlue.withOpacity(0.07),
-          blurRadius: 3,
-          offset: Offset(1, 2))
-      ],
-    ),
-    child: const Icon(Icons.add, color: primaryBlue, size: 30),
-  );
 }
