@@ -16,7 +16,7 @@ class _ModernLoginScreenState extends State<ModernLoginScreen> {
   final _passwordController = TextEditingController();
   bool _obscure = true;
   bool _loading = false;
-  bool _isLoginMode = true; // Toggle login/register
+  bool _isLoginMode = true; 
 
   @override
   void dispose() {

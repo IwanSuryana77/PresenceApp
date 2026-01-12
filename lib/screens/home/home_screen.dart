@@ -37,45 +37,52 @@ class _HomeScreenState extends State<HomeScreen> {
       child: CustomScrollView(
         slivers: [
           // ---- HEADER GREETING BAR ----
-          SliverToBoxAdapter(
-            child: GreetingHeader(),
-          ),
+          SliverToBoxAdapter(child: GreetingHeader()),
 
-          SliverToBoxAdapter(child: SizedBox(height: 3)), // Jarak antara header dan carousel
+          SliverToBoxAdapter(
+            child: SizedBox(height: 3),
+          ), // Jarak antara header dan carousel
           // ---- CAROUSEL ----
-        SliverPadding(
-          padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 12), // lebar & tinggi carousel
-          sliver: SliverToBoxAdapter(
-            child: Column(
-              children: [
-                const SizedBox(height:3),   // Jarak atas sebelum carousel
-                SizedBox(
-                  height: 150,
-                  child: PageView(
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(
+              vertical: 22,
+              horizontal: 12,
+            ), // lebar & tinggi carousel
+            sliver: SliverToBoxAdapter(
+              child: Column(
+                children: [
+                  const SizedBox(height: 3), // Jarak atas sebelum carousel
+                  SizedBox(
+                    height: 150,
+                    child: PageView(
+                      controller: _pageController,
+                      children: const [
+                        PromoCard(imageAsset: 'assets/images/safety.jpg'),
+                        PromoCard(imageAsset: 'assets/images/work.jpg'),
+                        PromoCard(imageAsset: 'assets/images/fokus.jpg'),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 16,
+                  ), // Jarak bawah antara carousel dan indicator
+                  SmoothPageIndicator(
                     controller: _pageController,
-                    children: const [
-                      PromoCard(imageAsset: 'assets/images/safety.jpg'),
-                      PromoCard(imageAsset: 'assets/images/work.jpg'),
-                      PromoCard(imageAsset: 'assets/images/fokus.jpg'),
-                    ],
+                    count: 3,
+                    effect: WormEffect(
+                      dotHeight: 7,
+                      dotWidth: 7,
+                      activeDotColor: AppColors.primary,
+                      dotColor: const Color(0xFFCBD2E1),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),    // Jarak bawah antara carousel dan indicator
-                SmoothPageIndicator(
-                  controller: _pageController,
-                  count: 3,
-                  effect: WormEffect(
-                    dotHeight: 7,
-                    dotWidth: 7,
-                    activeDotColor: AppColors.primary,
-                    dotColor: const Color(0xFFCBD2E1),
-                  ),
-                ),
-                const SizedBox(height: 6),    // Jarak bawah antara indicator dan menu grid
-              ],
+                  const SizedBox(
+                    height: 6,
+                  ), // Jarak bawah antara indicator dan menu grid
+                ],
+              ),
             ),
           ),
-        ),
           // ---- MENU GRID ----
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 14),
@@ -166,7 +173,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     IconTile(
                       icon: Icons.attach_money,
                       iconColor: AppColors.primary,
-                      label: 'REIMBURSEMENT',
+                      label: 'REIMBURSE',
                       textColor: Colors.black,
                       labelStyle: const TextStyle(
                         color: Colors.black,
@@ -316,11 +323,7 @@ class _GreetingHeaderState extends State<GreetingHeader> {
     await prefs.setString('user_email', email);
     await prefs.setString('user_photo', photoUrl);
 
-    return {
-      'name': displayName,
-      'email': email,
-      'photoUrl': photoUrl,
-    };
+    return {'name': displayName, 'email': email, 'photoUrl': photoUrl};
   }
 
   String getInitials(String name) {
@@ -335,13 +338,20 @@ class _GreetingHeaderState extends State<GreetingHeader> {
     return FutureBuilder<Map<String, dynamic>>(
       future: _userDataFuture,
       builder: (context, snapshot) {
-        final userName = snapshot.hasData ? snapshot.data!['name'] as String : 'User';
-        final userEmail = snapshot.hasData ? snapshot.data!['email'] as String : 'Username';
-        final photoUrl = snapshot.hasData ? snapshot.data!['photoUrl'] as String : '';
+        final userName = snapshot.hasData
+            ? snapshot.data!['name'] as String
+            : 'User';
+        final userEmail = snapshot.hasData
+            ? snapshot.data!['email'] as String
+            : 'Username';
+        final photoUrl = snapshot.hasData
+            ? snapshot.data!['photoUrl'] as String
+            : '';
 
         return Container(
           width: double.infinity,
-          color: AppColors.extraLight, // soft blue bg (update di app_theme.dart kalau mau biru lain)
+          color: AppColors
+              .extraLight, // soft blue bg (update di app_theme.dart kalau mau biru lain)
           padding: const EdgeInsets.only(top: 16, left: 0, right: 0, bottom: 8),
           child: Center(
             child: Container(
@@ -357,22 +367,23 @@ class _GreetingHeaderState extends State<GreetingHeader> {
                   SizedBox(width: 10),
                   // Avatar - Kiri
                   photoUrl.isNotEmpty
-                    ? CircleAvatar(
-                        radius: 20,
-                        backgroundColor: Colors.white,
-                        backgroundImage: NetworkImage(photoUrl),
-                      )
-                    : CircleAvatar(
-                        radius: 20,
-                        backgroundColor: Colors.white,
-                        child: Text(
-                          getInitials(userName),
-                          style: TextStyle(
+                      ? CircleAvatar(
+                          radius: 20,
+                          backgroundColor: Colors.white,
+                          backgroundImage: NetworkImage(photoUrl),
+                        )
+                      : CircleAvatar(
+                          radius: 20,
+                          backgroundColor: Colors.white,
+                          child: Text(
+                            getInitials(userName),
+                            style: TextStyle(
                               color: AppColors.primary,
                               fontWeight: FontWeight.bold,
-                              fontSize: 16),
+                              fontSize: 16,
+                            ),
+                          ),
                         ),
-                      ),
                   SizedBox(width: 14),
                   // Name & Label (email) - Tengah
                   Expanded(
@@ -404,8 +415,11 @@ class _GreetingHeaderState extends State<GreetingHeader> {
                   ),
                   // Bell icon (kanan)
                   IconButton(
-                    icon: Icon(Icons.notifications_none_rounded,
-                        color: Colors.white, size: 22),
+                    icon: Icon(
+                      Icons.notifications_none_rounded,
+                      color: Colors.white,
+                      size: 22,
+                    ),
                     onPressed: () {
                       // TODO: Ke halaman notifikasi
                     },

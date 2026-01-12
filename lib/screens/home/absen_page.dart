@@ -38,7 +38,6 @@ class _AbsensiDashboardPageState extends State<AbsensiDashboardPage> {
   // Get status absen hari ini dari Firebase
   Stream<DocumentSnapshot> getTodayAbsence() {
     final todayKey = DateFormat('yyyy-MM-dd').format(_today);
-    // Data absensi tersimpan di collection absensi/userId/YYYY-MM-DD
     return FirebaseFirestore.instance
         .collection('absensi')
         .doc(widget.userId)

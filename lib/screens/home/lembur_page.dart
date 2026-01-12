@@ -92,7 +92,6 @@ class _LemburPageState extends State<LemburPage> {
       'lampiran_urls': uploadedFiles,
       'created_at': FieldValue.serverTimestamp(),
     });
-
     setState(() => loading = false);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Pengajuan lembur berhasil dikirim!')),
