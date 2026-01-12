@@ -51,12 +51,12 @@ class AuthHelper {
     }, SetOptions(merge: true));
   }
 
-  /// Cek apakah user sudah login
+  // Cek apakah user sudah login
   static bool isUserLoggedIn() {
     return _auth.currentUser != null;
   }
 
-  /// Logout user
+  // Logout user
   static Future<void> logout() {
     return _auth.signOut();
   }

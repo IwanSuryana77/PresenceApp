@@ -3,16 +3,16 @@ import 'package:firebase_storage/firebase_storage.dart';
 import '../models/reimbursement_request.dart';
 import 'dart:io';
 
-/// 📌 Firebase Service untuk Reimbursement Request (Pengembalian Dana)
-/// 💾 FIREBASE: Mengelola CRUD operations di collection 'reimbursement_requests'
+/// Firebase Service untuk Reimbursement Request (Pengembalian Dana)
+/// FIREBASE: Mengelola CRUD operations di collection 'reimbursement_requests'
 class ReimbursementService {
   static final _firestore = FirebaseFirestore.instance;
   static final _storage = FirebaseStorage.instance;
   static const _collectionName = 'reimbursement_requests';
   static const _storagePath = 'reimbursement_attachments';
 
-  /// ➕ Tambah data reimbursement ke Firebase
-  /// 💾 FIREBASE WRITE: Menyimpan dokumen baru ke Firestore
+  // Tambah data reimbursement ke Firebase
+  // FIREBASE WRITE: Menyimpan dokumen baru ke Firestore
   static Future<String> createReimbursement(
     ReimbursementRequest request,
   ) async {
@@ -21,16 +21,16 @@ class ReimbursementService {
           .collection(_collectionName)
           .add(request.toMap());
 
-      print('✅ Reimbursement created with ID: ${docRef.id}');
+      print('Reimbursement created with ID: ${docRef.id}');
       return docRef.id;
     } catch (e) {
-      print('❌ Error creating reimbursement: $e');
+      print('Error creating reimbursement: $e');
       rethrow;
     }
   }
 
-  /// 📖 Ambil semua reimbursement untuk user tertentu
-  /// 💾 FIREBASE READ: Query dokumen berdasarkan employeeId
+  // Ambil semua reimbursement untuk user tertentu
+  //FIREBASE READ: Query dokumen berdasarkan employeeId
   static Future<List<ReimbursementRequest>> getUserReimbursements(
     String employeeId,
   ) async {
@@ -45,13 +45,13 @@ class ReimbursementService {
           .map((doc) => ReimbursementRequest.fromMap(doc.data(), doc.id))
           .toList();
     } catch (e) {
-      print('❌ Error fetching reimbursements: $e');
+      print(' Error fetching reimbursements: $e');
       return [];
     }
   }
 
-  /// 📖 Ambil semua reimbursement (untuk admin/approval)
-  /// 💾 FIREBASE READ: Query semua dokumen
+  // Ambil semua reimbursement (untuk admin/approval)
+  // FIREBASE READ: Query semua dokumen
   static Future<List<ReimbursementRequest>> getAllReimbursements() async {
     try {
       final snapshot = await _firestore
@@ -63,13 +63,13 @@ class ReimbursementService {
           .map((doc) => ReimbursementRequest.fromMap(doc.data(), doc.id))
           .toList();
     } catch (e) {
-      print('❌ Error fetching all reimbursements: $e');
+      print(' Error fetching all reimbursements: $e');
       return [];
     }
   }
 
-  /// 📖 Ambil reimbursement berdasarkan ID
-  /// 💾 FIREBASE READ: Get dokumen spesifik
+  // Ambil reimbursement berdasarkan ID
+  // FIREBASE READ: Get dokumen spesifik
   static Future<ReimbursementRequest?> getReimbursementById(String id) async {
     try {
       final doc = await _firestore.collection(_collectionName).doc(id).get();
@@ -82,13 +82,13 @@ class ReimbursementService {
       }
       return null;
     } catch (e) {
-      print('❌ Error fetching reimbursement: $e');
+      print(' Error fetching reimbursement: $e');
       return null;
     }
   }
 
-  /// 📤 Upload file ke Firebase Storage
-  /// 💾 FIREBASE STORAGE: Menyimpan file (bukti/lampiran)
+  // Upload file ke Firebase Storage
+  // FIREBASE STORAGE: Menyimpan file (bukti/lampiran)
   static Future<String> uploadAttachment(
     String filePath,
     String fileName,
@@ -107,16 +107,16 @@ class ReimbursementService {
       );
 
       final downloadUrl = await ref.getDownloadURL();
-      print('✅ File uploaded successfully: $downloadUrl');
+      print(' File uploaded successfully: $downloadUrl');
       return downloadUrl;
     } catch (e) {
-      print('❌ Error uploading file: $e');
+      print(' Error uploading file: $e');
       rethrow;
     }
   }
 
-  /// ✏️ Update status reimbursement
-  /// 💾 FIREBASE UPDATE: Memperbarui dokumen yang ada
+  // Update status reimbursement
+  // FIREBASE UPDATE: Memperbarui dokumen yang ada
   static Future<void> updateReimbursementStatus(
     String id,
     String newStatus, {
@@ -136,28 +136,28 @@ class ReimbursementService {
 
       await _firestore.collection(_collectionName).doc(id).update(updateData);
 
-      print('✅ Reimbursement status updated to: $newStatus');
+      print(' Reimbursement status updated to: $newStatus');
     } catch (e) {
-      print('❌ Error updating reimbursement: $e');
+      print(' Error updating reimbursement: $e');
       rethrow;
     }
   }
 
-  /// 🗑️ Hapus reimbursement
-  /// 💾 FIREBASE DELETE: Menghapus dokumen dari Firestore
+  // Hapus reimbursement
+  // FIREBASE DELETE: Menghapus dokumen dari Firestore
   static Future<void> deleteReimbursement(String id) async {
     try {
       await _firestore.collection(_collectionName).doc(id).delete();
 
-      print('✅ Reimbursement deleted: $id');
+      print(' Reimbursement deleted: $id');
     } catch (e) {
-      print('❌ Error deleting reimbursement: $e');
+      print(' Error deleting reimbursement: $e');
       rethrow;
     }
   }
 
-  /// 📊 Stream untuk real-time updates
-  /// 💾 FIREBASE STREAM: Listen ke perubahan data real-time
+  // Stream untuk real-time updates
+  // FIREBASE STREAM: Listen ke perubahan data real-time
   static Stream<List<ReimbursementRequest>> getUserReimbursementsStream(
     String employeeId,
   ) {
