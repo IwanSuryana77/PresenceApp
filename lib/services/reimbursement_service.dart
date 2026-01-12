@@ -3,7 +3,6 @@ import 'package:firebase_storage/firebase_storage.dart';
 import '../models/reimbursement_request.dart';
 import 'dart:io';
 
-
 /// 📌 Firebase Service untuk Reimbursement Request (Pengembalian Dana)
 /// 💾 FIREBASE: Mengelola CRUD operations di collection 'reimbursement_requests'
 class ReimbursementService {
@@ -14,7 +13,9 @@ class ReimbursementService {
 
   /// ➕ Tambah data reimbursement ke Firebase
   /// 💾 FIREBASE WRITE: Menyimpan dokumen baru ke Firestore
-  Future<String> createReimbursement(ReimbursementRequest request) async {
+  static Future<String> createReimbursement(
+    ReimbursementRequest request,
+  ) async {
     try {
       final docRef = await _firestore
           .collection(_collectionName)
@@ -30,7 +31,7 @@ class ReimbursementService {
 
   /// 📖 Ambil semua reimbursement untuk user tertentu
   /// 💾 FIREBASE READ: Query dokumen berdasarkan employeeId
-  Future<List<ReimbursementRequest>> getUserReimbursements(
+  static Future<List<ReimbursementRequest>> getUserReimbursements(
     String employeeId,
   ) async {
     try {
@@ -51,7 +52,7 @@ class ReimbursementService {
 
   /// 📖 Ambil semua reimbursement (untuk admin/approval)
   /// 💾 FIREBASE READ: Query semua dokumen
-  Future<List<ReimbursementRequest>> getAllReimbursements() async {
+  static Future<List<ReimbursementRequest>> getAllReimbursements() async {
     try {
       final snapshot = await _firestore
           .collection(_collectionName)
@@ -69,12 +70,9 @@ class ReimbursementService {
 
   /// 📖 Ambil reimbursement berdasarkan ID
   /// 💾 FIREBASE READ: Get dokumen spesifik
-  Future<ReimbursementRequest?> getReimbursementById(String id) async {
+  static Future<ReimbursementRequest?> getReimbursementById(String id) async {
     try {
-      final doc = await _firestore
-          .collection(_collectionName)
-          .doc(id)
-          .get();
+      final doc = await _firestore.collection(_collectionName).doc(id).get();
 
       if (doc.exists) {
         return ReimbursementRequest.fromMap(
@@ -91,7 +89,10 @@ class ReimbursementService {
 
   /// 📤 Upload file ke Firebase Storage
   /// 💾 FIREBASE STORAGE: Menyimpan file (bukti/lampiran)
-  Future<String> uploadAttachment(String filePath, String fileName) async {
+  static Future<String> uploadAttachment(
+    String filePath,
+    String fileName,
+  ) async {
     try {
       final ref = _storage
           .ref()
@@ -99,8 +100,10 @@ class ReimbursementService {
           .child(DateTime.now().millisecondsSinceEpoch.toString())
           .child(fileName);
 
-      final uploadTask = await ref.putFile(
-        await Future.value(File(filePath).readAsBytes()).then((_) => File(filePath)),
+      await ref.putFile(
+        await Future.value(
+          File(filePath).readAsBytes(),
+        ).then((_) => File(filePath)),
       );
 
       final downloadUrl = await ref.getDownloadURL();
@@ -114,7 +117,7 @@ class ReimbursementService {
 
   /// ✏️ Update status reimbursement
   /// 💾 FIREBASE UPDATE: Memperbarui dokumen yang ada
-  Future<void> updateReimbursementStatus(
+  static Future<void> updateReimbursementStatus(
     String id,
     String newStatus, {
     String? approvedBy,
@@ -131,10 +134,7 @@ class ReimbursementService {
         updateData['rejectionReason'] = rejectionReason;
       }
 
-      await _firestore
-          .collection(_collectionName)
-          .doc(id)
-          .update(updateData);
+      await _firestore.collection(_collectionName).doc(id).update(updateData);
 
       print('✅ Reimbursement status updated to: $newStatus');
     } catch (e) {
@@ -145,12 +145,9 @@ class ReimbursementService {
 
   /// 🗑️ Hapus reimbursement
   /// 💾 FIREBASE DELETE: Menghapus dokumen dari Firestore
-  Future<void> deleteReimbursement(String id) async {
+  static Future<void> deleteReimbursement(String id) async {
     try {
-      await _firestore
-          .collection(_collectionName)
-          .doc(id)
-          .delete();
+      await _firestore.collection(_collectionName).doc(id).delete();
 
       print('✅ Reimbursement deleted: $id');
     } catch (e) {
@@ -161,7 +158,7 @@ class ReimbursementService {
 
   /// 📊 Stream untuk real-time updates
   /// 💾 FIREBASE STREAM: Listen ke perubahan data real-time
-  Stream<List<ReimbursementRequest>> getUserReimbursementsStream(
+  static Stream<List<ReimbursementRequest>> getUserReimbursementsStream(
     String employeeId,
   ) {
     return _firestore
@@ -169,10 +166,10 @@ class ReimbursementService {
         .where('employeeId', isEqualTo: employeeId)
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => ReimbursementRequest.fromMap(doc.data(), doc.id))
-            .toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => ReimbursementRequest.fromMap(doc.data(), doc.id))
+              .toList(),
+        );
   }
 }
-
-

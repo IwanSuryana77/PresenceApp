@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/home/pengajuan_page.dart';
@@ -24,6 +25,9 @@ void main() async {
     );
   }
 
+  // Initialize date formatting for Indonesian locale
+  await initializeDateFormatting('id_ID', null);
+
   runApp(const MyApp());
 }
 
@@ -34,9 +38,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Modern HR UI',
-      theme: AppTheme.light(), // Pastikan ada AppTheme
-      home: const AuthGate(), // Gate ke login jika belum auth
+      title: 'Presence App',
+      theme: AppTheme.light(),
+      home: const AuthGate(),
     );
   }
 }

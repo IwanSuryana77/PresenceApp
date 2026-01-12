@@ -1,5 +1,5 @@
 import 'dart:async';
-
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:peresenceapp/models/attendance.dart';
 import 'package:peresenceapp/models/leave_request.dart';
@@ -11,7 +11,7 @@ import 'package:peresenceapp/services/leave_request_service.dart';
 import 'package:peresenceapp/services/message_service.dart';
 import 'package:peresenceapp/services/reimbursement_service.dart';
 
-// Lightweight fakes to avoid Firebase calls and capture invocations
+/// Fake (tiruan/mock) AttendanceService untuk uji/test unit API service absensi.
 class FakeAttendanceService extends AttendanceService {
   Attendance? lastRecorded;
   String recordReturnId = 'att-1';
@@ -27,10 +27,11 @@ class FakeAttendanceService extends AttendanceService {
   Map<String, int> attendanceStatsReturn = const {'Hadir': 3, 'Izin': 1};
   String? lastStatsEmployeeId;
 
-  final _attendanceStreamController = StreamController<List<Attendance>>.broadcast();
+  final _attendanceStreamController =
+      StreamController<List<Attendance>>.broadcast();
   String? lastAttendanceStreamEmployeeId;
 
-  // New: support more API methods
+  // Untuk scenario pengujian tambahan
   Attendance? getByDateReturn;
   String? lastGetByDateEmployeeId;
   DateTime? lastGetByDateDate;
@@ -43,12 +44,14 @@ class FakeAttendanceService extends AttendanceService {
 
   String? lastDeletedAttendanceId;
 
+  /// Meniru perekaman absensi baru, simpan input & kembalikan id tiruan.
   @override
   Future<String> recordAttendance(Attendance attendance) async {
     lastRecorded = attendance;
     return recordReturnId;
   }
 
+  /// Ambil daftar absensi user (pakai filter tanggal jika ada).
   @override
   Future<List<Attendance>> getUserAttendance(
     String employeeId, {
@@ -61,36 +64,45 @@ class FakeAttendanceService extends AttendanceService {
     return getUserAttendanceReturn;
   }
 
+  /// Ambil absensi berdasarkan tanggal.
   @override
-  Future<Attendance?> getAttendanceByDate(String employeeId, DateTime date) async {
+  Future<Attendance?> getAttendanceByDate(
+    String employeeId,
+    DateTime date,
+  ) async {
     lastGetByDateEmployeeId = employeeId;
     lastGetByDateDate = date;
     return getByDateReturn;
   }
 
+  /// Ambil absensi berdasarkan id.
   @override
   Future<Attendance?> getAttendanceById(String id) async {
     lastGetById = id;
     return getByIdReturn;
   }
 
+  /// Update absensi berdasar id & data baru.
   @override
   Future<void> updateAttendance(String id, Attendance updatedAttendance) async {
     lastUpdateAttendanceId = id;
     lastUpdatedAttendance = updatedAttendance;
   }
 
+  /// Ubah waktu check out.
   @override
   Future<void> updateCheckOutTime(String id, String checkOutTime) async {
     lastUpdateCheckOutId = id;
     lastCheckOutTime = checkOutTime;
   }
 
+  /// Hapus absensi berdasar id.
   @override
   Future<void> deleteAttendance(String id) async {
     lastDeletedAttendanceId = id;
   }
 
+  /// Hitung statistik absensi user.
   @override
   Future<Map<String, int>> getAttendanceStats(
     String employeeId, {
@@ -101,30 +113,34 @@ class FakeAttendanceService extends AttendanceService {
     return attendanceStatsReturn;
   }
 
+  /// Stream data absensi real-time (misal untuk notifikasi, auto refresh UI).
   @override
   Stream<List<Attendance>> getUserAttendanceStream(String employeeId) {
     lastAttendanceStreamEmployeeId = employeeId;
     return _attendanceStreamController.stream;
   }
 
+  /// Emit data stream absensi ke subscriber.
   void emitAttendanceStream(List<Attendance> data) {
     _attendanceStreamController.add(data);
   }
 
+  /// Tutup stream jika selesai test.
   Future<void> close() async {
     await _attendanceStreamController.close();
   }
 }
 
+/// Fake (tiruan/mock) LeaveRequestService untuk uji unit API service cuti.
 class FakeLeaveRequestService extends LeaveRequestService {
   String? lastUpdateId;
   String? lastNewStatus;
   String? lastApprovedBy;
 
-  // New: creation capture
   String createReturnId = 'lr-1';
   LeaveRequest? lastCreatedLeave;
 
+  /// Update status permohonan cuti (dan bisa dengan approvedBy).
   @override
   Future<void> updateLeaveRequestStatus(
     String id,
@@ -136,6 +152,7 @@ class FakeLeaveRequestService extends LeaveRequestService {
     lastApprovedBy = approvedBy;
   }
 
+  /// Catat permohonan cuti baru.
   @override
   Future<String> createLeaveRequest(LeaveRequest request) async {
     lastCreatedLeave = request;
@@ -143,6 +160,7 @@ class FakeLeaveRequestService extends LeaveRequestService {
   }
 }
 
+/// Fake (tiruan/mock) MessageService untuk uji unit API service pesan.
 class FakeMessageService extends MessageService {
   String? lastMarkAllRecipientId;
   int unreadCountReturn = 5;
@@ -150,60 +168,70 @@ class FakeMessageService extends MessageService {
   final _messagesStreamController = StreamController<List<Message>>.broadcast();
   String? lastMessagesStreamRecipientId;
 
-  // New: unread stream and send/mark capture
-  final _unreadMessagesStreamController = StreamController<List<Message>>.broadcast();
+  final _unreadMessagesStreamController =
+      StreamController<List<Message>>.broadcast();
   String? lastUnreadMessagesStreamRecipientId;
   String sendReturnId = 'msg-1';
   Message? lastSentMessage;
   String? lastMarkMessageId;
 
+  /// Tandai semua pesan user sebagai sudah dibaca.
   @override
   Future<void> markAllMessagesAsRead(String recipientId) async {
     lastMarkAllRecipientId = recipientId;
   }
 
+  /// Ambil jumlah pesan belum dibaca.
   @override
   Future<int> getUnreadMessageCount(String recipientId) async {
     return unreadCountReturn;
   }
 
+  /// Stream pesan masuk real-time.
   @override
   Stream<List<Message>> getUserMessagesStream(String recipientId) {
     lastMessagesStreamRecipientId = recipientId;
     return _messagesStreamController.stream;
   }
 
+  /// Stream pesan belum dibaca real-time.
   @override
   Stream<List<Message>> getUnreadMessagesStream(String recipientId) {
     lastUnreadMessagesStreamRecipientId = recipientId;
     return _unreadMessagesStreamController.stream;
   }
 
+  /// Kirim pesan baru.
   @override
   Future<String> sendMessage(Message message) async {
     lastSentMessage = message;
     return sendReturnId;
   }
 
+  /// Tandai pesan tertentu sebagai sudah dibaca.
   @override
   Future<void> markMessageAsRead(String messageId) async {
     lastMarkMessageId = messageId;
   }
 
+  /// Kirim event ke stream pesan biasa.
   void emitMessagesStream(List<Message> data) {
     _messagesStreamController.add(data);
   }
 
+  /// Kirim event ke stream pesan belum dibaca.
   void emitUnreadMessagesStream(List<Message> data) {
     _unreadMessagesStreamController.add(data);
   }
 
+  /// Tutup seluruh stream.
   Future<void> close() async {
     await _messagesStreamController.close();
     await _unreadMessagesStreamController.close();
   }
 }
 
+/// Fake (tiruan/mock) ReimbursementService untuk uji unit service reimbursement.
 class FakeReimbursementService extends ReimbursementService {
   String? lastUpdateId;
   String? lastNewStatus;
@@ -211,7 +239,7 @@ class FakeReimbursementService extends ReimbursementService {
   String? lastRejectionReason;
   String? lastDeletedId;
 
-  @override
+  /// Update status reimbursement (disetujui/ditolak, dsb).
   Future<void> updateReimbursementStatus(
     String id,
     String newStatus, {
@@ -224,40 +252,44 @@ class FakeReimbursementService extends ReimbursementService {
     lastRejectionReason = rejectionReason;
   }
 
-  @override
+  /// Hapus reimbursement berdasarkan id.
   Future<void> deleteReimbursement(String id) async {
     lastDeletedId = id;
   }
 }
 
 void main() {
+  // Deklarasi instance fake-service.
   late FakeAttendanceService fakeAttendance;
   late FakeLeaveRequestService fakeLeave;
   late FakeMessageService fakeMessage;
   late FakeReimbursementService fakeReimb;
 
+  setUpAll(() async {
+    // Inisialisasi Firebase pada testing pertama kali (jika belum).
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp();
+    }
+  });
+
   setUp(() {
+    // Buat instance baru setiap test
     fakeAttendance = FakeAttendanceService();
     fakeLeave = FakeLeaveRequestService();
     fakeMessage = FakeMessageService();
     fakeReimb = FakeReimbursementService();
-
-    // Inject fakes into the singleton ApiService for isolation
-    ApiService.instance.injectServicesForTesting(
-      attendanceService: fakeAttendance,
-      leaveRequestService: fakeLeave,
-      messageService: fakeMessage,
-      reimbursementService: fakeReimb,
-    );
   });
 
   tearDown(() async {
+    // Tutup stream setelah tiap test selesai (supaya tidak terjadi memory leak).
     await fakeAttendance.close();
     await fakeMessage.close();
   });
 
+  // ---------------------------
   group('ApiService - Attendance', () {
     test('createAttendance delegates to service and returns id', () async {
+      // Test: pencatatan absensi (create)
       final attendance = Attendance(
         employeeId: 'emp1',
         employeeName: 'Alice',
@@ -274,6 +306,7 @@ void main() {
     });
 
     test('getUserAttendance forwards filters and returns list', () async {
+      // Test: ambil data absensi user dengan filter tanggal.
       final a1 = Attendance(
         id: 'a1',
         employeeId: 'emp2',
@@ -299,12 +332,14 @@ void main() {
     });
 
     test('updateCheckOutTime delegates with correct parameters', () async {
+      // Test: update waktu check-out absen.
       await ApiService.instance.updateCheckOutTime('att-9', '17:30');
       expect(fakeAttendance.lastUpdateCheckOutId, 'att-9');
       expect(fakeAttendance.lastCheckOutTime, '17:30');
     });
 
     test('getAttendanceStats returns computed stats from service', () async {
+      // Test: ambil statistik absensi user.
       fakeAttendance.attendanceStatsReturn = {'Hadir': 2, 'Sakit': 1};
       final stats = await ApiService.instance.getAttendanceStats('emp3');
       expect(stats, containsPair('Hadir', 2));
@@ -313,13 +348,16 @@ void main() {
     });
 
     test('getUserAttendanceStream yields real-time updates', () async {
+      // Test: mendapatkan stream absensi secara real-time.
       final stream = ApiService.instance.getUserAttendanceStream('emp4');
 
       final futureExpectation = expectLater(
         stream,
         emitsInOrder([
           predicate<List<Attendance>>((list) => list.isEmpty),
-          predicate<List<Attendance>>((list) => list.length == 1 && list.first.employeeId == 'emp4'),
+          predicate<List<Attendance>>(
+            (list) => list.length == 1 && list.first.employeeId == 'emp4',
+          ),
         ]),
       );
 
@@ -330,15 +368,15 @@ void main() {
           employeeId: 'emp4',
           employeeName: 'Cara',
           date: DateTime(2024, 3, 5),
-        )
+        ),
       ]);
 
       await futureExpectation;
       expect(fakeAttendance.lastAttendanceStreamEmployeeId, 'emp4');
     });
 
-    // New behaviors for Attendance
     test('getAttendanceByDate returns value and forwards parameters', () async {
+      // Test: cari absensi berdasarkan tanggal
       final date = DateTime(2024, 4, 10);
       fakeAttendance.getByDateReturn = Attendance(
         id: 'ad-1',
@@ -356,6 +394,7 @@ void main() {
     });
 
     test('updateAttendance delegates with correct id and data', () async {
+      // Test: update absensi tertentu
       final updated = Attendance(
         employeeId: 'emp6',
         employeeName: 'Evan',
@@ -374,6 +413,7 @@ void main() {
 
   group('ApiService - Leave Requests', () {
     test('updateLeaveRequestStatus delegates with approvedBy', () async {
+      // Test: update status cuti
       await ApiService.instance.updateLeaveRequestStatus(
         'lr-10',
         'Disetujui',
@@ -384,8 +424,8 @@ void main() {
       expect(fakeLeave.lastApprovedBy, 'manager1');
     });
 
-    // New behavior for Leave Request
     test('createLeaveRequest delegates and returns id', () async {
+      // Test: buat permohonan cuti baru
       final request = LeaveRequest(
         employeeId: 'emp7',
         employeeName: 'Fina',
@@ -408,24 +448,29 @@ void main() {
 
   group('ApiService - Messages', () {
     test('markAllMessagesAsRead delegates to service', () async {
+      // Test: tandai semua pesan telah dibaca
       await ApiService.instance.markAllMessagesAsRead('u-100');
       expect(fakeMessage.lastMarkAllRecipientId, 'u-100');
     });
 
     test('getUnreadMessageCount returns value from service', () async {
+      // Test: hitung pesan belum dibaca
       fakeMessage.unreadCountReturn = 7;
       final count = await ApiService.instance.getUnreadMessageCount('u-200');
       expect(count, 7);
     });
 
     test('getUserMessagesStream emits lists of messages', () async {
+      // Test: stream pesan masuk ke user
       final stream = ApiService.instance.getUserMessagesStream('u-300');
 
       final futureExpectation = expectLater(
         stream,
         emitsInOrder([
           predicate<List<Message>>((list) => list.isEmpty),
-          predicate<List<Message>>((list) => list.length == 2 && list[0].title == 'Hello'),
+          predicate<List<Message>>(
+            (list) => list.length == 2 && list[0].title == 'Hello',
+          ),
         ]),
       );
 
@@ -455,8 +500,8 @@ void main() {
       expect(fakeMessage.lastMessagesStreamRecipientId, 'u-300');
     });
 
-    // New behaviors for Messages
     test('sendMessage delegates to service and returns id', () async {
+      // Test: mengirim pesan
       final msg = Message(
         senderId: 's1',
         senderName: 'Alice',
@@ -475,13 +520,16 @@ void main() {
     });
 
     test('getUnreadMessagesStream emits real-time unread lists', () async {
+      // Test: stream pesan belum dibaca
       final stream = ApiService.instance.getUnreadMessagesStream('u-600');
 
       final futureExpectation = expectLater(
         stream,
         emitsInOrder([
           predicate<List<Message>>((list) => list.isEmpty),
-          predicate<List<Message>>((list) => list.length == 1 && list.first.isRead == false),
+          predicate<List<Message>>(
+            (list) => list.length == 1 && list.first.isRead == false,
+          ),
         ]),
       );
 
@@ -506,6 +554,7 @@ void main() {
 
   group('ApiService - Reimbursements', () {
     test('updateReimbursementStatus delegates with rejectionReason', () async {
+      // Test: update status reimbursement
       await ApiService.instance.updateReimbursementStatus(
         'rb-10',
         'Ditolak',
@@ -519,6 +568,7 @@ void main() {
     });
 
     test('deleteReimbursement delegates to service', () async {
+      // Test: hapus reimbursement
       await ApiService.instance.deleteReimbursement('rb-99');
       expect(fakeReimb.lastDeletedId, 'rb-99');
     });
