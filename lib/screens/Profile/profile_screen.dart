@@ -595,7 +595,7 @@ class _ProfilScreenState extends State<ProfilScreen>
                 ],
               ),
               child: Image.asset(
-                'assets/profil.jpg',
+                'assets/images/profil.jpg',
                 fit: BoxFit.cover,
                 width: double.infinity,
                 height: double.infinity,

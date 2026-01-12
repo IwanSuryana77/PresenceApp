@@ -479,15 +479,15 @@ class _InfoKeluargaScreenState extends State<InfoKeluargaScreen>
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                borderRadius: BorderRadius.circular(isMobile ? 20 : 24),
+                borderRadius: BorderRadius.circular(isMobile ? 16 : 24),
                 boxShadow: [
                   BoxShadow(
                     color: primaryColor.withOpacity(
                       (_hoverStates['header'] ?? false) ? 0.15 : 0.1,
                     ),
-                    spreadRadius: 2,
-                    blurRadius: (_hoverStates['header'] ?? false) ? 25 : 20,
-                    offset: const Offset(0, 8),
+                    spreadRadius: 1,
+                    blurRadius: (_hoverStates['header'] ?? false) ? 20 : 15,
+                    offset: const Offset(0, 4),
                   ),
                   BoxShadow(
                     color: Colors.white.withOpacity(0.9),
@@ -503,7 +503,7 @@ class _InfoKeluargaScreenState extends State<InfoKeluargaScreen>
                   width: 1.5,
                 ),
               ),
-              padding: EdgeInsets.all(isMobile ? 24 : 28),
+              padding: EdgeInsets.all(isMobile ? 16 : 28),
               child: Column(
                 children: [
                   Row(
@@ -511,8 +511,8 @@ class _InfoKeluargaScreenState extends State<InfoKeluargaScreen>
                       ScaleTransition(
                         scale: _pulseAnimation,
                         child: Container(
-                          width: isMobile ? 70 : 80,
-                          height: isMobile ? 70 : 80,
+                          width: isMobile ? 60 : 80,
+                          height: isMobile ? 60 : 80,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             gradient: const LinearGradient(
@@ -523,9 +523,9 @@ class _InfoKeluargaScreenState extends State<InfoKeluargaScreen>
                             boxShadow: [
                               BoxShadow(
                                 color: primaryColor.withOpacity(0.4),
-                                blurRadius: 15,
-                                spreadRadius: 2,
-                                offset: const Offset(0, 4),
+                                blurRadius: 10,
+                                spreadRadius: 1,
+                                offset: const Offset(0, 2),
                               ),
                             ],
                             border: Border.all(
@@ -536,11 +536,11 @@ class _InfoKeluargaScreenState extends State<InfoKeluargaScreen>
                           child: const Icon(
                             Icons.family_restroom_rounded,
                             color: Colors.white,
-                            size: 34,
+                            size: 28,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 20),
+                      const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -548,7 +548,7 @@ class _InfoKeluargaScreenState extends State<InfoKeluargaScreen>
                             Text(
                               'Surya Ramadhan',
                               style: TextStyle(
-                                fontSize: isMobile ? 20 : 22,
+                                fontSize: isMobile ? 18 : 22,
                                 fontWeight: FontWeight.bold,
                                 color: primaryColor,
                                 letterSpacing: 0.5,
@@ -559,8 +559,8 @@ class _InfoKeluargaScreenState extends State<InfoKeluargaScreen>
                             const SizedBox(height: 6),
                             Container(
                               padding: EdgeInsets.symmetric(
-                                horizontal: isMobile ? 12 : 14,
-                                vertical: isMobile ? 4 : 5,
+                                horizontal: isMobile ? 10 : 14,
+                                vertical: isMobile ? 3 : 5,
                               ),
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
@@ -571,19 +571,19 @@ class _InfoKeluargaScreenState extends State<InfoKeluargaScreen>
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                 ),
-                                borderRadius: BorderRadius.circular(20),
+                                borderRadius: BorderRadius.circular(16),
                                 boxShadow: [
                                   BoxShadow(
                                     color: successColor.withOpacity(0.3),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 3),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 2),
                                   ),
                                 ],
                               ),
                               child: Text(
                                 'Fullstack Developer',
                                 style: TextStyle(
-                                  fontSize: isMobile ? 13 : 14,
+                                  fontSize: isMobile ? 12 : 14,
                                   color: Colors.white,
                                   fontWeight: FontWeight.w700,
                                   letterSpacing: 0.8,
@@ -597,7 +597,7 @@ class _InfoKeluargaScreenState extends State<InfoKeluargaScreen>
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
                   _buildEnhancedFamilySummary(isMobile),
                 ],
               ),
@@ -614,7 +614,7 @@ class _InfoKeluargaScreenState extends State<InfoKeluargaScreen>
       onExit: (_) => setState(() => _hoverStates['summary'] = false),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
-        padding: EdgeInsets.all(isMobile ? 16 : 20),
+        padding: EdgeInsets.all(isMobile ? 12 : 20),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
@@ -649,23 +649,29 @@ class _InfoKeluargaScreenState extends State<InfoKeluargaScreen>
                 Icon(
                   Icons.group_rounded,
                   color: primaryColor,
-                  size: isMobile ? 20 : 22,
+                  size: isMobile ? 18 : 22,
                 ),
-                const SizedBox(width: 10),
-                Text(
-                  'Data Keluarga',
-                  style: TextStyle(
-                    fontSize: isMobile ? 15 : 16,
-                    fontWeight: FontWeight.w700,
-                    color: primaryColor,
-                    letterSpacing: 0.3,
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Data Keluarga',
+                    style: TextStyle(
+                      fontSize: isMobile ? 14 : 16,
+                      fontWeight: FontWeight.w700,
+                      color: primaryColor,
+                      letterSpacing: 0.3,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              alignment: WrapAlignment.spaceEvenly,
               children: [
                 _buildEnhancedSummaryItem(
                   'Orang Tua',
@@ -673,41 +679,11 @@ class _InfoKeluargaScreenState extends State<InfoKeluargaScreen>
                   Icons.elderly,
                   isMobile,
                 ),
-                Container(
-                  height: 30,
-                  width: 1,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.transparent,
-                        primaryColor.withOpacity(0.3),
-                        Colors.transparent,
-                      ],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                    ),
-                  ),
-                ),
                 _buildEnhancedSummaryItem(
                   'Istri',
                   'Tidak Ada',
                   Icons.female,
                   isMobile,
-                ),
-                Container(
-                  height: 30,
-                  width: 1,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.transparent,
-                        primaryColor.withOpacity(0.3),
-                        Colors.transparent,
-                      ],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                    ),
-                  ),
                 ),
                 _buildEnhancedSummaryItem(
                   'Anak',
@@ -737,9 +713,10 @@ class _InfoKeluargaScreenState extends State<InfoKeluargaScreen>
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: EdgeInsets.symmetric(
-          horizontal: isMobile ? 12 : 16,
+          horizontal: isMobile ? 8 : 16,
           vertical: isMobile ? 8 : 12,
         ),
+        constraints: const BoxConstraints(minWidth: 0),
         decoration: BoxDecoration(
           color: (_hoverStates['summary_$title'] ?? false)
               ? (isAvailable
@@ -749,6 +726,7 @@ class _InfoKeluargaScreenState extends State<InfoKeluargaScreen>
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               icon,
@@ -761,17 +739,20 @@ class _InfoKeluargaScreenState extends State<InfoKeluargaScreen>
             Text(
               title,
               style: TextStyle(
-                fontSize: isMobile ? 12 : 13,
+                fontSize: isMobile ? 11 : 13,
                 color: const Color(0xFF64748B),
                 fontWeight: FontWeight.w600,
                 letterSpacing: 0.5,
               ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 4),
             Text(
               value,
               style: TextStyle(
-                fontSize: isMobile ? 16 : 18,
+                fontSize: isMobile ? 14 : 18,
                 fontWeight: FontWeight.bold,
                 color: isAvailable ? primaryColor : const Color(0xFF94A3B8),
                 shadows: isAvailable
@@ -784,6 +765,9 @@ class _InfoKeluargaScreenState extends State<InfoKeluargaScreen>
                       ]
                     : [],
               ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
