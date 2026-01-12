@@ -1,30 +1,30 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/leave_request.dart';
 
-/// 📌 Firebase Service untuk Leave Request (Permintaan Cuti)
-/// 💾 FIREBASE: Mengelola CRUD operations di collection 'leave_requests'
+// Firebase Service untuk Leave Request (Permintaan Cuti)
+// FIREBASE: Mengelola CRUD operations di collection 'leave_requests'
 class LeaveRequestService {
   static final _firestore = FirebaseFirestore.instance;
   static const _collectionName = 'PengajuanCuti';
 
-  /// ➕ Tambah data permintaan cuti ke Firebase
-  /// 💾 FIREBASE WRITE: Menyimpan dokumen baru ke Firestore
+  // Tambah data permintaan cuti ke Firebase
+  // FIREBASE WRITE: Menyimpan dokumen baru ke Firestore
   Future<String> createLeaveRequest(LeaveRequest request) async {
     try {
       final docRef = await _firestore
           .collection(_collectionName)
           .add(request.toMap());
 
-      print('✅ Leave Request created with ID: ${docRef.id}');
+      print(' Leave Request created with ID: ${docRef.id}');
       return docRef.id;
     } catch (e) {
-      print('❌ Error creating leave request: $e');
+      print(' Error creating leave request: $e');
       rethrow;
     }
   }
 
-  /// 📖 Ambil semua permintaan cuti untuk user tertentu
-  /// 💾 FIREBASE READ: Query dokumen berdasarkan employeeId
+  //  Ambil semua permintaan cuti untuk user tertentu
+  // FIREBASE READ: Query dokumen berdasarkan employeeId
   Future<List<LeaveRequest>> getUserLeaveRequests(String employeeId) async {
     try {
       final snapshot = await _firestore
@@ -42,8 +42,8 @@ class LeaveRequestService {
     }
   }
 
-  //Ambil semua permintaan cuti (untuk admin/approval)
-  //FIREBASE READ: Query semua dokumen
+  // Ambil semua permintaan cuti (untuk admin/approval)
+  // FIREBASE READ: Query semua dokumen
   Future<List<LeaveRequest>> getAllLeaveRequests() async {
     try {
       final snapshot = await _firestore
