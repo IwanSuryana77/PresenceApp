@@ -7,16 +7,6 @@ import '../models/leave_request.dart';
 import '../models/message.dart';
 import '../models/reimbursement_request.dart';
 
-/// ============================================================================
-/// 🌐 API LAYER
-/// ----------------------------------------------------------------------------
-/// Kelas ApiService adalah API internal aplikasi, menjadi satu pintu akses
-/// berbagai fitur terkait data absensi, cuti, pesan/inbox, dan reimbursement.
-/// Seluruh method di kelas ini adalah ANTARMUKA (API) bagi bagian aplikasi lain
-/// untuk komunikasi data tanpa peduli implementasi detail service/Firebase.
-///
-/// Tanda [API -> FIREBASE ...] digunakan untuk menandai interaksi DB.
-/// ============================================================================
 class ApiService {
   // Singleton pattern supaya hanya ada satu instance ApiService di aplikasi.
   static final ApiService _instance = ApiService._internal();
@@ -34,19 +24,15 @@ class ApiService {
   late final LeaveRequestService _leaveRequestService;
   late final MessageService _messageService;
 
-  // ---------------------------------------------------------------------------
-  // 📌 ATTENDANCE (ABSEN)
-  // ---------------------------------------------------------------------------
-
+  
   /// Mencatat absensi/kehadiran baru ke Firebase melalui AttendanceService.
   /// Digunakan ketika user check-in/check-out.
-  /// [API -> FIREBASE WRITE]
   Future<String> createAttendance(Attendance attendance) {
     return _attendanceService.recordAttendance(attendance);
   }
 
   /// Mengambil daftar absensi berdasarkan ID karyawan dan rentang tanggal.
-  /// Untuk melihat riwayat absensi pada suatu periode.
+  /// melihat riwayat absensi pada suatu periode.
   /// [API -> FIREBASE READ]
   Future<List<Attendance>> getUserAttendance(
     String employeeId, {
@@ -112,9 +98,6 @@ class ApiService {
     return _attendanceService.getUserAttendanceStream(employeeId);
   }
 
-  // ---------------------------------------------------------------------------
-  // 📌 LEAVE REQUEST (CUTI)
-  // ---------------------------------------------------------------------------
 
   /// Membuat permintaan cuti baru oleh user ke database.
   /// [API -> FIREBASE WRITE]
@@ -168,9 +151,7 @@ class ApiService {
     return _leaveRequestService.getUserLeaveRequestsStream(employeeId);
   }
 
-  // ---------------------------------------------------------------------------
-  // 📌 MESSAGE (PESAN / INBOX)
-  // ---------------------------------------------------------------------------
+
 
   /// Mengirim pesan dari user ke user/admin lain.
   /// [API -> FIREBASE WRITE]
@@ -232,9 +213,7 @@ class ApiService {
     return _messageService.getUnreadMessageCount(recipientId);
   }
 
-  // ---------------------------------------------------------------------------
-  // 📌 REIMBURSEMENT
-  // ---------------------------------------------------------------------------
+ 
 
   /// Membuat reimbursement baru (pengajuan penggantian biaya).
   /// [API -> FIREBASE WRITE]

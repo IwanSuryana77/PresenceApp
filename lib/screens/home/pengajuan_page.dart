@@ -44,7 +44,7 @@ class _PengajuanPageState extends State<PengajuanPage> {
         _leaveRequests = requests;
         _isLoading = false;
       });
-      // Optional: update sisa cuti real--hitung dari db
+      
       final approved = requests.where((e) => e.status == 'Disetujui');
       int pakai = approved.fold(0, (n, e) => n + (e.daysCount ?? 0));
       setState(() {
@@ -52,7 +52,7 @@ class _PengajuanPageState extends State<PengajuanPage> {
       });
     } catch (e) {
       setState(() => _isLoading = false);
-      print('❌ Error loading leave requests: $e');
+      print('Error loading leave requests: $e');
     }
   }
 
@@ -131,7 +131,7 @@ class _PengajuanPageState extends State<PengajuanPage> {
 
         await _api.createLeaveRequest(leaveRequest);
 
-        // Kurangi sisa cuti sementara (FE only, backend tetap utamakan validasinya!)
+        // Kurangi sisa cuti sementara 
         setState(() {
           _sisaCuti = (_sisaCuti - daysCount).clamp(0, 1000);
         });
@@ -163,7 +163,7 @@ class _PengajuanPageState extends State<PengajuanPage> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text("❌ Gagal mengirim pengajuan: $e"),
+              content: Text("Gagal mengirim pengajuan: $e"),
               duration: const Duration(seconds: 3),
               backgroundColor: Colors.red,
             ),
@@ -173,7 +173,7 @@ class _PengajuanPageState extends State<PengajuanPage> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("⚠️ Silakan isi semua field terlebih dahulu"),
+          content: Text("Silakan isi semua field terlebih dahulu"),
           duration: Duration(seconds: 2),
           backgroundColor: Colors.orange,
         ),

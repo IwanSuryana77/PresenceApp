@@ -3,32 +3,32 @@ import 'package:firebase_storage/firebase_storage.dart';
 import '../models/attendance.dart';
 import 'dart:io';
 
-/// 📌 Firebase Service untuk Attendance (Kehadiran)
-/// 💾 FIREBASE: Mengelola CRUD operations di collection 'attendance'
+// Firebase Service untuk Attendance (Kehadiran)
+// FIREBASE: Mengelola CRUD operations di collection 'attendance'
 class AttendanceService {
   static final _firestore = FirebaseFirestore.instance;
   static final _storage = FirebaseStorage.instance;
   static const _collectionName = 'attendance';
   static const _storagePath = 'attendance_photos';
 
-  /// ➕ Catat kehadiran baru ke Firebase
-  /// 💾 FIREBASE WRITE: Menyimpan dokumen baru ke Firestore
+  // Catat kehadiran baru ke Firebase
+  // FIREBASE WRITE: Menyimpan dokumen baru ke Firestore
   Future<String> recordAttendance(Attendance attendance) async {
     try {
       final docRef = await _firestore
           .collection(_collectionName)
           .add(attendance.toMap());
 
-      print('✅ Attendance recorded with ID: ${docRef.id}');
+      print(' Attendance recorded with ID: ${docRef.id}');
       return docRef.id;
     } catch (e) {
-      print('❌ Error recording attendance: $e');
+      print(' Error recording attendance: $e');
       rethrow;
     }
   }
 
-  /// 📖 Ambil kehadiran untuk user tertentu
-  /// 💾 FIREBASE READ: Query dokumen berdasarkan employeeId
+  // Ambil kehadiran untuk user tertentu
+  // FIREBASE READ: Query dokumen berdasarkan employeeId
   Future<List<Attendance>> getUserAttendance(
     String employeeId, {
     DateTime? startDate,
@@ -59,13 +59,13 @@ class AttendanceService {
           .map((doc) => Attendance.fromMap(doc.data(), doc.id))
           .toList();
     } catch (e) {
-      print('❌ Error fetching attendance: $e');
+      print(' Error fetching attendance: $e');
       return [];
     }
   }
 
-  /// 📖 Ambil kehadiran untuk tanggal tertentu
-  /// 💾 FIREBASE READ: Query dokumen berdasarkan date
+  // Ambil kehadiran untuk tanggal tertentu
+  // FIREBASE READ: Query dokumen berdasarkan date
   Future<Attendance?> getAttendanceByDate(
     String employeeId,
     DateTime date,
@@ -91,13 +91,13 @@ class AttendanceService {
       }
       return null;
     } catch (e) {
-      print('❌ Error fetching attendance by date: $e');
+      print(' Error fetching attendance by date: $e');
       return null;
     }
   }
 
-  /// 📖 Ambil kehadiran berdasarkan ID
-  /// 💾 FIREBASE READ: Get dokumen spesifik
+  // Ambil kehadiran berdasarkan ID
+  // FIREBASE READ: Get dokumen spesifik
   Future<Attendance?> getAttendanceById(String id) async {
     try {
       final doc = await _firestore.collection(_collectionName).doc(id).get();
@@ -107,13 +107,13 @@ class AttendanceService {
       }
       return null;
     } catch (e) {
-      print('❌ Error fetching attendance: $e');
+      print(' Error fetching attendance: $e');
       return null;
     }
   }
 
-  /// 📤 Upload foto kehadiran ke Firebase Storage
-  /// 💾 FIREBASE STORAGE: Menyimpan file foto
+  // Upload foto kehadiran ke Firebase Storage
+  // FIREBASE STORAGE: Menyimpan file foto
   Future<String> uploadAttendancePhoto(
     String filePath,
     String employeeId,
@@ -132,16 +132,16 @@ class AttendanceService {
       await ref.putFile(file);
 
       final downloadUrl = await ref.getDownloadURL();
-      print('✅ Photo uploaded successfully: $downloadUrl');
+      print(' Photo uploaded successfully: $downloadUrl');
       return downloadUrl;
     } catch (e) {
-      print('❌ Error uploading photo: $e');
+      print(' Error uploading photo: $e');
       rethrow;
     }
   }
 
-  /// ✏️ Update kehadiran
-  /// 💾 FIREBASE UPDATE: Memperbarui dokumen yang ada
+  // Update kehadiran
+  // FIREBASE UPDATE: Memperbarui dokumen yang ada
   Future<void> updateAttendance(String id, Attendance updatedAttendance) async {
     try {
       await _firestore
@@ -149,43 +149,43 @@ class AttendanceService {
           .doc(id)
           .update(updatedAttendance.toMap());
 
-      print('✅ Attendance updated: $id');
+      print(' Attendance updated: $id');
     } catch (e) {
-      print('❌ Error updating attendance: $e');
+      print(' Error updating attendance: $e');
       rethrow;
     }
   }
 
-  /// ✏️ Update check-out time
-  /// 💾 FIREBASE UPDATE: Memperbarui hanya field checkOutTime
+  // Update check-out time
+  // FIREBASE UPDATE: Memperbarui hanya field checkOutTime
   Future<void> updateCheckOutTime(String id, String checkOutTime) async {
     try {
       await _firestore.collection(_collectionName).doc(id).update({
         'checkOutTime': checkOutTime,
       });
 
-      print('✅ Check-out time updated');
+      print(' Check-out time updated');
     } catch (e) {
-      print('❌ Error updating check-out time: $e');
+      print(' Error updating check-out time: $e');
       rethrow;
     }
   }
 
-  /// 🗑️ Hapus kehadiran
-  /// 💾 FIREBASE DELETE: Menghapus dokumen dari Firestore
+  // Hapus kehadiran
+  // FIREBASE DELETE: Menghapus dokumen dari Firestore
   Future<void> deleteAttendance(String id) async {
     try {
       await _firestore.collection(_collectionName).doc(id).delete();
 
-      print('✅ Attendance deleted: $id');
+      print(' Attendance deleted: $id');
     } catch (e) {
-      print('❌ Error deleting attendance: $e');
+      print(' Error deleting attendance: $e');
       rethrow;
     }
   }
 
-  /// 📊 Dapatkan statistik kehadiran
-  /// 💾 FIREBASE READ: Menghitung dokumen dengan status tertentu
+  // Dapatkan statistik kehadiran
+  // FIREBASE READ: Menghitung dokumen dengan status tertentu
   Future<Map<String, int>> getAttendanceStats(
     String employeeId, {
     DateTime? startDate,
@@ -227,13 +227,13 @@ class AttendanceService {
 
       return stats;
     } catch (e) {
-      print('❌ Error getting attendance stats: $e');
+      print(' Error getting attendance stats: $e');
       return {};
     }
   }
 
-  /// 📊 Stream untuk real-time attendance updates
-  /// 💾 FIREBASE STREAM: Listen ke perubahan kehadiran real-time
+  // Stream untuk real-time attendance updates
+  // FIREBASE STREAM: Listen ke perubahan kehadiran real-time
   Stream<List<Attendance>> getUserAttendanceStream(String employeeId) {
     return _firestore
         .collection(_collectionName)
