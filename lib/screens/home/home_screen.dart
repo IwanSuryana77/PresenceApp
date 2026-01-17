@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -59,33 +61,33 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: const [
                         PromoCard(
                           imageAsset: 'assets/images/safety.jpg',
-                          title: 'Keselamatan Kerja',
-                          desc: 'Pikirkan aman, bekerja aman.',
+                          title: 'Utamakan Keselamatan',
+                          desc: 'Selalu patuhi protokol keselamatan kerja di lingkungan kantor.',
                         ),
                         PromoCard(
                           imageAsset: 'assets/images/work.jpg',
-                          title: 'Produktivitas',
-                          desc: 'Bekerja dengan fokus penuh.',
+                          title: 'Kerja Produktif',
+                          desc: 'Tingkatkan produktivitas dengan manajemen waktu yang baik.',
                         ),
                         PromoCard(
                           imageAsset: 'assets/images/fokus.jpg',
-                          title: 'Fokus',
-                          desc: 'Jaga fokus untuk hasil maksimal.',
+                          title: 'Fokus & Semangat',
+                          desc: 'Jaga fokus dan semangat untuk hasil kerja terbaik.',
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(
-                    height: 16,
-                  ), // Jarak bawah antara carousel dan indicator
+                  const SizedBox(height: 12),
                   SmoothPageIndicator(
                     controller: _pageController,
                     count: 3,
-                    effect: WormEffect(
-                      dotHeight: 7,
-                      dotWidth: 7,
+                    effect: ExpandingDotsEffect(
+                      dotHeight: 8,
+                      dotWidth: 8,
                       activeDotColor: AppColors.primary,
-                      dotColor: const Color(0xFFCBD2E1),
+                      dotColor: const Color(0xFFE0E7F3),
+                      expansionFactor: 3,
+                      spacing: 8,
                     ),
                   ),
                   const SizedBox(
@@ -101,6 +103,7 @@ class _HomeScreenState extends State<HomeScreen> {
             sliver: SliverToBoxAdapter(
               child: Surface(
                 padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+                // subtle neumorphic look via gradient + shadow inside Surface
                 child: GridView.count(
                   crossAxisCount: 3,
                   mainAxisSpacing: 14,
@@ -112,11 +115,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       icon: Icons.calendar_today,
                       iconColor: AppColors.primary,
                       label: 'KALENDER',
-                      textColor: Colors.black,
+                      textColor: Colors.black87,
                       labelStyle: const TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                        fontWeight: FontWeight.w700,
                         fontSize: 12,
+                        letterSpacing: 0.6,
                       ),
                       onTap: () {
                         Navigator.push(
@@ -131,11 +135,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       icon: Icons.receipt_long,
                       iconColor: AppColors.primary,
                       label: 'SLIP GAJI',
-                      textColor: Colors.black,
+                      textColor: Colors.black87,
                       labelStyle: const TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                        fontWeight: FontWeight.w700,
                         fontSize: 12,
+                        letterSpacing: 0.6,
                       ),
                       onTap: () {
                         Navigator.push(
@@ -150,11 +155,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       icon: Icons.list_alt,
                       iconColor: AppColors.primary,
                       label: 'DAFTAR ABSEN',
-                      textColor: Colors.black,
+                      textColor: Colors.black87,
                       labelStyle: const TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                        fontWeight: FontWeight.w700,
                         fontSize: 12,
+                        letterSpacing: 0.4,
                       ),
                       onTap: () {
                         Navigator.push(
@@ -169,11 +175,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       icon: Icons.access_time,
                       iconColor: AppColors.primary,
                       label: 'LEMBUR',
-                      textColor: Colors.black,
+                      textColor: Colors.black87,
                       labelStyle: const TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                        fontWeight: FontWeight.w700,
                         fontSize: 12,
+                        letterSpacing: 0.4,
                       ),
                       onTap: () {
                         Navigator.push(
@@ -185,12 +192,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     IconTile(
                       icon: Icons.attach_money,
                       iconColor: AppColors.primary,
-                      label: 'REIMBURSE',
-                      textColor: Colors.black,
+                      label: 'REIMBURSEMENT',
+                      textColor: Colors.black87,
                       labelStyle: const TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                        fontWeight: FontWeight.w700,
                         fontSize: 12,
+                        letterSpacing: 0.2,
                       ),
                       onTap: () {
                         Navigator.push(
@@ -205,11 +213,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       icon: Icons.camera_alt,
                       iconColor: AppColors.primary,
                       label: 'ABSEN',
-                      textColor: Colors.black,
+                      textColor: Colors.black87,
                       labelStyle: const TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                        fontWeight: FontWeight.w700,
                         fontSize: 12,
+                        letterSpacing: 0.6,
                       ),
                       onTap: () {
                         final userId =
@@ -244,20 +253,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                 },
                 titleStyle: const TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w800,
                   fontSize: 16,
                 ),
                 actionTextStyle: const TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w700,
                   fontSize: 14,
                 ),
                 child: const EmptyState(
                   title: 'Belum ada pengumuman',
                   subtitle: 'Pengumuman akan tampil disini',
                   titleStyle: TextStyle(
-                    color: Colors.black,
+                    color: Colors.black87,
                     fontWeight: FontWeight.w600,
                   ),
                   subtitleStyle: TextStyle(color: Colors.black54),
@@ -279,20 +288,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                 },
                 titleStyle: const TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w800,
                   fontSize: 16,
                 ),
                 actionTextStyle: const TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w700,
                   fontSize: 14,
                 ),
                 child: const EmptyState(
                   title: 'Tidak ada tugas',
                   subtitle: 'Anda tidak memiliki tugas yang tertunda',
                   titleStyle: TextStyle(
-                    color: Colors.black,
+                    color: Colors.black87,
                     fontWeight: FontWeight.w600,
                   ),
                   subtitleStyle: TextStyle(color: Colors.black54),
@@ -340,9 +349,22 @@ class _GreetingHeaderState extends State<GreetingHeader> {
 
   String getInitials(String name) {
     final parts = name.trim().split(' ');
-    if (parts.isEmpty) return '?';
+    if (parts.isEmpty) return 'U';
     if (parts.length == 1) return parts[0][0].toUpperCase();
     return (parts[0][0] + parts.last[0]).toUpperCase();
+  }
+
+  String getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) {
+      return 'Selamat Pagi';
+    } else if (hour < 15) {
+      return 'Selamat Siang';
+    } else if (hour < 19) {
+      return 'Selamat Sore';
+    } else {
+      return 'Selamat Malam';
+    }
   }
 
   @override
@@ -357,104 +379,87 @@ class _GreetingHeaderState extends State<GreetingHeader> {
         final photoUrl = snapshot.hasData
             ? snapshot.data!['photoUrl'] as String
             : '';
+        final userEmail = snapshot.hasData
+            ? snapshot.data!['email'] as String
+            : 'Username';
 
         return Container(
           width: double.infinity,
-          color: AppColors.extraLight,
-          padding: const EdgeInsets.only(
-            top: 18,
-            left: 0,
-            right: 0,
-            bottom: 12,
-          ),
-          child: Row(
-            children: [
-              const SizedBox(width: 16),
-              // Avatar
-              photoUrl.isNotEmpty
-                  ? CircleAvatar(
-                      radius: 26,
-                      backgroundColor: Colors.white,
-                      backgroundImage: NetworkImage(photoUrl),
-                    )
-                  : CircleAvatar(
-                      radius: 26,
-                      backgroundColor: Colors.white,
-                      child: Text(
-                        getInitials(userName),
-                        style: TextStyle(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20,
-                        ),
-                      ),
-                    ),
-              const SizedBox(width: 14),
-              // Name & Role
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      userName,
-                      style: const TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 17,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      userRole,
-                      style: TextStyle(
-                        color: Colors.grey[700],
-                        fontSize: 13,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                  ],
-                ),
+          color: AppColors
+              .extraLight, // soft blue bg (update di app_theme.dart kalau mau biru lain)
+          padding: const EdgeInsets.only(top: 16, left: 0, right: 0, bottom: 8),
+          child: Center(
+            child: Container(
+              height: 58,
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: AppColors.primary, // utama biru
+                borderRadius: BorderRadius.circular(16),
               ),
-              // Notification icon with badge
-              Stack(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  SizedBox(width: 10),
+                  // Avatar - Kiri
+                  photoUrl.isNotEmpty
+                      ? CircleAvatar(
+                          radius: 20,
+                          backgroundColor: Colors.white,
+                          backgroundImage: NetworkImage(photoUrl),
+                        )
+                      : CircleAvatar(
+                          radius: 20,
+                          backgroundColor: Colors.white,
+                          child: Text(
+                            getInitials(userName),
+                            style: TextStyle(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                  SizedBox(width: 14),
+                  // Name & Label (email) - Tengah
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          userName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          userEmail,
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.85),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Bell icon (kanan)
                   IconButton(
                     icon: const Icon(
                       Icons.notifications_none_rounded,
-                      color: Colors.black87,
-                      size: 26,
+                      color: Colors.white,
+                      size: 22,
                     ),
-                    onPressed: () {},
+                    onPressed: () {
+                      // TODO: Ke halaman notifikasi
+                    },
                   ),
-                  Positioned(
-                    right: 10,
-                    top: 12,
-                    child: Container(
-                      padding: const EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.white, width: 1.5),
-                      ),
-                      constraints: const BoxConstraints(
-                        minWidth: 16,
-                        minHeight: 16,
-                      ),
-                      child: const Center(
-                        child: Text(
-                          '3',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+                  SizedBox(width: 8),
                 ],
               ),
               const SizedBox(width: 16),

@@ -44,7 +44,6 @@ class _InfoTambahanScreenState extends State<InfoTambahanScreen>
   List<double> _skillAnimations = List.generate(8, (index) => 0.0);
 
   int _selectedTab = 0;
-  final ScrollController _tabScrollController = ScrollController();
 
   @override
   void initState() {
@@ -110,7 +109,6 @@ class _InfoTambahanScreenState extends State<InfoTambahanScreen>
     _pulseController.dispose();
     _glowController.dispose();
     _slideController.dispose();
-    _tabScrollController.dispose();
     super.dispose();
   }
 
@@ -123,233 +121,263 @@ class _InfoTambahanScreenState extends State<InfoTambahanScreen>
 
     return Scaffold(
       backgroundColor: backgroundColor,
-      body: NestedScrollView(
-        headerSliverBuilder: (context, innerBoxIsScrolled) {
-          return [
-            SliverAppBar(
-              expandedHeight: expandedHeight,
-              collapsedHeight: kToolbarHeight + 20,
-              floating: true,
-              pinned: true,
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              flexibleSpace: LayoutBuilder(
-                builder: (context, constraints) {
-                  final double currentHeight = constraints.biggest.height;
-                  final double minHeight = kToolbarHeight;
-                  final double maxHeight = expandedHeight;
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: expandedHeight,
+            collapsedHeight: kToolbarHeight + 20,
+            floating: true,
+            pinned: true,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            flexibleSpace: LayoutBuilder(
+              builder: (context, constraints) {
+                final double currentHeight = constraints.biggest.height;
+                final double minHeight = kToolbarHeight;
+                final double maxHeight = expandedHeight;
 
-                  double percentage = 0.0;
-                  if (maxHeight > minHeight) {
-                    percentage =
-                        ((currentHeight - minHeight) / (maxHeight - minHeight))
-                            .clamp(0.0, 1.0);
-                  }
+                double percentage = 0.0;
+                if (maxHeight > minHeight) {
+                  percentage =
+                      ((currentHeight - minHeight) / (maxHeight - minHeight))
+                          .clamp(0.0, 1.0);
+                }
 
-                  final double opacity = percentage;
+                final double opacity = percentage;
 
-                  return Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          primaryColor.withOpacity(opacity * 0.9),
-                          primaryColor.withOpacity(opacity * 0.7),
-                          Colors.transparent,
-                        ],
+                return Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        primaryColor.withOpacity(opacity * 0.9),
+                        primaryColor.withOpacity(opacity * 0.7),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                  child: FlexibleSpaceBar(
+                    titlePadding: EdgeInsets.only(
+                      left: isMobile ? 60.0 : 80.0,
+                      bottom: 16.0,
+                    ),
+                    expandedTitleScale: 1.2,
+                    title: AnimatedOpacity(
+                      opacity: (1.0 - percentage).clamp(0.0, 1.0),
+                      duration: Duration.zero,
+                      child: Text(
+                        'Info Tambahan',
+                        style: TextStyle(
+                          fontSize: isMobile ? 20 : 22,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          letterSpacing: 0.8,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withOpacity(0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                    child: FlexibleSpaceBar(
-                      titlePadding: EdgeInsets.only(
-                        left: isMobile ? 60.0 : 80.0,
-                        bottom: 16.0,
-                      ),
-                      expandedTitleScale: 1.2,
-                      title: AnimatedOpacity(
-                        opacity: (1.0 - percentage).clamp(0.0, 1.0),
-                        duration: Duration.zero,
-                        child: Text(
-                          'Info Tambahan',
-                          style: TextStyle(
-                            fontSize: isMobile ? 20 : 22,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
-                            letterSpacing: 0.8,
-                            shadows: [
-                              Shadow(
-                                color: Colors.black.withOpacity(0.3),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
+                    background: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            primaryColor.withOpacity(0.95),
+                            secondaryColor.withOpacity(0.9),
+                          ],
                         ),
                       ),
-                      background: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              primaryColor.withOpacity(0.95),
-                              secondaryColor.withOpacity(0.9),
-                            ],
-                          ),
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          left: horizontalPadding,
+                          right: horizontalPadding,
+                          top: kToolbarHeight + 40,
+                          bottom: 20,
                         ),
-                        child: Padding(
-                          padding: EdgeInsets.only(
-                            left: horizontalPadding,
-                            right: horizontalPadding,
-                            top: kToolbarHeight + 40,
-                            bottom: 20,
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              FadeTransition(
-                                opacity: _animation,
-                                child: SlideTransition(
-                                  position:
-                                      Tween<Offset>(
-                                        begin: const Offset(-0.5, 0),
-                                        end: Offset.zero,
-                                      ).animate(
-                                        CurvedAnimation(
-                                          parent: _animationController,
-                                          curve: const Interval(
-                                            0.0,
-                                            0.5,
-                                            curve: Curves.easeOutCubic,
-                                          ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            FadeTransition(
+                              opacity: _animation,
+                              child: SlideTransition(
+                                position:
+                                    Tween<Offset>(
+                                      begin: const Offset(-0.5, 0),
+                                      end: Offset.zero,
+                                    ).animate(
+                                      CurvedAnimation(
+                                        parent: _animationController,
+                                        curve: const Interval(
+                                          0.0,
+                                          0.5,
+                                          curve: Curves.easeOutCubic,
                                         ),
                                       ),
-                                  child: Row(
-                                    children: [
-                                      ScaleTransition(
-                                        scale: _glowAnimation,
-                                        child: Container(
-                                          width: isMobile ? 60 : 70,
-                                          height: isMobile ? 60 : 70,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            gradient: const LinearGradient(
-                                              colors: [
-                                                Colors.white,
-                                                Color(0xFFE2E8F0),
-                                              ],
-                                              begin: Alignment.topLeft,
-                                              end: Alignment.bottomRight,
-                                            ),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.white.withOpacity(
-                                                  0.4,
-                                                ),
-                                                blurRadius: 20,
-                                                spreadRadius: 2,
-                                                offset: const Offset(0, 4),
-                                              ),
+                                    ),
+                                child: Row(
+                                  children: [
+                                    ScaleTransition(
+                                      scale: _glowAnimation,
+                                      child: Container(
+                                        width: isMobile ? 60 : 70,
+                                        height: isMobile ? 60 : 70,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          gradient: const LinearGradient(
+                                            colors: [
+                                              Colors.white,
+                                              Color(0xFFE2E8F0),
                                             ],
-                                            border: Border.all(
-                                              color: accentColor.withOpacity(
-                                                0.3,
-                                              ),
-                                              width: 2,
-                                            ),
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
                                           ),
-                                          child: const Icon(
-                                            Icons.insights_rounded,
-                                            color: Color(0xFF0D1B2A),
-                                            size: 30,
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 16),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Profil Lengkap',
-                                              style: TextStyle(
-                                                fontSize: isMobile ? 14 : 16,
-                                                color: Colors.white.withOpacity(
-                                                  0.9,
-                                                ),
-                                                fontWeight: FontWeight.w600,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.white.withOpacity(
+                                                0.4,
                                               ),
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              'Informasi Tambahan',
-                                              style: TextStyle(
-                                                fontSize: isMobile ? 24 : 28,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.white,
-                                                letterSpacing: 0.5,
-                                              ),
+                                              blurRadius: 20,
+                                              spreadRadius: 2,
+                                              offset: const Offset(0, 4),
                                             ),
                                           ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              FadeTransition(
-                                opacity: CurvedAnimation(
-                                  parent: _animationController,
-                                  curve: const Interval(0.3, 0.8),
-                                ),
-                                child: SlideTransition(
-                                  position:
-                                      Tween<Offset>(
-                                        begin: const Offset(0, 0.5),
-                                        end: Offset.zero,
-                                      ).animate(
-                                        CurvedAnimation(
-                                          parent: _animationController,
-                                          curve: const Interval(
-                                            0.3,
-                                            0.8,
-                                            curve: Curves.easeOutCubic,
+                                          border: Border.all(
+                                            color: accentColor.withOpacity(0.3),
+                                            width: 2,
                                           ),
                                         ),
+                                        child: const Icon(
+                                          Icons.insights_rounded,
+                                          color: Color(0xFF0D1B2A),
+                                          size: 30,
+                                        ),
                                       ),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceAround,
-                                    children: [
-                                      _buildStatItem('Skill', '8', isMobile),
-                                      _buildStatItem('Bahasa', '3', isMobile),
-                                      _buildStatItem(
-                                        'Sertifikasi',
-                                        '5',
-                                        isMobile,
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Profil Lengkap',
+                                            style: TextStyle(
+                                              fontSize: isMobile ? 14 : 16,
+                                              color: Colors.white.withOpacity(
+                                                0.9,
+                                              ),
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            'Informasi Tambahan',
+                                            style: TextStyle(
+                                              fontSize: isMobile ? 24 : 28,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                              letterSpacing: 0.5,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      _buildStatItem('Hobi', '5', isMobile),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                            const SizedBox(height: 20),
+                            FadeTransition(
+                              opacity: CurvedAnimation(
+                                parent: _animationController,
+                                curve: const Interval(0.3, 0.8),
+                              ),
+                              child: SlideTransition(
+                                position:
+                                    Tween<Offset>(
+                                      begin: const Offset(0, 0.5),
+                                      end: Offset.zero,
+                                    ).animate(
+                                      CurvedAnimation(
+                                        parent: _animationController,
+                                        curve: const Interval(
+                                          0.3,
+                                          0.8,
+                                          curve: Curves.easeOutCubic,
+                                        ),
+                                      ),
+                                    ),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  children: [
+                                    _buildStatItem('Skill', '8', isMobile),
+                                    _buildStatItem('Bahasa', '3', isMobile),
+                                    _buildStatItem(
+                                      'Sertifikasi',
+                                      '5',
+                                      isMobile,
+                                    ),
+                                    _buildStatItem('Hobi', '5', isMobile),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                  );
-                },
+                  ),
+                );
+              },
+            ),
+            leading: Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: Material(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(12),
+                child: InkWell(
+                  onTap: () => Navigator.pop(context),
+                  borderRadius: BorderRadius.circular(12),
+                  splashColor: Colors.white.withOpacity(0.2),
+                  highlightColor: Colors.white.withOpacity(0.1),
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withOpacity(0.1),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.2),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.arrow_back_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                ),
               ),
-              leading: Padding(
-                padding: const EdgeInsets.only(left: 8.0),
+            ),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 8.0),
                 child: Material(
                   color: Colors.transparent,
                   borderRadius: BorderRadius.circular(12),
                   child: InkWell(
-                    onTap: () => Navigator.pop(context),
+                    onTap: () {
+                      _showEditDialog(context, isMobile);
+                    },
                     borderRadius: BorderRadius.circular(12),
                     splashColor: Colors.white.withOpacity(0.2),
                     highlightColor: Colors.white.withOpacity(0.1),
@@ -365,7 +393,7 @@ class _InfoTambahanScreenState extends State<InfoTambahanScreen>
                         ),
                       ),
                       child: const Icon(
-                        Icons.arrow_back_rounded,
+                        Icons.edit_rounded,
                         color: Colors.white,
                         size: 20,
                       ),
@@ -373,67 +401,44 @@ class _InfoTambahanScreenState extends State<InfoTambahanScreen>
                   ),
                 ),
               ),
-              actions: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 8.0),
-                  child: Material(
-                    color: Colors.transparent,
-                    borderRadius: BorderRadius.circular(12),
-                    child: InkWell(
-                      onTap: () {
-                        _showEditDialog(context, isMobile);
-                      },
-                      borderRadius: BorderRadius.circular(12),
-                      splashColor: Colors.white.withOpacity(0.2),
-                      highlightColor: Colors.white.withOpacity(0.1),
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white.withOpacity(0.1),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.2),
-                            width: 1.5,
-                          ),
-                        ),
-                        child: const Icon(
-                          Icons.edit_rounded,
-                          color: Colors.white,
-                          size: 20,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ];
-        },
-        body: SingleChildScrollView(
-          child: Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: horizontalPadding,
-              vertical: 8,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Tab Navigation
-                _buildTabNavigation(isMobile),
-                const SizedBox(height: 12),
-
-                // Content based on selected tab
-                _buildSelectedTabContent(isMobile),
-              ],
+            ],
+          ),
+          // Tab Navigation
+          SliverToBoxAdapter(
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: horizontalPadding,
+                vertical: 12,
+              ),
+              child: _buildTabNavigation(isMobile),
             ),
           ),
-        ),
+          // Main Content (Flexible space based on tab)
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: const ClampingScrollPhysics(),
+                      child: _buildSelectedTabContent(isMobile),
+                    ),
+                  ),
+                  SizedBox(height: isMobile ? 80 : 60), // Space for FAB
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
       floatingActionButton: _buildFloatingActionButton(context, isMobile),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
+
+  // ... (semua fungsi lainnya TETAP SAMA dari sini ke bawah) ...
 
   Widget _buildSelectedTabContent(bool isMobile) {
     switch (_selectedTab) {
@@ -582,84 +587,93 @@ class _InfoTambahanScreenState extends State<InfoTambahanScreen>
   Widget _buildSkillsSection(bool isMobile) {
     return SlideTransition(
       position: _slideAnimation,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        decoration: BoxDecoration(
-          color: cardColor,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: primaryColor.withOpacity(0.05),
-              blurRadius: 20,
-              spreadRadius: 1,
-              offset: const Offset(0, 4),
+      child: Column(
+        children: [
+          Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(
+              color: cardColor,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: primaryColor.withOpacity(0.05),
+                  blurRadius: 20,
+                  spreadRadius: 1,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+              border: Border.all(color: const Color(0xFFF1F5F9), width: 1),
             ),
-          ],
-          border: Border.all(color: const Color(0xFFF1F5F9), width: 1),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Row(
-                children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        colors: [
-                          infoColor.withOpacity(0.15),
-                          infoColor.withOpacity(0.05),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            colors: [
+                              infoColor.withOpacity(0.15),
+                              infoColor.withOpacity(0.05),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.code_rounded,
+                          color: infoColor,
+                          size: 22,
+                        ),
                       ),
-                    ),
-                    child: Icon(Icons.code_rounded, color: infoColor, size: 22),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Keahlian Teknis',
-                          style: TextStyle(
-                            fontSize: isMobile ? 16 : 18,
-                            fontWeight: FontWeight.w800,
-                            color: primaryColor,
-                          ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Keahlian Teknis',
+                              style: TextStyle(
+                                fontSize: isMobile ? 16 : 18,
+                                fontWeight: FontWeight.w800,
+                                color: primaryColor,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '${_skills.length} keahlian yang dikuasai',
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Color(0xFF64748B),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '${_skills.length} keahlian yang dikuasai',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: Color(0xFF64748B),
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                ...List.generate(
+                  _skills.length,
+                  (index) => _buildSkillItem(
+                    _skills[index],
+                    _skillLevels[index],
+                    _skillAnimations[index],
+                    isMobile,
+                    index,
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
             ),
-            ...List.generate(
-              _skills.length,
-              (index) => _buildSkillItem(
-                _skills[index],
-                _skillLevels[index],
-                _skillAnimations[index],
-                isMobile,
-                index,
-              ),
-            ),
-            const SizedBox(height: 12),
-          ],
-        ),
+          ),
+          SizedBox(height: 20), // Extra spacing at bottom
+        ],
       ),
     );
   }
@@ -779,88 +793,93 @@ class _InfoTambahanScreenState extends State<InfoTambahanScreen>
 
     return SlideTransition(
       position: _slideAnimation,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        decoration: BoxDecoration(
-          color: cardColor,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: primaryColor.withOpacity(0.05),
-              blurRadius: 20,
-              spreadRadius: 1,
-              offset: const Offset(0, 4),
+      child: Column(
+        children: [
+          Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(
+              color: cardColor,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: primaryColor.withOpacity(0.05),
+                  blurRadius: 20,
+                  spreadRadius: 1,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+              border: Border.all(color: const Color(0xFFF1F5F9), width: 1),
             ),
-          ],
-          border: Border.all(color: const Color(0xFFF1F5F9), width: 1),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Row(
-                children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        colors: [
-                          accentColor.withOpacity(0.15),
-                          accentColor.withOpacity(0.05),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            colors: [
+                              accentColor.withOpacity(0.15),
+                              accentColor.withOpacity(0.05),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.language_rounded,
+                          color: accentColor,
+                          size: 22,
+                        ),
                       ),
-                    ),
-                    child: Icon(
-                      Icons.language_rounded,
-                      color: accentColor,
-                      size: 22,
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Kemampuan Bahasa',
-                          style: TextStyle(
-                            fontSize: isMobile ? 16 : 18,
-                            fontWeight: FontWeight.w800,
-                            color: primaryColor,
-                          ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Kemampuan Bahasa',
+                              style: TextStyle(
+                                fontSize: isMobile ? 16 : 18,
+                                fontWeight: FontWeight.w800,
+                                color: primaryColor,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '${languages.length} bahasa yang dikuasai',
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Color(0xFF64748B),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '${languages.length} bahasa yang dikuasai',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: Color(0xFF64748B),
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                ...List.generate(
+                  languages.length,
+                  (index) => _buildLanguageItem(
+                    languages[index]['name'] as String,
+                    languages[index]['level'] as String,
+                    languages[index]['icon'] as IconData,
+                    isMobile,
+                    index,
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
             ),
-            ...List.generate(
-              languages.length,
-              (index) => _buildLanguageItem(
-                languages[index]['name'] as String,
-                languages[index]['level'] as String,
-                languages[index]['icon'] as IconData,
-                isMobile,
-                index,
-              ),
-            ),
-            const SizedBox(height: 12),
-          ],
-        ),
+          ),
+          SizedBox(height: 20), // Extra spacing at bottom
+        ],
       ),
     );
   }
@@ -969,93 +988,98 @@ class _InfoTambahanScreenState extends State<InfoTambahanScreen>
 
     return SlideTransition(
       position: _slideAnimation,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        decoration: BoxDecoration(
-          color: cardColor,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: primaryColor.withOpacity(0.05),
-              blurRadius: 20,
-              spreadRadius: 1,
-              offset: const Offset(0, 4),
+      child: Column(
+        children: [
+          Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(
+              color: cardColor,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: primaryColor.withOpacity(0.05),
+                  blurRadius: 20,
+                  spreadRadius: 1,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+              border: Border.all(color: const Color(0xFFF1F5F9), width: 1),
             ),
-          ],
-          border: Border.all(color: const Color(0xFFF1F5F9), width: 1),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Row(
-                children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        colors: [
-                          successColor.withOpacity(0.15),
-                          successColor.withOpacity(0.05),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            colors: [
+                              successColor.withOpacity(0.15),
+                              successColor.withOpacity(0.05),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.sports_esports_rounded,
+                          color: successColor,
+                          size: 22,
+                        ),
                       ),
-                    ),
-                    child: Icon(
-                      Icons.sports_esports_rounded,
-                      color: successColor,
-                      size: 22,
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Hobi & Minat',
-                          style: TextStyle(
-                            fontSize: isMobile ? 16 : 18,
-                            fontWeight: FontWeight.w800,
-                            color: primaryColor,
-                          ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Hobi & Minat',
+                              style: TextStyle(
+                                fontSize: isMobile ? 16 : 18,
+                                fontWeight: FontWeight.w800,
+                                color: primaryColor,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '${hobbies.length} hobi yang diminati',
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Color(0xFF64748B),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '${hobbies.length} hobi yang diminati',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: Color(0xFF64748B),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: List.generate(
-                  hobbies.length,
-                  (index) => _buildHobbyChip(
-                    hobbies[index]['name'] as String,
-                    hobbies[index]['icon'] as IconData,
-                    isMobile,
+                      ),
+                    ],
                   ),
                 ),
-              ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: List.generate(
+                      hobbies.length,
+                      (index) => _buildHobbyChip(
+                        hobbies[index]['name'] as String,
+                        hobbies[index]['icon'] as IconData,
+                        isMobile,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
             ),
-            const SizedBox(height: 20),
-          ],
-        ),
+          ),
+          SizedBox(height: 20), // Extra spacing at bottom
+        ],
       ),
     );
   }
@@ -1109,87 +1133,92 @@ class _InfoTambahanScreenState extends State<InfoTambahanScreen>
 
     return SlideTransition(
       position: _slideAnimation,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        decoration: BoxDecoration(
-          color: cardColor,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: primaryColor.withOpacity(0.05),
-              blurRadius: 20,
-              spreadRadius: 1,
-              offset: const Offset(0, 4),
+      child: Column(
+        children: [
+          Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(
+              color: cardColor,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: primaryColor.withOpacity(0.05),
+                  blurRadius: 20,
+                  spreadRadius: 1,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+              border: Border.all(color: const Color(0xFFF1F5F9), width: 1),
             ),
-          ],
-          border: Border.all(color: const Color(0xFFF1F5F9), width: 1),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Row(
-                children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        colors: [
-                          warningColor.withOpacity(0.15),
-                          warningColor.withOpacity(0.05),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            colors: [
+                              warningColor.withOpacity(0.15),
+                              warningColor.withOpacity(0.05),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.verified_rounded,
+                          color: warningColor,
+                          size: 22,
+                        ),
                       ),
-                    ),
-                    child: Icon(
-                      Icons.verified_rounded,
-                      color: warningColor,
-                      size: 22,
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Sertifikasi & Pelatihan',
-                          style: TextStyle(
-                            fontSize: isMobile ? 16 : 18,
-                            fontWeight: FontWeight.w800,
-                            color: primaryColor,
-                          ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Sertifikasi & Pelatihan',
+                              style: TextStyle(
+                                fontSize: isMobile ? 16 : 18,
+                                fontWeight: FontWeight.w800,
+                                color: primaryColor,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '${certifications.length} sertifikasi diperoleh',
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Color(0xFF64748B),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '${certifications.length} sertifikasi diperoleh',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: Color(0xFF64748B),
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                ...List.generate(
+                  certifications.length,
+                  (index) => _buildCertificationItem(
+                    certifications[index]['name']!,
+                    certifications[index]['year']!,
+                    isMobile,
+                    index,
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
             ),
-            ...List.generate(
-              certifications.length,
-              (index) => _buildCertificationItem(
-                certifications[index]['name']!,
-                certifications[index]['year']!,
-                isMobile,
-                index,
-              ),
-            ),
-            const SizedBox(height: 12),
-          ],
-        ),
+          ),
+          SizedBox(height: 20), // Extra spacing at bottom
+        ],
       ),
     );
   }
