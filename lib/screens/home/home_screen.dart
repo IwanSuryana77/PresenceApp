@@ -53,13 +53,25 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   const SizedBox(height: 3), // Jarak atas sebelum carousel
                   SizedBox(
-                    height: 150,
+                    height: 200,
                     child: PageView(
                       controller: _pageController,
                       children: const [
-                        PromoCard(imageAsset: 'assets/images/safety.jpg'),
-                        PromoCard(imageAsset: 'assets/images/work.jpg'),
-                        PromoCard(imageAsset: 'assets/images/fokus.jpg'),
+                        PromoCard(
+                          imageAsset: 'assets/images/safety.jpg',
+                          title: 'Keselamatan Kerja',
+                          desc: 'Pikirkan aman, bekerja aman.',
+                        ),
+                        PromoCard(
+                          imageAsset: 'assets/images/work.jpg',
+                          title: 'Produktivitas',
+                          desc: 'Bekerja dengan fokus penuh.',
+                        ),
+                        PromoCard(
+                          imageAsset: 'assets/images/fokus.jpg',
+                          title: 'Fokus',
+                          desc: 'Jaga fokus untuk hasil maksimal.',
+                        ),
                       ],
                     ),
                   ),
@@ -340,94 +352,113 @@ class _GreetingHeaderState extends State<GreetingHeader> {
       builder: (context, snapshot) {
         final userName = snapshot.hasData
             ? snapshot.data!['name'] as String
-            : 'User';
-        final userEmail = snapshot.hasData
-            ? snapshot.data!['email'] as String
-            : 'Username';
+            : 'Jane Doe';
+        final userRole = 'Marketing Manager'; // static role for demo
         final photoUrl = snapshot.hasData
             ? snapshot.data!['photoUrl'] as String
             : '';
 
         return Container(
           width: double.infinity,
-          color: AppColors
-              .extraLight, // soft blue bg (update di app_theme.dart kalau mau biru lain)
-          padding: const EdgeInsets.only(top: 16, left: 0, right: 0, bottom: 8),
-          child: Center(
-            child: Container(
-              height: 58,
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                color: AppColors.primary, // utama biru
-                borderRadius: BorderRadius.circular(16),
+          color: AppColors.extraLight,
+          padding: const EdgeInsets.only(
+            top: 18,
+            left: 0,
+            right: 0,
+            bottom: 12,
+          ),
+          child: Row(
+            children: [
+              const SizedBox(width: 16),
+              // Avatar
+              photoUrl.isNotEmpty
+                  ? CircleAvatar(
+                      radius: 26,
+                      backgroundColor: Colors.white,
+                      backgroundImage: NetworkImage(photoUrl),
+                    )
+                  : CircleAvatar(
+                      radius: 26,
+                      backgroundColor: Colors.white,
+                      child: Text(
+                        getInitials(userName),
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                        ),
+                      ),
+                    ),
+              const SizedBox(width: 14),
+              // Name & Role
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      userName,
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 17,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      userRole,
+                      style: TextStyle(
+                        color: Colors.grey[700],
+                        fontSize: 13,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
+              // Notification icon with badge
+              Stack(
                 children: [
-                  SizedBox(width: 10),
-                  // Avatar - Kiri
-                  photoUrl.isNotEmpty
-                      ? CircleAvatar(
-                          radius: 20,
-                          backgroundColor: Colors.white,
-                          backgroundImage: NetworkImage(photoUrl),
-                        )
-                      : CircleAvatar(
-                          radius: 20,
-                          backgroundColor: Colors.white,
-                          child: Text(
-                            getInitials(userName),
-                            style: TextStyle(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-                  SizedBox(width: 14),
-                  // Name & Label (email) - Tengah
-                  Expanded(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          userName,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        SizedBox(height: 2),
-                        Text(
-                          userEmail,
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.85),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Bell icon (kanan)
                   IconButton(
-                    icon: Icon(
+                    icon: const Icon(
                       Icons.notifications_none_rounded,
-                      color: Colors.white,
-                      size: 22,
+                      color: Colors.black87,
+                      size: 26,
                     ),
-                    onPressed: () {
-                      // TODO: Ke halaman notifikasi
-                    },
+                    onPressed: () {},
                   ),
-                  SizedBox(width: 8),
+                  Positioned(
+                    right: 10,
+                    top: 12,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.white, width: 1.5),
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 16,
+                        minHeight: 16,
+                      ),
+                      child: const Center(
+                        child: Text(
+                          '3',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
-            ),
+              const SizedBox(width: 16),
+            ],
           ),
         );
       },
