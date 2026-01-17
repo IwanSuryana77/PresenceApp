@@ -110,14 +110,7 @@ class _BerikanFeedbackPageState extends State<BerikanFeedbackPage>
                     Positioned.fill(
                       child: Opacity(
                         opacity: 0.08,
-                        child: Container(
-                          decoration: const BoxDecoration(
-                            image: DecorationImage(
-                              image: AssetImage('assets/images/pattern.png'),
-                              repeat: ImageRepeat.repeat,
-                            ),
-                          ),
-                        ),
+                        // ...existing code...
                       ),
                     ),
                     // Content
