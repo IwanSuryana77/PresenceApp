@@ -91,6 +91,7 @@ flutter:
     - assets/images/work.jpg
     - assets/images/fokus.jpg
     - assets/images/profil.jpg
+    - assets/images/foto_bitmap.bmp
 
   # To add assets to your application, add an assets section, like this:
   # assets:
