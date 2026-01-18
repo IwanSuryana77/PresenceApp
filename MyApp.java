@@ -4,7 +4,7 @@ public class MyApp extends Application {
         super.onCreate();
 
         Map<String, Object> config = new HashMap<>();
-        config.put("cloud_name", "facesign123"); // ganti dengan punyamu
+        config.put("dv8zwl76d", "facesign_unsigned");
 
         MediaManager.init(this, config);
     }
