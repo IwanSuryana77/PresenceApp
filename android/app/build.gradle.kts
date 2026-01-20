@@ -2,13 +2,11 @@ plugins {
     id("com.android.application")
     id("kotlin-android")
     id("dev.flutter.flutter-gradle-plugin")
-    id("com.google.gms.google-services")
+    id("com.google.gms.google-services")  // <-- YANG BENAR UNTUK KTS!
 }
 
 android {
-    // ⚠️ HARUS SAMA DENGAN FIREBASE
-    namespace = "com.example.presenceapp"
-
+    namespace = "com.example.peresenceapp"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -18,14 +16,11 @@ android {
     }
 
     kotlinOptions {
-    
-        jvmTarget = "11"
+        jvmTarget = JavaVersion.VERSION_11.toString()
     }
 
     defaultConfig {
-        // ⚠️ HARUS SAMA DENGAN FIREBASE
-        applicationId = "com.example.presenceapp"
-
+        applicationId = "com.example.peresenceapp"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
@@ -34,6 +29,8 @@ android {
 
     buildTypes {
         release {
+            // TODO: Add your own signing config for the release build.
+            // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
         }
     }
@@ -44,14 +41,15 @@ flutter {
 }
 
 dependencies {
-    // Firebase BOM
+    // Import the Firebase BoM (Bill of Materials)
     implementation(platform("com.google.firebase:firebase-bom:34.7.0"))
 
-    // 🔥 FIREBASE YANG KAMU PAKAI
-    implementation("com.google.firebase:firebase-firestore")
-    implementation("com.google.firebase:firebase-auth")
-    implementation("com.google.firebase:firebase-analytics")
-
-    // ☁️ CLOUDINARY
+    // Tambahkan produk Firebase sesuai kebutuhan, contoh:
+    // implementation("com.google.firebase:firebase-analytics")
+    // implementation("com.google.firebase:firebase-auth")
+    // implementation("com.google.firebase:firebase-firestore")
+    // import clouddinary
     implementation("com.cloudinary:cloudinary-android:2.3.1")
+
+    // ...dst.
 }

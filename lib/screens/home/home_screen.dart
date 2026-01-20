@@ -342,11 +342,21 @@ class _GreetingHeaderState extends State<GreetingHeader> {
   }
 
   String getInitials(String name) {
-    final parts = name.trim().split(' ');
-    if (parts.isEmpty) return 'U';
-    if (parts.length == 1) return parts[0][0].toUpperCase();
-    return (parts[0][0] + parts.last[0]).toUpperCase();
+  final cleanName = name.trim();
+
+  if (cleanName.isEmpty) return 'U';
+
+  final parts = cleanName.split(' ').where((p) => p.isNotEmpty).toList();
+
+  if (parts.isEmpty) return 'U';
+
+  if (parts.length == 1) {
+    return parts[0][0].toUpperCase();
   }
+
+  return (parts[0][0] + parts.last[0]).toUpperCase();
+}
+
 
   @override
   Widget build(BuildContext context) {
