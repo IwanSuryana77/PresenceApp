@@ -12,6 +12,7 @@ import 'theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
 
   if (Firebase.apps.isEmpty) {
     await Firebase.initializeApp(
