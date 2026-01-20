@@ -10,7 +10,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 const primaryPurple = Color(0xFF242484);
-const greyBg = Color(0xFFEFEFF2);
 
 class ClockInPage extends StatefulWidget {
   final String userId;
@@ -33,7 +32,6 @@ class _ClockInPageState extends State<ClockInPage> {
   XFile? fotoWajah;
   final TextEditingController _catatanCtrl = TextEditingController();
   bool _loading = false;
-  bool _loadingLokasi = true;
   DateTime now = DateTime.now();
 
   @override
@@ -44,32 +42,20 @@ class _ClockInPageState extends State<ClockInPage> {
 
   // ================== LOKASI ==================
   Future<void> _ambilLokasi() async {
-    try {
-      final pos = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
-      final placemarks =
-          await placemarkFromCoordinates(pos.latitude, pos.longitude);
+    final pos = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
 
-      String alamat = 'Lokasi tidak ditemukan';
-      if (placemarks.isNotEmpty) {
-        final p = placemarks.first;
-        alamat =
-            '${p.street}, ${p.locality}, ${p.administrativeArea}, ${p.country}';
-      }
+    final placemarks =
+        await placemarkFromCoordinates(pos.latitude, pos.longitude);
 
-      setState(() {
-        latitude = pos.latitude;
-        longitude = pos.longitude;
-        namaLokasi = alamat;
-        _loadingLokasi = false;
-      });
-    } catch (e) {
-      setState(() {
-        namaLokasi = 'Gagal mengambil lokasi';
-        _loadingLokasi = false;
-      });
-    }
+    setState(() {
+      latitude = pos.latitude;
+      longitude = pos.longitude;
+      namaLokasi = placemarks.isNotEmpty
+          ? '${placemarks.first.street}, ${placemarks.first.locality}'
+          : 'Lokasi tidak diketahui';
+    });
   }
 
   // ================== AMBIL FOTO ==================
@@ -122,16 +108,7 @@ class _ClockInPageState extends State<ClockInPage> {
   // ================== KIRIM ABSENSI ==================
   Future<void> _kirimAbsensi() async {
     if (fotoWajah == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('❌ Foto wajah wajib diambil')),
-      );
-      return;
-    }
-
-    if (latitude == null || longitude == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('❌ Lokasi belum siap')),
-      );
+      _snack('Foto wajah wajib diambil');
       return;
     }
 
@@ -140,72 +117,52 @@ class _ClockInPageState extends State<ClockInPage> {
     try {
       final adaWajah = await _cekAdaWajah(File(fotoWajah!.path));
       if (!adaWajah) {
+        _snack('Wajah tidak terdeteksi');
         setState(() => _loading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('❌ Wajah tidak terdeteksi'),
-            backgroundColor: Colors.red,
-          ),
-        );
         return;
       }
 
-      final urlFoto =
+      final fotoUrl =
           await uploadToCloudinary(File(fotoWajah!.path));
 
-      if (urlFoto == null) {
+      if (fotoUrl == null) {
+        _snack('Upload foto gagal');
         setState(() => _loading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('❌ Upload foto gagal'),
-            backgroundColor: Colors.red,
-          ),
-        );
         return;
       }
 
       final hariKey = DateFormat('yyyy-MM-dd').format(now);
       final waktu = DateFormat('HH:mm:ss').format(now);
 
-      final dataAbsen = {
-        'waktu': waktu,
-        'jenis':
-            widget.isCheckOut ? 'Jam Pulang' : 'Jam Masuk',
-        'koordinat': {
-          'lat': latitude,
-          'lng': longitude,
-        },
-        'lokasi': namaLokasi,
-        'catatan': _catatanCtrl.text,
-        'fotoUrl': urlFoto,
-        'timestamp': FieldValue.serverTimestamp(),
-      };
-
-      final key = widget.isCheckOut ? 'checkOut' : 'checkIn';
-
       await FirebaseFirestore.instance
           .collection('absensi')
           .doc(widget.userId)
           .collection('hari')
           .doc(hariKey)
-          .set({key: dataAbsen}, SetOptions(merge: true));
+          .set({
+        widget.isCheckOut ? 'checkOut' : 'checkIn': {
+          'waktu': waktu,
+          'lokasi': namaLokasi,
+          'lat': latitude,
+          'lng': longitude,
+          'fotoUrl': fotoUrl,
+          'catatan': _catatanCtrl.text,
+          'timestamp': FieldValue.serverTimestamp(),
+        }
+      }, SetOptions(merge: true));
 
-      setState(() => _loading = false);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('✅ Absensi berhasil'),
-          backgroundColor: Colors.green,
-        ),
-      );
-
+      _snack('Absensi berhasil');
       Navigator.pop(context);
     } catch (e) {
-      setState(() => _loading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('❌ Error: $e')),
-      );
+      _snack('Error: $e');
     }
+
+    setState(() => _loading = false);
+  }
+
+  void _snack(String msg) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(msg)));
   }
 
   // ================== UI ==================
@@ -213,7 +170,8 @@ class _ClockInPageState extends State<ClockInPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.isCheckOut ? 'Jam Pulang' : 'Jam Masuk'),
+        title:
+            Text(widget.isCheckOut ? 'Jam Pulang' : 'Jam Masuk'),
         backgroundColor: primaryPurple,
       ),
       body: ListView(
@@ -225,7 +183,6 @@ class _ClockInPageState extends State<ClockInPage> {
           ),
           if (fotoWajah != null)
             Image.file(File(fotoWajah!.path), height: 200),
-          const SizedBox(height: 20),
           TextField(
             controller: _catatanCtrl,
             decoration:
@@ -235,8 +192,7 @@ class _ClockInPageState extends State<ClockInPage> {
           ElevatedButton(
             onPressed: _loading ? null : _kirimAbsensi,
             child: _loading
-                ? const CircularProgressIndicator(
-                    color: Colors.white)
+                ? const CircularProgressIndicator()
                 : const Text('Kirim Absensi'),
           ),
         ],
@@ -293,13 +249,14 @@ class _CameraFaceDialogState extends State<CameraFaceDialog> {
           else
             Image.file(File(file!.path)),
           ElevatedButton(
-            onPressed:
-                file == null ? _takePicture : () {
-              widget.onConfirm(file!);
-              Navigator.pop(context);
-            },
-            child: Text(
-                file == null ? 'Foto' : 'Konfirmasi'),
+            onPressed: file == null
+                ? _takePicture
+                : () {
+                    widget.onConfirm(file!);
+                    Navigator.pop(context);
+                  },
+            child:
+                Text(file == null ? 'Foto' : 'Konfirmasi'),
           )
         ],
       ),
