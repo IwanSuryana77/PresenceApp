@@ -2,11 +2,13 @@ plugins {
     id("com.android.application")
     id("kotlin-android")
     id("dev.flutter.flutter-gradle-plugin")
-    id("com.google.gms.google-services")  // <-- YANG BENAR UNTUK KTS!
+    id("com.google.gms.google-services")
 }
 
 android {
-    namespace = "com.example.peresenceapp"
+    // ⚠️ HARUS SAMA DENGAN FIREBASE
+    namespace = "com.example.presenceapp"
+
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -16,11 +18,14 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
+    
+        jvmTarget = "11"
     }
 
     defaultConfig {
-        applicationId = "com.example.peresenceapp"
+        // ⚠️ HARUS SAMA DENGAN FIREBASE
+        applicationId = "com.example.presenceapp"
+
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
@@ -29,8 +34,6 @@ android {
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
         }
     }
@@ -41,15 +44,14 @@ flutter {
 }
 
 dependencies {
-    // Import the Firebase BoM (Bill of Materials)
+    // Firebase BOM
     implementation(platform("com.google.firebase:firebase-bom:34.7.0"))
 
-    // Tambahkan produk Firebase sesuai kebutuhan, contoh:
-    // implementation("com.google.firebase:firebase-analytics")
-    // implementation("com.google.firebase:firebase-auth")
-    // implementation("com.google.firebase:firebase-firestore")
-    // import clouddinary
-    implementation("com.cloudinary:cloudinary-android:2.3.1")
+    // 🔥 FIREBASE YANG KAMU PAKAI
+    implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-analytics")
 
-    // ...dst.
+    // ☁️ CLOUDINARY
+    implementation("com.cloudinary:cloudinary-android:2.3.1")
 }
