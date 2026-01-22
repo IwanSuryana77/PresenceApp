@@ -1,86 +1,268 @@
-import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:peresenceapp/screens/home/home_screen.dart';
+import 'package:peresenceapp/services/auth_helper.dart';
+import 'register_screen.dart';
 
-const primaryBlue = Color(0xFF242484);
-
-class ModernLoginScreen extends StatefulWidget {
-  const ModernLoginScreen({super.key});
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
 
   @override
-  State<ModernLoginScreen> createState() => _ModernLoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _ModernLoginScreenState extends State<ModernLoginScreen> {
+class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController(); // bisa jadi username/email
-  final _passwordController = TextEditingController();
+
   bool _obscure = true;
   bool _loading = false;
-  bool _isLoginMode = true; 
+  bool _isCheckingAutoLogin = true; // Tambahkan flag untuk auto login check
+
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    // Cek auto login dengan delay untuk memberi waktu splash screen (jika ada)
+    _checkAutoLogin();
   }
 
-  // Tombol utama, login atau register
-  Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
-    setState(() => _loading = true);
-    try {
-      if (_isLoginMode) {
-        // LOGIN EMAIL/PASSWORD (atau username sebagai email)
-        await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: _emailController.text.trim(),
-          password: _passwordController.text,
-        );
+  Future<void> _checkAutoLogin() async {
+    // Tunggu sedikit untuk animasi/loading
+    await Future.delayed(const Duration(milliseconds: 300));
+    
+    // Cek apakah user sudah login menggunakan Firebase Auth langsung
+    final currentUser = FirebaseAuth.instance.currentUser;
+    
+    if (currentUser != null) {
+      print('🔄 User sudah login, email: ${currentUser.email}');
+      
+      try {
+        // Tunggu sedikit untuk memastikan data user siap
+        await Future.delayed(const Duration(milliseconds: 200));
+        
         if (!mounted) return;
+        
+        // Pindah ke home screen
+        await _navigateToHomeScreen();
+      } catch (e) {
+        print(' Error saat auto login: $e');
+        if (mounted) {
+          setState(() => _isCheckingAutoLogin = false);
+        }
+      }
+    } else {
+      print('ℹ️ User belum login');
+      if (mounted) {
+        setState(() => _isCheckingAutoLogin = false);
+      }
+    }
+  }
+
+  Future<void> _navigateToHomeScreen() async {
+    try {
+      // Dapatkan data user
+      final userName = await AuthHelper.getCurrentUserName();
+      final userEmail = AuthHelper.getCurrentUserEmail();
+
+      print(' Auto login berhasil! User: $userName, Email: $userEmail');
+
+      if (!mounted) return;
+
+      // Navigasi ke HomeScreen
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HomeScreen(
+            userEmail: userEmail ?? '',
+            userName: userName,
+          ),
+        ),
+      );
+    } catch (e) {
+      print('Error mendapatkan data user: $e');
+      if (mounted) {
+        setState(() => _isCheckingAutoLogin = false);
+      }
+    }
+  }
+
+  Future<void> _login() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _loading = true);
+
+    try {
+      // Login dengan Firebase Auth langsung
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      // Tunggu sebentar untuk memastikan login berhasil
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      // Cek apakah user sudah login
+      if (FirebaseAuth.instance.currentUser != null) {
+        // Dapatkan data user
+        final userName = await AuthHelper.getCurrentUserName();
+        final userEmail = AuthHelper.getCurrentUserEmail();
+
+        print(' Login manual berhasil! User: $userName, Email: $userEmail');
+
+        // Navigasi ke HomeScreen
+        if (!mounted) return;
+        
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HomeScreen(
+              userEmail: userEmail ?? '',
+              userName: userName,
+            ),
+          ),
+        );
+
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Berhasil masuk!')),
+          SnackBar(
+            content: Text('Login berhasil! Selamat datang $userName'),
+            backgroundColor: Colors.green.shade700,
+            duration: const Duration(seconds: 2),
+          ),
         );
       } else {
-        // REGISTER EMAIL/PASSWORD
-        await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: _emailController.text.trim(),
-          password: _passwordController.text,
-        );
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Akun berhasil dibuat!')),
-        );
+        throw Exception('Login gagal: user tidak ditemukan');
       }
     } on FirebaseAuthException catch (e) {
       _showError(_mapAuthError(e));
     } catch (e) {
-      _showError('Terjadi kesalahan. Coba lagi nanti.');
+      _showError('Terjadi kesalahan. Coba lagi nanti: $e');
     } finally {
-      if (mounted) setState(() => _loading = false);
+      if (mounted) {
+        setState(() => _loading = false);
+      }
     }
   }
 
   String _mapAuthError(FirebaseAuthException e) {
     switch (e.code) {
-      case 'user-not-found': return 'Pengguna tidak ditemukan. Daftar dulu?';
-      case 'wrong-password': return 'Kata sandi salah.';
-      case 'invalid-email': return 'Format email salah.';
-      case 'email-already-in-use': return 'Email sudah digunakan.';
-      case 'weak-password': return 'Kata sandi terlalu lemah.';
-      default: return 'Auth error: ${e.code}';
+      case 'user-not-found':
+      case 'invalid-credential':
+        return 'Email atau password salah.';
+      case 'wrong-password':
+        return 'Kata sandi salah.';
+      case 'invalid-email':
+        return 'Format email tidak valid.';
+      case 'user-disabled':
+        return 'Akun ini dinonaktifkan. Hubungi administrator.';
+      case 'too-many-requests':
+        return 'Terlalu banyak percobaan gagal. Coba lagi nanti.';
+      case 'network-request-failed':
+        return 'Koneksi internet bermasalah. Cek koneksi Anda.';
+      default:
+        return 'Terjadi kesalahan: ${e.message}';
     }
   }
 
   void _showError(String msg) {
     if (!mounted) return;
+    
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg), backgroundColor: Colors.red),
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: Colors.red.shade700,
+        duration: const Duration(seconds: 3),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  void _forgotPassword() {
+    if (_emailController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Masukkan email terlebih dahulu'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Lupa Kata Sandi?'),
+        content: Text(
+          'Kami akan mengirim email reset password ke:\n${_emailController.text}',
+          style: const TextStyle(height: 1.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              try {
+                await AuthHelper.sendPasswordResetEmail(
+                  _emailController.text.trim(),
+                );
+                
+                if (!mounted) return;
+                
+                Navigator.pop(context);
+                
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'Email reset password telah dikirim ke ${_emailController.text}',
+                    ),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              } catch (e) {
+                if (!mounted) return;
+                
+                Navigator.pop(context);
+                _showError('Gagal mengirim email: $e');
+              }
+            },
+            child: const Text('Kirim'),
+          ),
+        ],
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final mainFont = 'Georgia';
+    const primaryBlue = Color(0xFF242484);
+    const mainFont = 'Georgia';
+
+    // Tampilkan loading jika sedang cek auto login
+    if (_isCheckingAutoLogin) {
+      return Scaffold(
+        backgroundColor: Colors.white,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 20),
+              Text(
+                'Memeriksa sesi login...',
+                style: TextStyle(
+                  color: primaryBlue,
+                  fontFamily: mainFont,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -92,8 +274,35 @@ class _ModernLoginScreenState extends State<ModernLoginScreen> {
             children: [
               // LOGO/Judul di atas
               const SizedBox(height: 36),
+
+              // Logo dari asset
+              Image.asset(
+                'assets/images/logo.png',
+                height: 100,
+                width: 100,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    height: 100,
+                    width: 100,
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade100,
+                      borderRadius: BorderRadius.circular(60),
+                    ),
+                    child: Icon(
+                      Icons.person,
+                      size: 60,
+                      color: Colors.blue.shade700,
+                    ),
+                  );
+                },
+              ),
+
+              const SizedBox(height: 24),
+
+              // Judul
               Text(
-                _isLoginMode ? 'Log In Your\nAccount' : 'Register\nYour Account',
+                'FaceApp',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: primaryBlue,
@@ -103,11 +312,11 @@ class _ModernLoginScreenState extends State<ModernLoginScreen> {
                   height: 1.2,
                 ),
               ),
-              const SizedBox(height: 20),
+
+              const SizedBox(height: 8),
+
               Text(
-                _isLoginMode
-                  ? "Already Registered? Log in here."
-                  : "Create your account below.",
+                'Masuk Akun',
                 style: TextStyle(
                   color: primaryBlue.withOpacity(0.8),
                   fontSize: 18,
@@ -116,6 +325,7 @@ class _ModernLoginScreenState extends State<ModernLoginScreen> {
                 ),
                 textAlign: TextAlign.center,
               ),
+
               const SizedBox(height: 36),
 
               Form(
@@ -123,9 +333,9 @@ class _ModernLoginScreenState extends State<ModernLoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // USERNAME/EMAIL Title
+                    // EMAIL/PERUSAHAAN TITLE
                     Text(
-                      "USERNAME",
+                      "EMAIL",
                       style: TextStyle(
                         color: primaryBlue,
                         fontSize: 17,
@@ -134,8 +344,10 @@ class _ModernLoginScreenState extends State<ModernLoginScreen> {
                         letterSpacing: 2.0,
                       ),
                     ),
+
                     const SizedBox(height: 8),
-                    // USERNAME/EMAIL Field
+
+                    // EMAIL FIELD
                     Container(
                       decoration: BoxDecoration(
                         color: const Color(0xFFEFEFF2),
@@ -162,11 +374,22 @@ class _ModernLoginScreenState extends State<ModernLoginScreen> {
                             fontWeight: FontWeight.w400,
                             fontSize: 16,
                           ),
+                          prefixIcon: Icon(
+                            Icons.email_outlined,
+                            color: primaryBlue,
+                          ),
                         ),
                         validator: (v) {
-                          if (v == null || v.isEmpty) return "Email wajib diisi";
-                          final pattern = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
-                          if (!pattern.hasMatch(v)) return "Format email tidak valid";
+                          if (v == null || v.isEmpty) {
+                            return "Email wajib diisi";
+                          }
+                          // Validasi format email
+                          final isEmail = RegExp(
+                            r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
+                          ).hasMatch(v);
+                          if (!isEmail) {
+                            return "Format email tidak valid";
+                          }
                           return null;
                         },
                       ),
@@ -176,7 +399,7 @@ class _ModernLoginScreenState extends State<ModernLoginScreen> {
 
                     // PASSWORD TITLE
                     Text(
-                      "PASSWORD",
+                      "KATA SANDI",
                       style: TextStyle(
                         color: primaryBlue,
                         fontSize: 17,
@@ -185,6 +408,7 @@ class _ModernLoginScreenState extends State<ModernLoginScreen> {
                         letterSpacing: 2.0,
                       ),
                     ),
+
                     const SizedBox(height: 8),
 
                     // PASSWORD FIELD
@@ -208,7 +432,7 @@ class _ModernLoginScreenState extends State<ModernLoginScreen> {
                             horizontal: 16,
                             vertical: 18,
                           ),
-                          hintText: '*****',
+                          hintText: '••••••',
                           hintStyle: const TextStyle(
                             color: primaryBlue,
                             fontFamily: 'Georgia',
@@ -216,29 +440,57 @@ class _ModernLoginScreenState extends State<ModernLoginScreen> {
                             fontSize: 18,
                             letterSpacing: 2.0,
                           ),
+                          prefixIcon: const Icon(
+                            Icons.lock_outline,
+                            color: primaryBlue,
+                          ),
                           suffixIcon: IconButton(
-                            onPressed: () => setState(() => _obscure = !_obscure),
+                            onPressed: () =>
+                                setState(() => _obscure = !_obscure),
                             icon: Icon(
-                              _obscure ? Icons.visibility_off : Icons.visibility,
+                              _obscure
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
                               color: primaryBlue,
                             ),
                           ),
                         ),
                         validator: (v) {
-                          if (v == null || v.isEmpty) return "Kata sandi wajib diisi";
-                          if (v.length < 6) return "Minimal 6 karakter";
+                          if (v == null || v.isEmpty) {
+                            return "Kata sandi wajib diisi";
+                          }
+                          if (v.length < 6) {
+                            return "Minimal 6 karakter";
+                          }
                           return null;
                         },
                       ),
                     ),
 
+                    // Lupa Password
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: _forgotPassword,
+                        child: Text(
+                          'Lupa Kata Sandi?',
+                          style: TextStyle(
+                            color: primaryBlue,
+                            fontSize: 14,
+                            fontFamily: mainFont,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ),
+
                     const SizedBox(height: 38),
 
-                    // LOGIN/REGISTER BUTTON
+                    // LOGIN BUTTON
                     SizedBox(
                       height: 56,
                       child: ElevatedButton(
-                        onPressed: _loading ? null : _submit,
+                        onPressed: _loading ? null : _login,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: primaryBlue,
                           foregroundColor: Colors.white,
@@ -246,338 +498,116 @@ class _ModernLoginScreenState extends State<ModernLoginScreen> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
-                          textStyle: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 19,
+                          textStyle: GoogleFonts.roboto(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 17,
                           ),
                         ),
                         child: _loading
-                            ? const CircularProgressIndicator(
-                                color: Colors.white,
+                            ? SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  color: Colors.white,
+                                ),
                               )
-                            : Text(_isLoginMode ? "Log in" : "Register"),
+                            : const Text("MASUK"),
                       ),
                     ),
                   ],
                 ),
               ),
 
-              // SWITCH LOGIN/REGISTER
-              const SizedBox(height: 24),
-              GestureDetector(
-                onTap: () => setState(() => _isLoginMode = !_isLoginMode),
-                child: Text(
-                  _isLoginMode
-                    ? "Belum punya akun? Register."
-                    : "Sudah punya akun? Log in.",
-                  style: TextStyle(
-                    color: primaryBlue,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: mainFont,
-                    decoration: TextDecoration.underline,
+              // SWITCH KE REGISTER
+              const SizedBox(height: 32),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "Belum punya akun? ",
+                    style: TextStyle(
+                      color: Colors.grey.shade600,
+                      fontSize: 15,
+                      fontFamily: mainFont,
+                    ),
                   ),
-                ),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const RegisterScreen(),
+                        ),
+                      );
+                    },
+                    child: Text(
+                      "Daftar di sini",
+                      style: TextStyle(
+                        color: primaryBlue,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: mainFont,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 40),
+
+              // Divider atau informasi tambahan
+              Row(
+                children: [
+                  Expanded(
+                    child: Divider(
+                      color: Colors.grey.shade300,
+                      thickness: 1,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      'atau',
+                      style: TextStyle(
+                        color: Colors.grey.shade500,
+                        fontFamily: mainFont,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Divider(
+                      color: Colors.grey.shade300,
+                      thickness: 1,
+                    ),
+                  ),
+                ],
               ),
 
               const SizedBox(height: 20),
+
+              // Versi aplikasi
+              Text(
+                'Version 1.0.0',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey.shade500,
+                  fontFamily: mainFont,
+                ),
+              ),
             ],
           ),
         ),
       ),
     );
   }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 }
-// import 'package:flutter/material.dart';
-// import 'package:firebase_auth/firebase_auth.dart';
-
-// class ModernLoginScreen extends StatefulWidget {
-//   const ModernLoginScreen({super.key});
-
-//   @override
-//   State<ModernLoginScreen> createState() => _ModernLoginScreenState();
-// }
-
-// class _ModernLoginScreenState extends State<ModernLoginScreen> {
-//   final _formKey = GlobalKey<FormState>();
-//   final _emailController = TextEditingController();
-//   final _passwordController = TextEditingController();
-//   bool _obscure = true;
-//   bool _loading = false;
-
-//   @override
-//   void dispose() {
-//     _emailController.dispose();
-//     _passwordController.dispose();
-//     super.dispose();
-//   }
-
-//   Future<void> _signIn() async {
-//     if (!_formKey.currentState!.validate()) return;
-//     setState(() => _loading = true);
-//     try {
-//       await FirebaseAuth.instance.signInWithEmailAndPassword(
-//         email: _emailController.text.trim(),
-//         password: _passwordController.text,
-//       );
-//       if (!mounted) return;
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         const SnackBar(content: Text('Berhasil masuk')),
-//       );
-//     } on FirebaseAuthException catch (e) {
-//       _showError(_mapAuthError(e));
-//     } catch (e) {
-//       _showError('Terjadi kesalahan. Coba lagi.');
-//     } finally {
-//       if (mounted) setState(() => _loading = false);
-//     }
-//   }
-
-//   Future<void> _register() async {
-//     if (!_formKey.currentState!.validate()) return;
-//     setState(() => _loading = true);
-//     try {
-//       await FirebaseAuth.instance.createUserWithEmailAndPassword(
-//         email: _emailController.text.trim(),
-//         password: _passwordController.text,
-//       );
-//       if (!mounted) return;
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         const SnackBar(content: Text('Akun berhasil dibuat dan masuk')),
-//       );
-//     } on FirebaseAuthException catch (e) {
-//       _showError(_mapAuthError(e));
-//     } catch (e) {
-//       _showError('Terjadi kesalahan. Coba lagi.');
-//     } finally {
-//       if (mounted) setState(() => _loading = false);
-//     }
-//   }
-
-//   Future<void> _signInAnonymously() async {
-//     setState(() => _loading = true);
-//     try {
-//       await FirebaseAuth.instance.signInAnonymously();
-//       if (!mounted) return;
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         const SnackBar(content: Text('Masuk sebagai Tamu')),
-//       );
-//     } on FirebaseAuthException catch (e) {
-//       _showError(_mapAuthError(e));
-//     } catch (e) {
-//       _showError('Terjadi kesalahan. Coba lagi.');
-//     } finally {
-//       if (mounted) setState(() => _loading = false);
-//     }
-//   }
-
-//   String _mapAuthError(FirebaseAuthException e) {
-//     switch (e.code) {
-//       case 'user-not-found':
-//         return 'Pengguna tidak ditemukan. Daftar terlebih dahulu.';
-//       case 'wrong-password':
-//         return 'Kata sandi salah.';
-//       case 'invalid-email':
-//         return 'Format email tidak valid.';
-//       case 'email-already-in-use':
-//         return 'Email sudah digunakan.';
-//       case 'weak-password':
-//         return 'Kata sandi terlalu lemah.';
-//       case 'operation-not-allowed':
-//         return 'Operasi tidak diizinkan di project Firebase.';
-//       default:
-//         return 'Auth error: ${e.code}';
-//     }
-//   }
-
-//   void _showError(String message) {
-//     if (!mounted) return;
-//     ScaffoldMessenger.of(context).showSnackBar(
-//       SnackBar(
-//         content: Text(message),
-//         backgroundColor: Colors.red,
-//       ),
-//     );
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final theme = Theme.of(context);
-
-//     return Scaffold(
-//       body: Stack(
-//         children: [
-//           // Background gradient
-//           Container(
-//             decoration: const BoxDecoration(
-//               gradient: LinearGradient(
-//                 colors: [Color(0xFF0EA5E9), Color(0xFF3B82F6)],
-//                 begin: Alignment.topLeft,
-//                 end: Alignment.bottomRight,
-//               ),
-//             ),
-//           ),
-//           // Subtle circles
-//           Positioned(
-//             top: -60,
-//             right: -40,
-//             child: _bubble(160, Colors.white.withOpacity(0.08)),
-//           ),
-//           Positioned(
-//             bottom: -80,
-//             left: -30,
-//             child: _bubble(220, Colors.white.withOpacity(0.06)),
-//           ),
-
-//           Center(
-//             child: SingleChildScrollView(
-//               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-//               child: ConstrainedBox(
-//                 constraints: const BoxConstraints(maxWidth: 420),
-//                 child: Card(
-//                   elevation: 12,
-//                   shape: RoundedRectangleBorder(
-//                     borderRadius: BorderRadius.circular(20),
-//                   ),
-//                   child: Padding(
-//                     padding: const EdgeInsets.all(24.0),
-//                     child: Column(
-//                       crossAxisAlignment: CrossAxisAlignment.stretch,
-//                       children: [
-//                         Row(
-//                           mainAxisAlignment: MainAxisAlignment.center,
-//                           children: [
-//                             Container(
-//                               padding: const EdgeInsets.all(12),
-//                               decoration: BoxDecoration(
-//                                 color: const Color(0xFF3B82F6).withOpacity(0.1),
-//                                 borderRadius: BorderRadius.circular(14),
-//                               ),
-//                               child: const Icon(Icons.lock_outline, size: 28, color: Color(0xFF1E3A8A)),
-//                             ),
-//                             const SizedBox(width: 12),
-//                             Text(
-//                               'Masuk Akun',
-//                               style: theme.textTheme.headlineSmall?.copyWith(
-//                                 fontWeight: FontWeight.w700,
-//                               ),
-//                             ),
-//                           ],
-//                         ),
-//                         const SizedBox(height: 24),
-//                         Form(
-//                           key: _formKey,
-//                           child: Column(
-//                             children: [
-//                               TextFormField(
-//                                 controller: _emailController,
-//                                 decoration: InputDecoration(
-//                                   labelText: 'Email',
-//                                   prefixIcon: const Icon(Icons.email_outlined),
-//                                   border: OutlineInputBorder(
-//                                     borderRadius: BorderRadius.circular(12),
-//                                   ),
-//                                 ),
-//                                 keyboardType: TextInputType.emailAddress,
-//                                 validator: (v) {
-//                                   if ((v ?? '').trim().isEmpty) return 'Email wajib diisi';
-//                                   final email = v!.trim();
-//                                   final regex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
-//                                   if (!regex.hasMatch(email)) return 'Format email tidak valid';
-//                                   return null;
-//                                 },
-//                               ),
-//                               const SizedBox(height: 16),
-//                               TextFormField(
-//                                 controller: _passwordController,
-//                                 decoration: InputDecoration(
-//                                   labelText: 'Kata Sandi',
-//                                   prefixIcon: const Icon(Icons.lock_outline),
-//                                   suffixIcon: IconButton(
-//                                     onPressed: () => setState(() => _obscure = !_obscure),
-//                                     icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
-//                                   ),
-//                                   border: OutlineInputBorder(
-//                                     borderRadius: BorderRadius.circular(12),
-//                                   ),
-//                                 ),
-//                                 obscureText: _obscure,
-//                                 validator: (v) {
-//                                   if ((v ?? '').isEmpty) return 'Kata sandi wajib diisi';
-//                                   if ((v ?? '').length < 6) return 'Minimal 6 karakter';
-//                                   return null;
-//                                 },
-//                               ),
-//                             ],
-//                           ),
-//                         ),
-//                         const SizedBox(height: 20),
-//                         _loading
-//                             ? const Center(child: CircularProgressIndicator())
-//                             : Column(
-//                                 crossAxisAlignment: CrossAxisAlignment.stretch,
-//                                 children: [
-//                                   SizedBox(
-//                                     height: 48,
-//                                     child: ElevatedButton(
-//                                       onPressed: _signIn,
-//                                       style: ElevatedButton.styleFrom(
-//                                         backgroundColor: const Color(0xFF1E3A8A),
-//                                         shape: RoundedRectangleBorder(
-//                                           borderRadius: BorderRadius.circular(12),
-//                                         ),
-//                                       ),
-//                                       child: const Text('Masuk'),
-//                                     ),
-//                                   ),
-//                                   const SizedBox(height: 12),
-//                                   SizedBox(
-//                                     height: 48,
-//                                     child: OutlinedButton(
-//                                       onPressed: _register,
-//                                       style: OutlinedButton.styleFrom(
-//                                         side: const BorderSide(color: Color(0xFF1E3A8A)),
-//                                         shape: RoundedRectangleBorder(
-//                                           borderRadius: BorderRadius.circular(12),
-//                                         ),
-//                                       ),
-//                                       child: const Text('Daftar Akun Baru'),
-//                                     ),
-//                                   ),
-//                                   const SizedBox(height: 12),
-//                                   TextButton(
-//                                     onPressed: _signInAnonymously,
-//                                     child: const Text('Masuk sebagai Tamu'),
-//                                   ),
-//                                 ],
-//                               ),
-//                         const SizedBox(height: 8),
-//                         const Divider(height: 24),
-//                         Text(
-//                           'Dengan masuk, Anda menyetujui kebijakan privasi dan ketentuan penggunaan.',
-//                           textAlign: TextAlign.center,
-//                           style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey[700]),
-//                         ),
-//                       ],
-//                     ),
-//                   ),
-//                 ),
-//               ),
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-
-//   Widget _bubble(double size, Color color) {
-//     return Container(
-//       width: size,
-//       height: size,
-//       decoration: BoxDecoration(
-//         shape: BoxShape.circle,
-//         color: color,
-//       ),
-//     );
-//   }
-// }

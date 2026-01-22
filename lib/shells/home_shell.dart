@@ -16,7 +16,7 @@ class _HomeShellState extends State<HomeShell> {
   @override
   Widget build(BuildContext context) {
     final pages = <Widget>[
-      const HomeScreen(),
+      const HomeScreen(userEmail: '', userName: '',),
       const PlaceholderScreen(title: 'Pengajuan'),
       const PlaceholderScreen(title: 'Inbox'),
       const PlaceholderScreen(title: 'Profil'),

@@ -62,7 +62,7 @@ class AuthGate extends StatelessWidget {
         }
         if (snapshot.data == null) {
           // Belum login -> tampilkan layar login modern
-          return const ModernLoginScreen();
+          return const LoginScreen();
         }
         // Sudah login -> lanjut ke aplikasi utama
         return const BottomNavWrapper();
@@ -82,7 +82,7 @@ class _BottomNavWrapperState extends State<BottomNavWrapper> {
   int _selectedIndex = 0;
 
   final List<Widget> _pages = [
-    const HomeScreen(),
+    const HomeScreen(userName: '', userEmail: '',),
     const PengajuanPage(),
     const InboxPage(),
     const ProfilePage(),

@@ -14,9 +14,10 @@ import '../../widgets/promo_card.dart';
 import '../../widgets/section_card.dart';
 import '../../widgets/surface.dart';
 import '../../widgets/icon_tile.dart';
+import '../../services/auth_helper.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, required String userEmail, required String userName});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -44,10 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ), // Jarak antara header dan carousel
           // ---- CAROUSEL ----
           SliverPadding(
-            padding: const EdgeInsets.symmetric(
-              vertical: 22,
-              horizontal: 12,
-            ),
+            padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 12),
             sliver: SliverToBoxAdapter(
               child: Column(
                 children: [
@@ -60,17 +58,20 @@ class _HomeScreenState extends State<HomeScreen> {
                         PromoCard(
                           imageAsset: 'assets/images/safety.jpg',
                           title: 'Utamakan Keselamatan',
-                          desc: 'Selalu patuhi protokol keselamatan kerja di lingkungan kantor.',
+                          desc:
+                              'Selalu patuhi protokol keselamatan kerja di lingkungan kantor.',
                         ),
                         PromoCard(
                           imageAsset: 'assets/images/work.jpg',
                           title: 'Kerja Produktif',
-                          desc: 'Tingkatkan produktivitas dengan manajemen waktu yang baik.',
+                          desc:
+                              'Tingkatkan produktivitas dengan manajemen waktu yang baik.',
                         ),
                         PromoCard(
                           imageAsset: 'assets/images/fokus.jpg',
                           title: 'Fokus & Semangat',
-                          desc: 'Jaga fokus dan semangat untuk hasil kerja terbaik.',
+                          desc:
+                              'Jaga fokus dan semangat untuk hasil kerja terbaik.',
                         ),
                       ],
                     ),
@@ -187,7 +188,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     IconTile(
                       icon: Icons.attach_money,
                       iconColor: AppColors.primary,
-                      label: 'REIMBURSEMENT',
+                      label: 'REIMBURSE',
                       textColor: Colors.black87,
                       labelStyle: const TextStyle(
                         color: Colors.black87,
@@ -320,6 +321,26 @@ class GreetingHeader extends StatefulWidget {
 
 class _GreetingHeaderState extends State<GreetingHeader> {
   late Future<Map<String, dynamic>> _userDataFuture;
+  
+  // Daftar asset gambar profil lokal
+  static const List<String> _availableProfileAssets = [
+    'assets/images/profil1.jpg',
+    'assets/images/profil2.jpg',
+    'assets/images/profil3.jpg',
+    'assets/images/profil4.jpg',
+    'assets/images/profil5.jpg',
+    'assets/images/profil6.png',
+    'assets/images/profil7.png',
+    'assets/images/profil8.png',
+    // 'assets/images/avatar1.png',
+    // 'assets/images/avatar2.png',
+    // 'assets/images/avatar3.png',
+    // 'assets/images/user1.jpg',
+    // 'assets/images/user2.jpg',
+    // 'assets/images/user3.jpg',
+    // 'assets/images/employee1.png',
+    // 'assets/images/employee2.png',
+  ];
 
   @override
   void initState() {
@@ -328,35 +349,103 @@ class _GreetingHeaderState extends State<GreetingHeader> {
   }
 
   Future<Map<String, dynamic>> _fetchUserData() async {
-    final user = FirebaseAuth.instance.currentUser;
-    String displayName = user?.displayName ?? 'User';
-    String email = user?.email ?? 'Username';
-    String photoUrl = user?.photoURL ?? '';
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      String displayName = await AuthHelper.getCurrentUserName();
+      String companyName = await AuthHelper.getCurrentUserCompanyName();
+      
+      // Ambil path asset profil dari SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      String savedPhotoAsset = prefs.getString('user_photo_asset') ?? '';
+      
+      // Jika belum ada asset yang disimpan, pilih berdasarkan nama
+      if (savedPhotoAsset.isEmpty) {
+        savedPhotoAsset = _getProfileAssetByUserName(displayName);
+        await prefs.setString('user_photo_asset', savedPhotoAsset);
+      }
+      
+      await prefs.setString('user_name', displayName);
+      await prefs.setString('user_company', companyName);
 
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('user_name', displayName);
-    await prefs.setString('user_email', email);
-    await prefs.setString('user_photo', photoUrl);
+      return {
+        'name': displayName,
+        'companyName': companyName,
+        'photoAsset': savedPhotoAsset, // Menggunakan asset lokal, bukan URL
+      };
+    } catch (e) {
+      print('Error fetching user data: $e');
+      return {
+        'name': 'User',
+        'companyName': 'Unknown Company',
+        'photoAsset': 'assets/images/profile1.png', // Asset default
+      };
+    }
+  }
 
-    return {'name': displayName, 'email': email, 'photoUrl': photoUrl};
+  // Method untuk mendapatkan asset profil berdasarkan nama user
+  String _getProfileAssetByUserName(String userName) {
+    if (userName.isEmpty || userName == 'User') {
+      return 'assets/images/profile1.png'; // Asset default
+    }
+    
+    // Gunakan hash dari nama untuk konsistensi
+    final nameHash = userName.hashCode.abs();
+    final index = nameHash % _availableProfileAssets.length;
+    
+    return _availableProfileAssets[index];
   }
 
   String getInitials(String name) {
-  final cleanName = name.trim();
+    final cleanName = name.trim();
 
-  if (cleanName.isEmpty) return 'U';
+    if (cleanName.isEmpty) return 'U';
 
-  final parts = cleanName.split(' ').where((p) => p.isNotEmpty).toList();
+    final parts = cleanName.split(' ').where((p) => p.isNotEmpty).toList();
 
-  if (parts.isEmpty) return 'U';
+    if (parts.isEmpty) return 'U';
 
-  if (parts.length == 1) {
-    return parts[0][0].toUpperCase();
+    if (parts.length == 1) {
+      return parts[0][0].toUpperCase();
+    }
+
+    return (parts[0][0] + parts.last[0]).toUpperCase();
   }
 
-  return (parts[0][0] + parts.last[0]).toUpperCase();
-}
-
+  Widget _buildAvatar(String photoAsset, String userName) {
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Image.asset(
+          photoAsset,
+          width: 40,
+          height: 40,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            // Jika asset tidak ditemukan, tampilkan inisial
+            return Container(
+              color: Colors.white,
+              child: Center(
+                child: Text(
+                  getInitials(userName),
+                  style: TextStyle(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -365,13 +454,13 @@ class _GreetingHeaderState extends State<GreetingHeader> {
       builder: (context, snapshot) {
         final userName = snapshot.hasData
             ? snapshot.data!['name'] as String
-            : 'Jane Doe';
-        final photoUrl = snapshot.hasData
-            ? snapshot.data!['photoUrl'] as String
-            : '';
-        final userEmail = snapshot.hasData
-            ? snapshot.data!['email'] as String
-            : 'Username';
+            : 'User';
+        final photoAsset = snapshot.hasData
+            ? snapshot.data!['photoAsset'] as String
+            : 'assets/images/profile1.png'; // Asset default
+        final companyName = snapshot.hasData
+            ? snapshot.data!['companyName'] as String
+            : 'Unknown Company';
 
         return Container(
           width: double.infinity,
@@ -389,24 +478,8 @@ class _GreetingHeaderState extends State<GreetingHeader> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const SizedBox(width: 10),
-                  photoUrl.isNotEmpty
-                      ? CircleAvatar(
-                          radius: 20,
-                          backgroundColor: Colors.white,
-                          backgroundImage: NetworkImage(photoUrl),
-                        )
-                      : CircleAvatar(
-                          radius: 20,
-                          backgroundColor: Colors.white,
-                          child: Text(
-                            getInitials(userName),
-                            style: TextStyle(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
+                  // Menggunakan asset lokal untuk foto profil
+                  _buildAvatar(photoAsset, userName),
                   const SizedBox(width: 14),
                   Expanded(
                     child: Column(
@@ -425,7 +498,7 @@ class _GreetingHeaderState extends State<GreetingHeader> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          userEmail,
+                          companyName,
                           style: TextStyle(
                             color: Colors.white.withOpacity(0.85),
                             fontSize: 12,
@@ -504,8 +577,6 @@ class AllTugasPage extends StatelessWidget {
   }
 }
 
-// import 'dart:ui';
-
 // import 'package:flutter/material.dart';
 // import 'package:firebase_auth/firebase_auth.dart';
 // import 'package:shared_preferences/shared_preferences.dart';
@@ -522,9 +593,10 @@ class AllTugasPage extends StatelessWidget {
 // import '../../widgets/section_card.dart';
 // import '../../widgets/surface.dart';
 // import '../../widgets/icon_tile.dart';
+// import '../../services/auth_helper.dart';
 
 // class HomeScreen extends StatefulWidget {
-//   const HomeScreen({super.key});
+//   const HomeScreen({super.key, required String userEmail, required String userName});
 
 //   @override
 //   State<HomeScreen> createState() => _HomeScreenState();
@@ -545,21 +617,18 @@ class AllTugasPage extends StatelessWidget {
 //       child: CustomScrollView(
 //         slivers: [
 //           // ---- HEADER GREETING BAR ----
-//           SliverToBoxAdapter(child: GreetingHeader()),
+//           const SliverToBoxAdapter(child: GreetingHeader()),
 
-//           SliverToBoxAdapter(
+//           const SliverToBoxAdapter(
 //             child: SizedBox(height: 3),
 //           ), // Jarak antara header dan carousel
 //           // ---- CAROUSEL ----
 //           SliverPadding(
-//             padding: const EdgeInsets.symmetric(
-//               vertical: 22,
-//               horizontal: 12,
-//             ), // lebar & tinggi carousel
+//             padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 12),
 //             sliver: SliverToBoxAdapter(
 //               child: Column(
 //                 children: [
-//                   const SizedBox(height: 3), // Jarak atas sebelum carousel
+//                   const SizedBox(height: 3),
 //                   SizedBox(
 //                     height: 200,
 //                     child: PageView(
@@ -568,17 +637,20 @@ class AllTugasPage extends StatelessWidget {
 //                         PromoCard(
 //                           imageAsset: 'assets/images/safety.jpg',
 //                           title: 'Utamakan Keselamatan',
-//                           desc: 'Selalu patuhi protokol keselamatan kerja di lingkungan kantor.',
+//                           desc:
+//                               'Selalu patuhi protokol keselamatan kerja di lingkungan kantor.',
 //                         ),
 //                         PromoCard(
 //                           imageAsset: 'assets/images/work.jpg',
 //                           title: 'Kerja Produktif',
-//                           desc: 'Tingkatkan produktivitas dengan manajemen waktu yang baik.',
+//                           desc:
+//                               'Tingkatkan produktivitas dengan manajemen waktu yang baik.',
 //                         ),
 //                         PromoCard(
 //                           imageAsset: 'assets/images/fokus.jpg',
 //                           title: 'Fokus & Semangat',
-//                           desc: 'Jaga fokus dan semangat untuk hasil kerja terbaik.',
+//                           desc:
+//                               'Jaga fokus dan semangat untuk hasil kerja terbaik.',
 //                         ),
 //                       ],
 //                     ),
@@ -596,9 +668,7 @@ class AllTugasPage extends StatelessWidget {
 //                       spacing: 8,
 //                     ),
 //                   ),
-//                   const SizedBox(
-//                     height: 6,
-//                   ), // Jarak bawah antara indicator dan menu grid
+//                   const SizedBox(height: 6),
 //                 ],
 //               ),
 //             ),
@@ -608,8 +678,7 @@ class AllTugasPage extends StatelessWidget {
 //             padding: const EdgeInsets.fromLTRB(20, 8, 20, 14),
 //             sliver: SliverToBoxAdapter(
 //               child: Surface(
-//                 padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
-//                 // subtle neumorphic look via gradient + shadow inside Surface
+//                 padding: const EdgeInsets.all(14),
 //                 child: GridView.count(
 //                   crossAxisCount: 3,
 //                   mainAxisSpacing: 14,
@@ -698,7 +767,7 @@ class AllTugasPage extends StatelessWidget {
 //                     IconTile(
 //                       icon: Icons.attach_money,
 //                       iconColor: AppColors.primary,
-//                       label: 'REIMBURSEMENT',
+//                       label: 'REIMBURSE',
 //                       textColor: Colors.black87,
 //                       labelStyle: const TextStyle(
 //                         color: Colors.black87,
@@ -840,37 +909,36 @@ class AllTugasPage extends StatelessWidget {
 
 //   Future<Map<String, dynamic>> _fetchUserData() async {
 //     final user = FirebaseAuth.instance.currentUser;
-//     String displayName = user?.displayName ?? 'User';
-//     String email = user?.email ?? 'Username';
+//     String displayName = await AuthHelper.getCurrentUserName();
+//     String companyName = await AuthHelper.getCurrentUserCompanyName();
 //     String photoUrl = user?.photoURL ?? '';
 
-//     // Simpan ke SharedPreferences biar persistent (opsional)
 //     final prefs = await SharedPreferences.getInstance();
 //     await prefs.setString('user_name', displayName);
-//     await prefs.setString('user_email', email);
+//     await prefs.setString('user_company', companyName);
 //     await prefs.setString('user_photo', photoUrl);
 
-//     return {'name': displayName, 'email': email, 'photoUrl': photoUrl};
+//     return {
+//       'name': displayName,
+//       'companyName': companyName,
+//       'photoUrl': photoUrl,
+//     };
 //   }
 
 //   String getInitials(String name) {
-//     final parts = name.trim().split(' ');
-//     if (parts.isEmpty) return 'U';
-//     if (parts.length == 1) return parts[0][0].toUpperCase();
-//     return (parts[0][0] + parts.last[0]).toUpperCase();
-//   }
+//     final cleanName = name.trim();
 
-//   String getGreeting() {
-//     final hour = DateTime.now().hour;
-//     if (hour < 12) {
-//       return 'Selamat Pagi';
-//     } else if (hour < 15) {
-//       return 'Selamat Siang';
-//     } else if (hour < 19) {
-//       return 'Selamat Sore';
-//     } else {
-//       return 'Selamat Malam';
+//     if (cleanName.isEmpty) return 'U';
+
+//     final parts = cleanName.split(' ').where((p) => p.isNotEmpty).toList();
+
+//     if (parts.isEmpty) return 'U';
+
+//     if (parts.length == 1) {
+//       return parts[0][0].toUpperCase();
 //     }
+
+//     return (parts[0][0] + parts.last[0]).toUpperCase();
 //   }
 
 //   @override
@@ -880,33 +948,30 @@ class AllTugasPage extends StatelessWidget {
 //       builder: (context, snapshot) {
 //         final userName = snapshot.hasData
 //             ? snapshot.data!['name'] as String
-//             : 'Jane Doe';
-//         final userRole = 'Marketing Manager'; // static role for demo
+//             : 'User';
 //         final photoUrl = snapshot.hasData
 //             ? snapshot.data!['photoUrl'] as String
 //             : '';
-//         final userEmail = snapshot.hasData
-//             ? snapshot.data!['email'] as String
-//             : 'Username';
+//         final companyName = snapshot.hasData
+//             ? snapshot.data!['companyName'] as String
+//             : 'Unknown Company';
 
 //         return Container(
 //           width: double.infinity,
-//           color: AppColors
-//               .extraLight, // soft blue bg (update di app_theme.dart kalau mau biru lain)
+//           color: AppColors.extraLight,
 //           padding: const EdgeInsets.only(top: 16, left: 0, right: 0, bottom: 8),
 //           child: Center(
 //             child: Container(
 //               height: 58,
 //               margin: const EdgeInsets.symmetric(horizontal: 16),
 //               decoration: BoxDecoration(
-//                 color: AppColors.primary, // utama biru
+//                 color: AppColors.primary,
 //                 borderRadius: BorderRadius.circular(16),
 //               ),
 //               child: Row(
 //                 crossAxisAlignment: CrossAxisAlignment.center,
 //                 children: [
-//                   SizedBox(width: 10),
-//                   // Avatar - Kiri
+//                   const SizedBox(width: 10),
 //                   photoUrl.isNotEmpty
 //                       ? CircleAvatar(
 //                           radius: 20,
@@ -925,8 +990,7 @@ class AllTugasPage extends StatelessWidget {
 //                             ),
 //                           ),
 //                         ),
-//                   SizedBox(width: 14),
-//                   // Name & Label (email) - Tengah
+//                   const SizedBox(width: 14),
 //                   Expanded(
 //                     child: Column(
 //                       mainAxisAlignment: MainAxisAlignment.center,
@@ -942,9 +1006,9 @@ class AllTugasPage extends StatelessWidget {
 //                             fontSize: 16,
 //                           ),
 //                         ),
-//                         SizedBox(height: 2),
+//                         const SizedBox(height: 2),
 //                         Text(
-//                           userEmail,
+//                           companyName,
 //                           style: TextStyle(
 //                             color: Colors.white.withOpacity(0.85),
 //                             fontSize: 12,
@@ -954,7 +1018,6 @@ class AllTugasPage extends StatelessWidget {
 //                       ],
 //                     ),
 //                   ),
-//                   // Bell icon (kanan)
 //                   IconButton(
 //                     icon: const Icon(
 //                       Icons.notifications_none_rounded,
@@ -965,11 +1028,10 @@ class AllTugasPage extends StatelessWidget {
 //                       // TODO: Ke halaman notifikasi
 //                     },
 //                   ),
-//                   SizedBox(width: 8),
+//                   const SizedBox(width: 8),
 //                 ],
 //               ),
-//               const SizedBox(width: 16),
-//             ],
+//             ),
 //           ),
 //         );
 //       },
@@ -977,7 +1039,7 @@ class AllTugasPage extends StatelessWidget {
 //   }
 // }
 
-// // --- Tambahan: Halaman Semua Pengumuman dan Semua Tugas ---
+// // Halaman Pengumuman & Tugas
 // class AllPengumumanPage extends StatelessWidget {
 //   const AllPengumumanPage({super.key});
 //   @override
@@ -1024,3 +1086,4 @@ class AllTugasPage extends StatelessWidget {
 //     );
 //   }
 // }
+

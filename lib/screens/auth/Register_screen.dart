@@ -1,0 +1,669 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:peresenceapp/services/auth_helper.dart';
+import 'login_screen.dart';
+
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
+
+  @override
+  State<RegisterScreen> createState() => _RegisterScreenState();
+}
+
+class _RegisterScreenState extends State<RegisterScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  
+  bool _isObscure = true;
+  bool _isConfirmObscure = true;
+  bool _isLoading = false;
+  
+  final TextEditingController _companyIdController = TextEditingController();
+  final TextEditingController _companyNameController = TextEditingController();
+  final TextEditingController _fullNameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+
+  // Warna utama sama dengan LoginScreen
+  static const primaryBlue = Color(0xFF242484);
+  static const mainFont = 'Georgia';
+  
+  Future<void> _register() async {
+    if (!_formKey.currentState!.validate()) return;
+    
+    if (_passwordController.text != _confirmPasswordController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Konfirmasi kata sandi tidak cocok'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    
+    setState(() => _isLoading = true);
+    
+    try {
+      // 1. Dapatkan data dari form
+      final companyId = _companyIdController.text.trim();
+      final companyName = _companyNameController.text.trim();
+      final fullName = _fullNameController.text.trim();
+      final email = _emailController.text.trim();
+      final phone = _phoneController.text.trim();
+      final password = _passwordController.text.trim();
+      
+      // 2. Buat akun dengan Firebase Auth
+      final userCredential = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      
+      final userId = userCredential.user!.uid;
+      
+      // 3. Simpan data lengkap ke Firestore
+      final userData = {
+        'companyId': companyId,
+        'companyName': companyName,
+        'fullName': fullName,
+        'name': fullName, // Field alternatif untuk AuthHelper
+        'email': email,
+        'phone': phone,
+        'uid': userId,
+        'role': 'user', // Default role
+        'isActive': true,
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+      
+      await _firestore.collection('users').doc(userId).set(userData);
+      
+      print('✅ User registered successfully: $userId');
+      
+      // 4. Tampilkan pesan sukses
+      if (!mounted) return;
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Registrasi berhasil! Selamat datang $fullName'),
+          backgroundColor: Colors.green.shade700,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+      
+      // 5. Auto login dan navigasi ke home screen
+      await _autoLoginAndNavigate(email, password, fullName);
+      
+    } on FirebaseAuthException catch (e) {
+      // Tangani error Firebase Auth
+      String errorMessage = _mapRegisterError(e);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+      
+    } catch (e) {
+      // Tangani error umum
+      print('❌ Registration error: $e');
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Terjadi kesalahan: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  String _mapRegisterError(FirebaseAuthException e) {
+    switch (e.code) {
+      case 'email-already-in-use':
+        return 'Email sudah digunakan. Silakan gunakan email lain atau login.';
+      case 'invalid-email':
+        return 'Format email tidak valid.';
+      case 'weak-password':
+        return 'Kata sandi terlalu lemah. Minimal 6 karakter.';
+      case 'operation-not-allowed':
+        return 'Registrasi dengan email/password tidak diizinkan. Hubungi administrator.';
+      case 'network-request-failed':
+        return 'Koneksi internet bermasalah. Cek koneksi Anda.';
+      default:
+        return 'Registrasi gagal: ${e.message}';
+    }
+  }
+
+  Future<void> _autoLoginAndNavigate(String email, String password, String fullName) async {
+    try {
+      // Tunggu sebentar untuk memastikan user dibuat
+      await Future.delayed(const Duration(milliseconds: 500));
+      
+      if (!mounted) return;
+      
+      // Navigasi langsung ke home screen (user sudah login otomatis)
+      final currentUser = _auth.currentUser;
+      
+      if (currentUser != null) {
+        // User sudah login otomatis setelah registrasi
+        final userEmail = currentUser.email ?? email;
+        final userName = fullName;
+        
+        // Anda bisa menambahkan HomeScreen navigation di sini
+        // Untuk sekarang, kita arahkan ke login screen dulu
+        // atau bisa langsung ke home jika sudah ada HomeScreen
+        
+        // Untuk sementara, arahkan ke login dengan pesan sukses
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const LoginScreen(),
+          ),
+          (route) => false,
+        );
+      } else {
+        // Fallback: arahkan ke login screen
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const LoginScreen(),
+          ),
+          (route) => false,
+        );
+      }
+      
+    } catch (e) {
+      print('❌ Error auto login after register: $e');
+      if (mounted) {
+        // Tetap arahkan ke login screen
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const LoginScreen(),
+          ),
+          (route) => false,
+        );
+      }
+    }
+  }
+
+  Widget _buildTextField({
+    required String label,
+    required IconData prefixIcon,
+    required TextEditingController controller,
+    required String? Function(String?) validator,
+    bool isPassword = false,
+    bool isObscure = false,
+    VoidCallback? onToggleObscure,
+    TextInputType keyboardType = TextInputType.text,
+    int? maxLength,
+    String? hintText,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              color: primaryBlue,
+              fontSize: 17,
+              fontFamily: mainFont,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 2.0,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFFEFEFF2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: TextFormField(
+              controller: controller,
+              obscureText: isPassword && isObscure,
+              keyboardType: keyboardType,
+              maxLength: maxLength,
+              style: TextStyle(
+                color: primaryBlue,
+                fontFamily: mainFont,
+                fontSize: 16,
+              ),
+              decoration: InputDecoration(
+                hintText: hintText,
+                hintStyle: TextStyle(
+                  color: primaryBlue.withOpacity(0.6),
+                  fontFamily: mainFont,
+                  fontWeight: FontWeight.w400,
+                  fontSize: 16,
+                ),
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 18,
+                ),
+                prefixIcon: Icon(
+                  prefixIcon,
+                  color: primaryBlue,
+                  size: 22,
+                ),
+                suffixIcon: isPassword && onToggleObscure != null
+                    ? IconButton(
+                        icon: Icon(
+                          isObscure ? Icons.visibility_off : Icons.visibility,
+                          color: primaryBlue,
+                          size: 22,
+                        ),
+                        onPressed: onToggleObscure,
+                      )
+                    : null,
+                counterText: '',
+                filled: true,
+                fillColor: Colors.transparent,
+              ),
+              validator: validator,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          onPressed: _isLoading ? null : () => Navigator.pop(context),
+          icon: Icon(
+            Icons.arrow_back_ios_new,
+            color: primaryBlue,
+            size: 22,
+          ),
+        ),
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // LOGO - Sama seperti di LoginScreen
+                const SizedBox(height: 20),
+                Center(
+                  child: Image.asset(
+                    'assets/images/logo.png',
+                    height: 100,
+                    width: 100,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        height: 100,
+                        width: 100,
+                        decoration: BoxDecoration(
+                          color: Colors.blue.shade100,
+                          borderRadius: BorderRadius.circular(60),
+                        ),
+                        child: Icon(
+                          Icons.person_add_alt_1,
+                          size: 60,
+                          color: primaryBlue,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // JUDUL - Sama seperti di LoginScreen
+                Center(
+                  child: Text(
+                    'FaceApp',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: primaryBlue,
+                      fontSize: 34,
+                      fontWeight: FontWeight.w700,
+                      fontFamily: mainFont,
+                      height: 1.2,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                Center(
+                  child: Text(
+                    'Buat Akun Baru',
+                    style: TextStyle(
+                      color: primaryBlue.withOpacity(0.8),
+                      fontSize: 18,
+                      fontWeight: FontWeight.w400,
+                      fontFamily: mainFont,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+
+                const SizedBox(height: 36),
+                
+                // Form registrasi
+                Text(
+                  'Informasi Perusahaan',
+                  style: TextStyle(
+                    color: primaryBlue,
+                    fontSize: 16,
+                    fontFamily: mainFont,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                
+                _buildTextField(
+                  label: 'ID Perusahaan',
+                  prefixIcon: Icons.business,
+                  controller: _companyIdController,
+                  hintText: 'Contoh: 23456711',
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'ID Perusahaan wajib diisi';
+                    }
+                    if (value.length < 3) {
+                      return 'ID Perusahaan minimal 3 karakter';
+                    }
+                    return null;
+                  },
+                  maxLength: 20,
+                ),
+                
+                _buildTextField(
+                  label: 'Nama Perusahaan',
+                  prefixIcon: Icons.business_center,
+                  controller: _companyNameController,
+                  hintText: 'Contoh: PT. Kimia Farma',
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Nama Perusahaan wajib diisi';
+                    }
+                    if (value.length < 3) {
+                      return 'Nama Perusahaan minimal 3 karakter';
+                    }
+                    return null;
+                  },
+                  maxLength: 50,
+                ),
+                
+                const SizedBox(height: 8),
+                Divider(color: Colors.grey.shade300, height: 1),
+                const SizedBox(height: 20),
+                
+                Text(
+                  'Informasi Pribadi',
+                  style: TextStyle(
+                    color: primaryBlue,
+                    fontSize: 16,
+                    fontFamily: mainFont,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                
+                _buildTextField(
+                  label: 'Nama Lengkap',
+                  prefixIcon: Icons.person_outline,
+                  controller: _fullNameController,
+                  hintText: 'Contoh: Iwan Suryana',
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Nama Lengkap wajib diisi';
+                    }
+                    if (value.length < 3) {
+                      return 'Nama Lengkap minimal 3 karakter';
+                    }
+                    return null;
+                  },
+                  maxLength: 50,
+                ),
+                
+                _buildTextField(
+                  label: 'Email',
+                  prefixIcon: Icons.email_outlined,
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  hintText: 'contoh@email.com',
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Email wajib diisi';
+                    }
+                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                      return 'Format email tidak valid';
+                    }
+                    return null;
+                  },
+                  maxLength: 50,
+                ),
+                
+                _buildTextField(
+                  label: 'Nomor Telepon',
+                  prefixIcon: Icons.phone_outlined,
+                  controller: _phoneController,
+                  keyboardType: TextInputType.phone,
+                  hintText: '081234567890',
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Nomor Telepon wajib diisi';
+                    }
+                    final cleanPhone = value.replaceAll(RegExp(r'[^0-9]'), '');
+                    if (cleanPhone.length < 10 || cleanPhone.length > 15) {
+                      return 'Nomor Telepon 10-15 digit';
+                    }
+                    return null;
+                  },
+                  maxLength: 15,
+                ),
+                
+                const SizedBox(height: 8),
+                Divider(color: Colors.grey.shade300, height: 1),
+                const SizedBox(height: 20),
+                
+                Text(
+                  'Keamanan Akun',
+                  style: TextStyle(
+                    color: primaryBlue,
+                    fontSize: 16,
+                    fontFamily: mainFont,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                
+                _buildTextField(
+                  label: 'Kata Sandi',
+                  prefixIcon: Icons.lock_outline,
+                  controller: _passwordController,
+                  isPassword: true,
+                  isObscure: _isObscure,
+                  hintText: 'Minimal 6 karakter',
+                  onToggleObscure: () {
+                    setState(() => _isObscure = !_isObscure);
+                  },
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Kata Sandi wajib diisi';
+                    }
+                    if (value.length < 6) {
+                      return 'Kata Sandi minimal 6 karakter';
+                    }
+                    return null;
+                  },
+                  maxLength: 20,
+                ),
+                
+                _buildTextField(
+                  label: 'Konfirmasi Kata Sandi',
+                  prefixIcon: Icons.lock_outline,
+                  controller: _confirmPasswordController,
+                  isPassword: true,
+                  isObscure: _isConfirmObscure,
+                  hintText: 'Ulangi kata sandi',
+                  onToggleObscure: () {
+                    setState(() => _isConfirmObscure = !_isConfirmObscure);
+                  },
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Konfirmasi Kata Sandi wajib diisi';
+                    }
+                    return null;
+                  },
+                  maxLength: 20,
+                ),
+                
+                // Informasi
+                Container(
+                  margin: const EdgeInsets.only(bottom: 24),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEFEFF2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        Icons.info_outline,
+                        color: primaryBlue,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Dengan mendaftar, akun Anda akan dibuat dan Anda dapat langsung login setelah registrasi.',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: primaryBlue.withOpacity(0.7),
+                            fontFamily: mainFont,
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                // Tombol Daftar Akun - Warna sama dengan LoginScreen
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _register,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryBlue,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    child: _isLoading
+                        ? SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              color: Colors.white,
+                            ),
+                          )
+                        : Text(
+                            'Daftar Akun ',
+                            style: GoogleFonts.roboto(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 17,
+                            ),
+                          ),
+                  ),
+                ),
+                
+                const SizedBox(height: 24),
+                
+                // Tautan ke halaman login
+                Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Sudah punya akun? ',
+                        style: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontSize: 15,
+                          fontFamily: mainFont,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: _isLoading
+                            ? null
+                            : () {
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const LoginScreen(),
+                                  ),
+                                );
+                              },
+                        child: Text(
+                          'Masuk di sini',
+                          style: TextStyle(
+                            color: primaryBlue,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            fontFamily: mainFont,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                const SizedBox(height: 40),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _companyIdController.dispose();
+    _companyNameController.dispose();
+    _fullNameController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+}
