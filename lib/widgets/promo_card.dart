@@ -1,74 +1,53 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
+import 'dart:async';
 
-// Dot indicator widget
-class DotIndicator extends StatelessWidget {
-  final int currentIndex;
-  final int count;
-  const DotIndicator({
-    required this.currentIndex,
-    required this.count,
-    super.key,
-  });
+class PromoCarousel extends StatefulWidget {
+  const PromoCarousel({super.key});
+
   @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(
-        count,
-        (index) => AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          margin: const EdgeInsets.symmetric(horizontal: 3),
-          width: currentIndex == index ? 10 : 6,
-          height: 6,
-          decoration: BoxDecoration(
-            color: currentIndex == index ? Colors.blueAccent : Colors.grey[300],
-            borderRadius: BorderRadius.circular(3),
-          ),
-        ),
-      ),
-    );
-  }
+  State<PromoCarousel> createState() => _PromoCarouselState();
 }
 
-class PromoCardCarousel extends StatefulWidget {
-  const PromoCardCarousel({super.key});
-  @override
-  State<PromoCardCarousel> createState() => _PromoCardCarouselState();
-}
-
-class _PromoCardCarouselState extends State<PromoCardCarousel> {
+class _PromoCarouselState extends State<PromoCarousel> {
   final PageController _controller = PageController();
-  int _currentPage = 0;
-
-  final List<_PromoModel> _data = [
-    _PromoModel(
-      imageAsset: 'assets/images/policy.jpg', // Ganti dengan gambar yang sesuai
+  final List<PromoModel> _data = [
+    PromoModel(
+      imageAsset: 'assets/images/safety.jpg',
+      title: 'Keselamatan',
+      desc: 'Utamakan keselamatan dalam bekerja.',
+    ),
+    PromoModel(
+      imageAsset: 'assets/images/policy.jpg',
       title: 'Pembaruan Kebijakan',
       desc: 'Kebijakan baru efektif 1 September.',
     ),
-    _PromoModel(
+    PromoModel(
       imageAsset: 'assets/images/work.jpg',
       title: 'Produktivitas',
       desc: 'Bekerja dengan fokus penuh.',
     ),
-    _PromoModel(
+    PromoModel(
       imageAsset: 'assets/images/fokus.jpg',
       title: 'Fokus',
       desc: 'Jaga fokus untuk hasil maksimal.',
     ),
   ];
-
+  
+  int _currentPage = 0;
   Timer? _timer;
 
   @override
   void initState() {
     super.initState();
+    _startAutoScroll();
+  }
+
+  void _startAutoScroll() {
     _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
       if (_controller.hasClients) {
-        _currentPage = (_currentPage + 1) % _data.length;
+        final nextPage = (_currentPage + 1) % _data.length;
         _controller.animateToPage(
-          _currentPage,
+          nextPage,
           duration: const Duration(milliseconds: 600),
           curve: Curves.easeInOut,
         );
@@ -91,8 +70,10 @@ class _PromoCardCarouselState extends State<PromoCardCarousel> {
           height: 200,
           child: PageView.builder(
             controller: _controller,
-            onPageChanged: (idx) {
-              setState(() => _currentPage = idx);
+            onPageChanged: (index) {
+              setState(() {
+                _currentPage = index;
+              });
             },
             itemCount: _data.length,
             itemBuilder: (context, index) {
@@ -104,8 +85,11 @@ class _PromoCardCarouselState extends State<PromoCardCarousel> {
             },
           ),
         ),
-        const SizedBox(height: 6),
-        DotIndicator(currentIndex: _currentPage, count: _data.length),
+        const SizedBox(height: 8),
+        DotIndicator(
+          currentIndex: _currentPage,
+          count: _data.length,
+        ),
       ],
     );
   }
@@ -115,6 +99,7 @@ class PromoCard extends StatelessWidget {
   final String imageAsset;
   final String title;
   final String desc;
+  
   const PromoCard({
     super.key,
     required this.imageAsset,
@@ -124,63 +109,58 @@ class PromoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Sesuaikan ukuran card dan padding sesuai gambar contoh
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Container(
-        width: double.infinity,
-        constraints: const BoxConstraints(minHeight: 140, maxHeight: 170),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Color(0xFFE5EAF1), width: 2),
+          border: Border.all(color: const Color(0xFFE5EAF1), width: 1.5),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 12,
-              offset: Offset(0, 4),
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
         child: Column(
-          mainAxisSize: MainAxisSize.max,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Image section
             ClipRRect(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(16),
-                topRight: Radius.circular(16),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(16),
               ),
-              child: SizedBox(
-                height: 100,
-                width: double.infinity,
-                child: Image.asset(
-                  imageAsset,
-                  fit: BoxFit.cover,
-                  alignment: Alignment.topCenter,
-                ),
-              ),
+              child: _buildImage(),
             ),
+            
+            // Content section
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
                     style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15.5,
-                      color: Colors.black,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                      color: Colors.black87,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Text(
                     desc,
                     style: const TextStyle(
-                      fontSize: 12.5,
+                      fontSize: 13,
                       color: Colors.black54,
+                      height: 1.4,
                     ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
@@ -190,15 +170,79 @@ class PromoCard extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildImage() {
+    const double imageHeight = 100;
+    
+    if (imageAsset == 'assets/images/safety.jpg') {
+      return SizedBox(
+        height: imageHeight,
+        width: double.infinity,
+        child: ClipRect(
+          child: Align(
+            alignment: Alignment.topCenter,
+            heightFactor: 0.82,
+            child: Image.asset(
+              imageAsset,
+              width: double.infinity,
+              height: imageHeight,
+              fit: BoxFit.cover,
+            ),
+          ),
+        ),
+      );
+    }
+    
+    return SizedBox(
+      height: imageHeight,
+      width: double.infinity,
+      child: Image.asset(
+        imageAsset,
+        fit: BoxFit.cover,
+      ),
+    );
+  }
 }
 
-class _PromoModel {
+class PromoModel {
   final String imageAsset;
   final String title;
   final String desc;
-  _PromoModel({
+  
+  PromoModel({
     required this.imageAsset,
     required this.title,
     required this.desc,
   });
+}
+
+class DotIndicator extends StatelessWidget {
+  final int currentIndex;
+  final int count;
+  
+  const DotIndicator({
+    super.key,
+    required this.currentIndex,
+    required this.count,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(count, (index) {
+        return Container(
+          width: 8,
+          height: 8,
+          margin: const EdgeInsets.symmetric(horizontal: 3),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: currentIndex == index 
+                ? Colors.blue
+                : Colors.grey.withOpacity(0.3),
+          ),
+        );
+      }),
+    );
+  }
 }

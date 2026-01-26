@@ -16,26 +16,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  
+
   bool _isObscure = true;
   bool _isConfirmObscure = true;
   bool _isLoading = false;
-  
+
   final TextEditingController _companyIdController = TextEditingController();
   final TextEditingController _companyNameController = TextEditingController();
   final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
-  // Warna utama sama dengan LoginScreen
-  static const primaryBlue = Color(0xFF242484);
+  // Warna utama sama denganLoginScreen
+  static const primaryBlue = Color.fromARGB(255, 87, 87, 255);
   static const mainFont = 'Georgia';
-  
+
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     if (_passwordController.text != _confirmPasswordController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -45,9 +46,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
       return;
     }
-    
+
     setState(() => _isLoading = true);
-    
+
     try {
       // 1. Dapatkan data dari form
       final companyId = _companyIdController.text.trim();
@@ -56,15 +57,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final email = _emailController.text.trim();
       final phone = _phoneController.text.trim();
       final password = _passwordController.text.trim();
-      
+
       // 2. Buat akun dengan Firebase Auth
       final userCredential = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
-      
+
       final userId = userCredential.user!.uid;
-      
+
       // 3. Simpan data lengkap ke Firestore
       final userData = {
         'companyId': companyId,
@@ -79,14 +80,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       };
-      
+
       await _firestore.collection('users').doc(userId).set(userData);
-      
+
       print('✅ User registered successfully: $userId');
-      
+
       // 4. Tampilkan pesan sukses
       if (!mounted) return;
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Registrasi berhasil! Selamat datang $fullName'),
@@ -94,14 +95,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
           duration: const Duration(seconds: 3),
         ),
       );
-      
+
       // 5. Auto login dan navigasi ke home screen
       await _autoLoginAndNavigate(email, password, fullName);
-      
     } on FirebaseAuthException catch (e) {
       // Tangani error Firebase Auth
       String errorMessage = _mapRegisterError(e);
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -111,11 +111,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
         );
       }
-      
     } catch (e) {
       // Tangani error umum
       print('❌ Registration error: $e');
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -148,53 +147,50 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
-  Future<void> _autoLoginAndNavigate(String email, String password, String fullName) async {
+  Future<void> _autoLoginAndNavigate(
+    String email,
+    String password,
+    String fullName,
+  ) async {
     try {
       // Tunggu sebentar untuk memastikan user dibuat
       await Future.delayed(const Duration(milliseconds: 500));
-      
+
       if (!mounted) return;
-      
+
       // Navigasi langsung ke home screen (user sudah login otomatis)
       final currentUser = _auth.currentUser;
-      
+
       if (currentUser != null) {
         // User sudah login otomatis setelah registrasi
         final userEmail = currentUser.email ?? email;
         final userName = fullName;
-        
+
         // Anda bisa menambahkan HomeScreen navigation di sini
         // Untuk sekarang, kita arahkan ke login screen dulu
         // atau bisa langsung ke home jika sudah ada HomeScreen
-        
+
         // Untuk sementara, arahkan ke login dengan pesan sukses
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(
-            builder: (context) => const LoginScreen(),
-          ),
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
           (route) => false,
         );
       } else {
         // Fallback: arahkan ke login screen
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(
-            builder: (context) => const LoginScreen(),
-          ),
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
           (route) => false,
         );
       }
-      
     } catch (e) {
       print('❌ Error auto login after register: $e');
       if (mounted) {
         // Tetap arahkan ke login screen
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(
-            builder: (context) => const LoginScreen(),
-          ),
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
           (route) => false,
         );
       }
@@ -257,11 +253,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   horizontal: 16,
                   vertical: 18,
                 ),
-                prefixIcon: Icon(
-                  prefixIcon,
-                  color: primaryBlue,
-                  size: 22,
-                ),
+                prefixIcon: Icon(prefixIcon, color: primaryBlue, size: 22),
                 suffixIcon: isPassword && onToggleObscure != null
                     ? IconButton(
                         icon: Icon(
@@ -293,11 +285,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         elevation: 0,
         leading: IconButton(
           onPressed: _isLoading ? null : () => Navigator.pop(context),
-          icon: Icon(
-            Icons.arrow_back_ios_new,
-            color: primaryBlue,
-            size: 22,
-          ),
+          icon: Icon(Icons.arrow_back_ios_new, color: primaryBlue, size: 22),
         ),
       ),
       body: SingleChildScrollView(
@@ -367,7 +355,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
 
                 const SizedBox(height: 36),
-                
+
                 // Form registrasi
                 Text(
                   'Informasi Perusahaan',
@@ -379,7 +367,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                
+
                 _buildTextField(
                   label: 'ID Perusahaan',
                   prefixIcon: Icons.business,
@@ -396,7 +384,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   },
                   maxLength: 20,
                 ),
-                
+
                 _buildTextField(
                   label: 'Nama Perusahaan',
                   prefixIcon: Icons.business_center,
@@ -413,22 +401,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   },
                   maxLength: 50,
                 ),
-                
+
                 const SizedBox(height: 8),
                 Divider(color: Colors.grey.shade300, height: 1),
                 const SizedBox(height: 20),
-                
+
                 Text(
                   'Informasi Pribadi',
                   style: TextStyle(
-                    color: primaryBlue,
+                    color: Color.fromARGB(255, 87, 87, 255),
                     fontSize: 16,
                     fontFamily: mainFont,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 12),
-                
+
                 _buildTextField(
                   label: 'Nama Lengkap',
                   prefixIcon: Icons.person_outline,
@@ -445,7 +433,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   },
                   maxLength: 50,
                 ),
-                
+
                 _buildTextField(
                   label: 'Email',
                   prefixIcon: Icons.email_outlined,
@@ -456,14 +444,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     if (value == null || value.isEmpty) {
                       return 'Email wajib diisi';
                     }
-                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                    if (!RegExp(
+                      r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                    ).hasMatch(value)) {
                       return 'Format email tidak valid';
                     }
                     return null;
                   },
                   maxLength: 50,
                 ),
-                
+
                 _buildTextField(
                   label: 'Nomor Telepon',
                   prefixIcon: Icons.phone_outlined,
@@ -482,22 +472,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   },
                   maxLength: 15,
                 ),
-                
+
                 const SizedBox(height: 8),
                 Divider(color: Colors.grey.shade300, height: 1),
                 const SizedBox(height: 20),
-                
+
                 Text(
                   'Keamanan Akun',
                   style: TextStyle(
-                    color: primaryBlue,
+                    color:Color.fromARGB(255, 87, 87, 255),
                     fontSize: 16,
                     fontFamily: mainFont,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 12),
-                
+
                 _buildTextField(
                   label: 'Kata Sandi',
                   prefixIcon: Icons.lock_outline,
@@ -519,7 +509,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   },
                   maxLength: 20,
                 ),
-                
+
                 _buildTextField(
                   label: 'Konfirmasi Kata Sandi',
                   prefixIcon: Icons.lock_outline,
@@ -538,7 +528,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   },
                   maxLength: 20,
                 ),
-                
+
                 // Informasi
                 Container(
                   margin: const EdgeInsets.only(bottom: 24),
@@ -550,11 +540,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        Icons.info_outline,
-                        color: primaryBlue,
-                        size: 18,
-                      ),
+                      Icon(Icons.info_outline, color: primaryBlue, size: 18),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -570,7 +556,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ],
                   ),
                 ),
-                
+
                 // Tombol Daftar Akun - Warna sama dengan LoginScreen
                 SizedBox(
                   width: double.infinity,
@@ -578,7 +564,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _register,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryBlue,
+                      backgroundColor: Color.fromARGB(255, 87, 87, 255),
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
@@ -604,9 +590,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Tautan ke halaman login
                 Center(
                   child: Row(
@@ -634,7 +620,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         child: Text(
                           'Masuk di sini',
                           style: TextStyle(
-                            color: primaryBlue,
+                            color: Color.fromARGB(255, 87, 87, 255),
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
                             fontFamily: mainFont,
@@ -645,7 +631,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 40),
               ],
             ),

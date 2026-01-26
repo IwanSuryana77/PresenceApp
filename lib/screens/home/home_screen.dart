@@ -17,7 +17,11 @@ import '../../widgets/icon_tile.dart';
 import '../../services/auth_helper.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key, required String userEmail, required String userName});
+  const HomeScreen({
+    super.key,
+    required String userEmail,
+    required String userName,
+  });
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -54,7 +58,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     height: 200,
                     child: PageView(
                       controller: _pageController,
-                      children: const [
+                      children: [
                         PromoCard(
                           imageAsset: 'assets/images/safety.jpg',
                           title: 'Utamakan Keselamatan',
@@ -261,11 +265,18 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: const EmptyState(
                   title: 'Belum ada pengumuman',
                   subtitle: 'Pengumuman akan tampil disini',
+                  // Pastikan warna teks konsisten dan tidak kuning
                   titleStyle: TextStyle(
                     color: Colors.black87,
                     fontWeight: FontWeight.w600,
+                    backgroundColor:
+                        Colors.transparent, // pastikan tidak ada background
                   ),
-                  subtitleStyle: TextStyle(color: Colors.black54),
+                  subtitleStyle: TextStyle(
+                    color: Colors.black54,
+                    backgroundColor:
+                        Colors.transparent, // pastikan tidak ada background
+                  ),
                 ),
               ),
             ),
@@ -296,11 +307,18 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: const EmptyState(
                   title: 'Tidak ada tugas',
                   subtitle: 'Anda tidak memiliki tugas yang tertunda',
+                  // Pastikan warna teks konsisten dan tidak kuning
                   titleStyle: TextStyle(
                     color: Colors.black87,
                     fontWeight: FontWeight.w600,
+                    backgroundColor:
+                        Colors.transparent, // pastikan tidak ada background
                   ),
-                  subtitleStyle: TextStyle(color: Colors.black54),
+                  subtitleStyle: TextStyle(
+                    color: Colors.black54,
+                    backgroundColor:
+                        Colors.transparent, // pastikan tidak ada background
+                  ),
                 ),
               ),
             ),
@@ -321,7 +339,7 @@ class GreetingHeader extends StatefulWidget {
 
 class _GreetingHeaderState extends State<GreetingHeader> {
   late Future<Map<String, dynamic>> _userDataFuture;
-  
+
   // Daftar asset gambar profil lokal
   static const List<String> _availableProfileAssets = [
     'assets/images/profil1.jpg',
@@ -353,17 +371,17 @@ class _GreetingHeaderState extends State<GreetingHeader> {
       final user = FirebaseAuth.instance.currentUser;
       String displayName = await AuthHelper.getCurrentUserName();
       String companyName = await AuthHelper.getCurrentUserCompanyName();
-      
+
       // Ambil path asset profil dari SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       String savedPhotoAsset = prefs.getString('user_photo_asset') ?? '';
-      
+
       // Jika belum ada asset yang disimpan, pilih berdasarkan nama
       if (savedPhotoAsset.isEmpty) {
         savedPhotoAsset = _getProfileAssetByUserName(displayName);
         await prefs.setString('user_photo_asset', savedPhotoAsset);
       }
-      
+
       await prefs.setString('user_name', displayName);
       await prefs.setString('user_company', companyName);
 
@@ -387,11 +405,11 @@ class _GreetingHeaderState extends State<GreetingHeader> {
     if (userName.isEmpty || userName == 'User') {
       return 'assets/images/profile1.png'; // Asset default
     }
-    
+
     // Gunakan hash dari nama untuk konsistensi
     final nameHash = userName.hashCode.abs();
     final index = nameHash % _availableProfileAssets.length;
-    
+
     return _availableProfileAssets[index];
   }
 
@@ -1086,4 +1104,3 @@ class AllTugasPage extends StatelessWidget {
 //     );
 //   }
 // }
-
