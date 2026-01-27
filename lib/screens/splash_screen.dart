@@ -15,12 +15,14 @@ class _SplashScreenState extends State<SplashScreen> {
   int _visibleChars = 0;
   final String _appName = 'FaceApp';
   Timer? _timer;
+  double _logoScale = 0.4;
 
   @override
   void initState() {
     super.initState();
     // Mulai animasi teks satu per satu
     _startAnimation();
+    _animateLogo();
   }
 
   void _startAnimation() {
@@ -45,6 +47,16 @@ class _SplashScreenState extends State<SplashScreen> {
     });
   }
 
+  void _animateLogo() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {
+          _logoScale = 1.0;
+        });
+      }
+    });
+  }
+
   @override
   void dispose() {
     _timer?.cancel();
@@ -60,25 +72,30 @@ class _SplashScreenState extends State<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // Logo aplikasi (gunakan asset logo.png di assets/images/)
-            Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                color: Colors.blue[700],
-                borderRadius: BorderRadius.circular(32),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.blue.withOpacity(0.2),
-                    blurRadius: 24,
-                    offset: const Offset(0, 8),
+            AnimatedScale(
+              scale: _logoScale,
+              duration: const Duration(milliseconds: 900),
+              curve: Curves.easeOutBack,
+              child: Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(255, 255, 255, 255),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color.fromARGB(255, 44, 47, 228).withOpacity(0.2),
+                      blurRadius: 24,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Image.asset(
+                    'assets/images/logo1.jpg',
+                    fit: BoxFit.contain,
                   ),
-                ],
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Image.asset(
-                  'assets/images/logo.png',
-                  fit: BoxFit.contain,
                 ),
               ),
             ),
@@ -92,7 +109,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   style: TextStyle(
                     fontSize: 36,
                     fontWeight: FontWeight.bold,
-                    color: Colors.blue[800],
+                    color: const Color.fromARGB(255, 255, 255, 255),
                     letterSpacing: 2,
                   ),
                 );

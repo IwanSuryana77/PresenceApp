@@ -14,8 +14,9 @@ class AbsensiData {
 }
 
 class DaftarAbsenPage extends StatefulWidget {
-  final List<AbsensiData> absensi;
-  const DaftarAbsenPage({super.key, required this.absensi});
+  // Use a ValueNotifier so the page updates automatically when new data is added
+  final ValueNotifier<List<AbsensiData>> absensiNotifier;
+  const DaftarAbsenPage({super.key, required this.absensiNotifier, required List absensi});
 
   @override
   State<DaftarAbsenPage> createState() => _DaftarAbsenPageState();
@@ -24,10 +25,14 @@ class DaftarAbsenPage extends StatefulWidget {
 class _DaftarAbsenPageState extends State<DaftarAbsenPage> {
   DateTime selectedMonth = DateTime.now();
 
-  // Untuk filter bulan/tahun
-  List<AbsensiData> get filtered => widget.absensi.where((a) =>
-      a.tanggal.month == selectedMonth.month &&
-      a.tanggal.year == selectedMonth.year).toList();
+  // Untuk filter bulan/tahun (computed per build)
+  List<AbsensiData> _filterForMonth(List<AbsensiData> all) => all
+      .where(
+        (a) =>
+            a.tanggal.month == selectedMonth.month &&
+            a.tanggal.year == selectedMonth.year,
+      )
+      .toList();
 
   // Custom month picker (bisa pakai package lain kalau mau)
   Future<void> _pickMonth() async {
@@ -35,7 +40,10 @@ class _DaftarAbsenPageState extends State<DaftarAbsenPage> {
     await showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Pilih Bulan & Tahun', style: TextStyle(color: Color(0xFF1B1E6D))),
+        title: const Text(
+          'Pilih Bulan & Tahun',
+          style: TextStyle(color: Color(0xFF1B1E6D)),
+        ),
         content: Row(
           children: [
             Expanded(
@@ -45,7 +53,9 @@ class _DaftarAbsenPageState extends State<DaftarAbsenPage> {
                   12,
                   (i) => DropdownMenuItem(
                     value: i + 1,
-                    child: Text(DateFormat('MMMM', 'id_ID').format(DateTime(0, i + 1))),
+                    child: Text(
+                      DateFormat('MMMM', 'id_ID').format(DateTime(0, i + 1)),
+                    ),
                   ),
                 ),
                 onChanged: (val) => setState(() => month = val!),
@@ -76,7 +86,9 @@ class _DaftarAbsenPageState extends State<DaftarAbsenPage> {
               setState(() => selectedMonth = DateTime(year, month));
               Navigator.pop(ctx);
             },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1B1E6D)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF1B1E6D),
+            ),
             child: const Text('Pilih', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -114,10 +126,12 @@ class _DaftarAbsenPageState extends State<DaftarAbsenPage> {
               children: [
                 IconButton(
                   onPressed: () {
-                    setState(() => selectedMonth = DateTime(
-                      selectedMonth.year,
-                      selectedMonth.month - 1,
-                    ));
+                    setState(
+                      () => selectedMonth = DateTime(
+                        selectedMonth.year,
+                        selectedMonth.month - 1,
+                      ),
+                    );
                   },
                   icon: const Icon(Icons.chevron_left, color: navy),
                 ),
@@ -128,18 +142,35 @@ class _DaftarAbsenPageState extends State<DaftarAbsenPage> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(13),
-                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5)],
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 5,
+                          ),
+                        ],
                         border: Border.all(color: surface, width: 1.2),
                       ),
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(DateFormat('MMMM yyyy', 'id_ID').format(selectedMonth),
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold, color: navy, fontSize: 16)),
+                          Text(
+                            DateFormat(
+                              'MMMM yyyy',
+                              'id_ID',
+                            ).format(selectedMonth),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: navy,
+                              fontSize: 16,
+                            ),
+                          ),
                           const SizedBox(width: 5),
-                          const Icon(Icons.keyboard_arrow_down, color: navy, size: 22),
+                          const Icon(
+                            Icons.keyboard_arrow_down,
+                            color: navy,
+                            size: 22,
+                          ),
                         ],
                       ),
                     ),
@@ -147,10 +178,12 @@ class _DaftarAbsenPageState extends State<DaftarAbsenPage> {
                 ),
                 IconButton(
                   onPressed: () {
-                    setState(() => selectedMonth = DateTime(
-                      selectedMonth.year,
-                      selectedMonth.month + 1,
-                    ));
+                    setState(
+                      () => selectedMonth = DateTime(
+                        selectedMonth.year,
+                        selectedMonth.month + 1,
+                      ),
+                    );
                   },
                   icon: const Icon(Icons.chevron_right, color: navy),
                 ),
@@ -161,14 +194,23 @@ class _DaftarAbsenPageState extends State<DaftarAbsenPage> {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 11),
-              child: filtered.isEmpty
-                  ? Container(
+              child: ValueListenableBuilder<List<AbsensiData>>(
+                valueListenable: widget.absensiNotifier,
+                builder: (context, allAbsensi, _) {
+                  final filtered = _filterForMonth(allAbsensi);
+                  if (filtered.isEmpty) {
+                    return Container(
                       width: double.infinity,
                       margin: const EdgeInsets.only(top: 30),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(14),
-                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 9)],
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.03),
+                            blurRadius: 9,
+                          ),
+                        ],
                       ),
                       child: const Padding(
                         padding: EdgeInsets.symmetric(vertical: 19),
@@ -183,75 +225,129 @@ class _DaftarAbsenPageState extends State<DaftarAbsenPage> {
                           ),
                         ),
                       ),
-                    )
-                  : ListView.separated(
-                      itemCount: filtered.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 11),
-                      itemBuilder: (context, i) {
-                        final absen = filtered[i];
-                        // hitung total jam kerja
-                        final duration = absen.jamPulang.difference(absen.jamMasuk);
-                        final totalTime = "${duration.inHours}j ${duration.inMinutes % 60}m";
-                        final hari = DateFormat('EEEE', 'id_ID').format(absen.tanggal);
-                        return Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(14),
-                            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 6)],
-                            border: Border.all(color: surface, width: 1),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 13),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                hari,
-                                style: const TextStyle(
-                                  color: navy,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 16,
-                                ),
+                    );
+                  }
+                  return ListView.separated(
+                    itemCount: filtered.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 11),
+                    itemBuilder: (context, i) {
+                      final absen = filtered[i];
+                      // hitung total jam kerja
+                      final duration = absen.jamPulang.difference(
+                        absen.jamMasuk,
+                      );
+                      final totalTime =
+                          "${duration.inHours}j ${duration.inMinutes % 60}m";
+                      final hari = DateFormat(
+                        'EEEE',
+                        'id_ID',
+                      ).format(absen.tanggal);
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(14),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 6,
+                            ),
+                          ],
+                          border: Border.all(color: surface, width: 1),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 14,
+                          horizontal: 13,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              hari,
+                              style: const TextStyle(
+                                color: navy,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 16,
                               ),
-                              const SizedBox(height: 3),
-                              Row(
-                                children: [
-                                  const Text("Masuk: ", style: TextStyle(fontWeight: FontWeight.bold, color: navy)),
-                                  Text(DateFormat('HH:mm').format(absen.jamMasuk),
-                                      style: TextStyle(fontWeight: FontWeight.w500, color: navy.withOpacity(0.74))),
-                                  const SizedBox(width: 14),
-                                  const Text("Pulang: ", style: TextStyle(fontWeight: FontWeight.bold, color: navy)),
-                                  Text(DateFormat('HH:mm').format(absen.jamPulang),
-                                      style: TextStyle(fontWeight: FontWeight.w500, color: navy.withOpacity(0.74))),
-                                ],
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                DateFormat('d MMMM yyyy', 'id_ID').format(absen.tanggal),
-                                style: TextStyle(color: navy.withOpacity(0.75), fontWeight: FontWeight.w500),
-                              ),
-                              const SizedBox(height: 8),
-                              Divider(height: 7, thickness: 1, color: surface, endIndent: 100),
-                              Row(
-                                children: [
-                                  const Text("Total Jam Kerja: ",
-                                      style: TextStyle(
-                                          color: navy,
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 14)),
-                                  Text(
-                                    totalTime,
-                                    style: const TextStyle(
-                                        color: Color(0xFF2196F3),
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 15),
+                            ),
+                            const SizedBox(height: 3),
+                            Row(
+                              children: [
+                                const Text(
+                                  "Masuk: ",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: navy,
                                   ),
-                                ],
+                                ),
+                                Text(
+                                  DateFormat('HH:mm').format(absen.jamMasuk),
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    color: navy.withOpacity(0.74),
+                                  ),
+                                ),
+                                const SizedBox(width: 14),
+                                const Text(
+                                  "Pulang: ",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: navy,
+                                  ),
+                                ),
+                                Text(
+                                  DateFormat('HH:mm').format(absen.jamPulang),
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    color: navy.withOpacity(0.74),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              DateFormat(
+                                'd MMMM yyyy',
+                                'id_ID',
+                              ).format(absen.tanggal),
+                              style: TextStyle(
+                                color: navy.withOpacity(0.75),
+                                fontWeight: FontWeight.w500,
                               ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
+                            ),
+                            const SizedBox(height: 8),
+                            Divider(
+                              height: 7,
+                              thickness: 1,
+                              color: surface,
+                              endIndent: 100,
+                            ),
+                            Row(
+                              children: [
+                                const Text(
+                                  "Total Jam Kerja: ",
+                                  style: TextStyle(
+                                    color: navy,
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                Text(
+                                  totalTime,
+                                  style: const TextStyle(
+                                    color: Color(0xFF2196F3),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
             ),
           ),
         ],

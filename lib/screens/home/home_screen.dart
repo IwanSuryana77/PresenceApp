@@ -29,10 +29,14 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final _pageController = PageController(viewportFraction: 0.92);
+  // Notifier for attendance entries so DaftarAbsenPage updates live
+  final ValueNotifier<List<AbsensiData>> _absensiNotifier =
+      ValueNotifier<List<AbsensiData>>([]);
 
   @override
   void dispose() {
     _pageController.dispose();
+    _absensiNotifier.dispose();
     super.dispose();
   }
 
@@ -161,7 +165,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const DaftarAbsenPage(absensi: []),
+                              builder: (_) => DaftarAbsenPage(
+                                absensiNotifier: _absensiNotifier, absensi: [],
+                              ),
                             ),
                           );
                         },
@@ -223,7 +229,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => AbsensiDashboardPage(userId: userId),
+                              builder: (_) =>
+                                  AbsensiDashboardPage(userId: userId),
                             ),
                           );
                         },
