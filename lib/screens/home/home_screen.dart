@@ -38,15 +38,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Hanya return body utama, tanpa Scaffold, agar navbar dari BottomNavWrapper selalu muncul
     return SafeArea(
       child: CustomScrollView(
         slivers: [
           // ---- HEADER GREETING BAR ----
           const SliverToBoxAdapter(child: GreetingHeader()),
-
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 3),
-          ), // Jarak antara header dan carousel
+          const SliverToBoxAdapter(child: SizedBox(height: 3)),
           // ---- CAROUSEL ----
           SliverPadding(
             padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 12),
@@ -58,19 +56,20 @@ class _HomeScreenState extends State<HomeScreen> {
                     height: 200,
                     child: PageView(
                       controller: _pageController,
-                      children: [
-                        PromoCard(
+                      children: const [
+                         PromoCard(
                           imageAsset: 'assets/images/safety.jpg',
-                          title: 'Utamakan Keselamatan',
-                          desc:
-                              'Selalu patuhi protokol keselamatan kerja di lingkungan kantor.',
+                          title: 'Keselamatan',
+                          desc: 'Utamakan keselamatan dalam bekerja.',
                         ),
+
                         PromoCard(
                           imageAsset: 'assets/images/work.jpg',
                           title: 'Kerja Produktif',
                           desc:
                               'Tingkatkan produktivitas dengan manajemen waktu yang baik.',
                         ),
+                        
                         PromoCard(
                           imageAsset: 'assets/images/fokus.jpg',
                           title: 'Fokus & Semangat',
@@ -83,12 +82,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 12),
                   SmoothPageIndicator(
                     controller: _pageController,
-                    count: 3,
+                    count: 2,
                     effect: ExpandingDotsEffect(
                       dotHeight: 8,
                       dotWidth: 8,
                       activeDotColor: AppColors.primary,
-                      dotColor: const Color(0xFFE0E7F3),
+                      dotColor: Color(0xFFE0E7F3),
                       expansionFactor: 3,
                       spacing: 8,
                     ),
@@ -102,142 +101,147 @@ class _HomeScreenState extends State<HomeScreen> {
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 14),
             sliver: SliverToBoxAdapter(
-              child: Surface(
-                padding: const EdgeInsets.all(14),
-                child: GridView.count(
-                  crossAxisCount: 3,
-                  mainAxisSpacing: 14,
-                  crossAxisSpacing: 14,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: [
-                    IconTile(
-                      icon: Icons.calendar_today,
-                      iconColor: AppColors.primary,
-                      label: 'KALENDER',
-                      textColor: Colors.black87,
-                      labelStyle: const TextStyle(
-                        color: Colors.black87,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 12,
-                        letterSpacing: 0.6,
+              child: Material(
+                color: Colors.transparent,
+                child: Surface(
+                  padding: const EdgeInsets.all(14),
+                  child: GridView.count(
+                    crossAxisCount: 3,
+                    mainAxisSpacing: 14,
+                    crossAxisSpacing: 14,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: [
+                      IconTile(
+                        icon: Icons.calendar_today,
+                        iconColor: AppColors.primary,
+                        label: 'KALENDER',
+                        textColor: Colors.black87,
+                        labelStyle: const TextStyle(
+                          color: Colors.black87,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                          letterSpacing: 0.6,
+                        ),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const CalendarPage(),
+                            ),
+                          );
+                        },
                       ),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const CalendarPage(),
-                          ),
-                        );
-                      },
-                    ),
-                    IconTile(
-                      icon: Icons.receipt_long,
-                      iconColor: AppColors.primary,
-                      label: 'SLIP GAJI',
-                      textColor: Colors.black87,
-                      labelStyle: const TextStyle(
-                        color: Colors.black87,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 12,
-                        letterSpacing: 0.6,
+                      IconTile(
+                        icon: Icons.receipt_long,
+                        iconColor: AppColors.primary,
+                        label: 'SLIP GAJI',
+                        textColor: Colors.black87,
+                        labelStyle: const TextStyle(
+                          color: Colors.black87,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                          letterSpacing: 0.6,
+                        ),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const SlipGajiPage(),
+                            ),
+                          );
+                        },
                       ),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const SlipGajiPage(),
-                          ),
-                        );
-                      },
-                    ),
-                    IconTile(
-                      icon: Icons.list_alt,
-                      iconColor: AppColors.primary,
-                      label: 'DAFTAR ABSEN',
-                      textColor: Colors.black87,
-                      labelStyle: const TextStyle(
-                        color: Colors.black87,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 12,
-                        letterSpacing: 0.4,
+                      IconTile(
+                        icon: Icons.list_alt,
+                        iconColor: AppColors.primary,
+                        label: 'DAFTAR ABSEN',
+                        textColor: Colors.black87,
+                        labelStyle: const TextStyle(
+                          color: Colors.black87,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                          letterSpacing: 0.4,
+                        ),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  const DaftarAbsenPage(absensi: []),
+                            ),
+                          );
+                        },
                       ),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const DaftarAbsenPage(absensi: []),
-                          ),
-                        );
-                      },
-                    ),
-                    IconTile(
-                      icon: Icons.access_time,
-                      iconColor: AppColors.primary,
-                      label: 'LEMBUR',
-                      textColor: Colors.black87,
-                      labelStyle: const TextStyle(
-                        color: Colors.black87,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 12,
-                        letterSpacing: 0.4,
+                      IconTile(
+                        icon: Icons.access_time,
+                        iconColor: AppColors.primary,
+                        label: 'LEMBUR',
+                        textColor: Colors.black87,
+                        labelStyle: const TextStyle(
+                          color: Colors.black87,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                          letterSpacing: 0.4,
+                        ),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const LemburPage(),
+                            ),
+                          );
+                        },
                       ),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const LemburPage()),
-                        );
-                      },
-                    ),
-                    IconTile(
-                      icon: Icons.attach_money,
-                      iconColor: AppColors.primary,
-                      label: 'REIMBURSE',
-                      textColor: Colors.black87,
-                      labelStyle: const TextStyle(
-                        color: Colors.black87,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 12,
-                        letterSpacing: 0.2,
+                      IconTile(
+                        icon: Icons.attach_money,
+                        iconColor: AppColors.primary,
+                        label: 'REIMBURSE',
+                        textColor: Colors.black87,
+                        labelStyle: const TextStyle(
+                          color: Colors.black87,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                          letterSpacing: 0.2,
+                        ),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const ReimbursementListPage(),
+                            ),
+                          );
+                        },
                       ),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const ReimbursementListPage(),
-                          ),
-                        );
-                      },
-                    ),
-                    IconTile(
-                      icon: Icons.camera_alt,
-                      iconColor: AppColors.primary,
-                      label: 'ABSEN',
-                      textColor: Colors.black87,
-                      labelStyle: const TextStyle(
-                        color: Colors.black87,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 12,
-                        letterSpacing: 0.6,
+                      IconTile(
+                        icon: Icons.camera_alt,
+                        iconColor: AppColors.primary,
+                        label: 'ABSEN',
+                        textColor: Colors.black87,
+                        labelStyle: const TextStyle(
+                          color: Colors.black87,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                          letterSpacing: 0.6,
+                        ),
+                        onTap: () {
+                          final userId =
+                              FirebaseAuth.instance.currentUser?.uid ?? 'guest';
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  AbsensiDashboardPage(userId: userId),
+                            ),
+                          );
+                        },
                       ),
-                      onTap: () {
-                        final userId =
-                            FirebaseAuth.instance.currentUser?.uid ?? 'guest';
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                AbsensiDashboardPage(userId: userId),
-                          ),
-                        );
-                      },
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
-
           // ---- PENGUMUMAN ----
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
@@ -265,23 +269,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: const EmptyState(
                   title: 'Belum ada pengumuman',
                   subtitle: 'Pengumuman akan tampil disini',
-                  // Pastikan warna teks konsisten dan tidak kuning
                   titleStyle: TextStyle(
                     color: Colors.black87,
                     fontWeight: FontWeight.w600,
-                    backgroundColor:
-                        Colors.transparent, // pastikan tidak ada background
                   ),
-                  subtitleStyle: TextStyle(
-                    color: Colors.black54,
-                    backgroundColor:
-                        Colors.transparent, // pastikan tidak ada background
-                  ),
+                  subtitleStyle: TextStyle(color: Colors.black54),
                 ),
               ),
             ),
           ),
-
           // ---- TUGAS ----
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
@@ -307,18 +303,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: const EmptyState(
                   title: 'Tidak ada tugas',
                   subtitle: 'Anda tidak memiliki tugas yang tertunda',
-                  // Pastikan warna teks konsisten dan tidak kuning
                   titleStyle: TextStyle(
                     color: Colors.black87,
                     fontWeight: FontWeight.w600,
-                    backgroundColor:
-                        Colors.transparent, // pastikan tidak ada background
                   ),
-                  subtitleStyle: TextStyle(
-                    color: Colors.black54,
-                    backgroundColor:
-                        Colors.transparent, // pastikan tidak ada background
-                  ),
+                  subtitleStyle: TextStyle(color: Colors.black54),
                 ),
               ),
             ),

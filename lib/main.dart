@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'screens/auth/login_screen.dart';
+import 'screens/splash_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/home/pengajuan_page.dart';
 import 'screens/home/inbox_page.dart';
@@ -12,7 +13,6 @@ import 'theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
 
   if (Firebase.apps.isEmpty) {
     await Firebase.initializeApp(
@@ -41,7 +41,14 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Presence App',
       theme: AppTheme.light(),
-      home: const AuthGate(),
+      // SplashScreen sebagai halaman pertama
+      home: const SplashScreen(),
+      // Daftar route aplikasi
+      routes: {
+        '/login': (context) => const LoginScreen(),
+        '/main': (context) => const BottomNavWrapper(),
+        // Tambahkan route lain jika perlu
+      },
     );
   }
 }
@@ -82,7 +89,7 @@ class _BottomNavWrapperState extends State<BottomNavWrapper> {
   int _selectedIndex = 0;
 
   final List<Widget> _pages = [
-    const HomeScreen(userName: '', userEmail: '',),
+    const HomeScreen(userName: '', userEmail: ''),
     const PengajuanPage(),
     const InboxPage(),
     const ProfilePage(),

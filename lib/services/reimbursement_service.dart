@@ -96,7 +96,7 @@ class ReimbursementService {
     }
   }
 
-  // ================= UPDATE =================
+
   // Update status reimbursement
   static Future<void> updateReimbursementStatus(
     String id,
