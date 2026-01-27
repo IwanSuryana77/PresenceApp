@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:peresenceapp/screens/home/home_screen.dart';
 import 'package:peresenceapp/services/auth_helper.dart';
 import 'register_screen.dart';
 
@@ -32,19 +31,19 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _checkAutoLogin() async {
     // Tunggu sedikit untuk animasi/loading
     await Future.delayed(const Duration(milliseconds: 300));
-    
+
     // Cek apakah user sudah login menggunakan Firebase Auth langsung
     final currentUser = FirebaseAuth.instance.currentUser;
-    
+
     if (currentUser != null) {
       print('🔄 User sudah login, email: ${currentUser.email}');
-      
+
       try {
         // Tunggu sedikit untuk memastikan data user siap
         await Future.delayed(const Duration(milliseconds: 200));
-        
+
         if (!mounted) return;
-        
+
         // Pindah ke home screen
         await _navigateToHomeScreen();
       } catch (e) {
@@ -71,16 +70,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (!mounted) return;
 
-      // Navigasi ke HomeScreen
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => HomeScreen(
-            userEmail: userEmail ?? '',
-            userName: userName,
-          ),
-        ),
-      );
+      // Navigasi ke halaman utama dengan bottom navigation
+      Navigator.pushReplacementNamed(context, '/main');
     } catch (e) {
       print('Error mendapatkan data user: $e');
       if (mounted) {
@@ -114,16 +105,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
         // Navigasi ke HomeScreen
         if (!mounted) return;
-        
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => HomeScreen(
-              userEmail: userEmail ?? '',
-              userName: userName,
-            ),
-          ),
-        );
+
+        Navigator.pushReplacementNamed(context, '/main');
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -168,7 +151,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _showError(String msg) {
     if (!mounted) return;
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(msg),
@@ -209,11 +192,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 await AuthHelper.sendPasswordResetEmail(
                   _emailController.text.trim(),
                 );
-                
+
                 if (!mounted) return;
-                
+
                 Navigator.pop(context);
-                
+
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
@@ -224,7 +207,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 );
               } catch (e) {
                 if (!mounted) return;
-                
+
                 Navigator.pop(context);
                 _showError('Gagal mengirim email: $e');
               }
@@ -253,10 +236,7 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 20),
               Text(
                 'Memeriksa sesi login...',
-                style: TextStyle(
-                  color: primaryBlue,
-                  fontFamily: mainFont,
-                ),
+                style: TextStyle(color: primaryBlue, fontFamily: mainFont),
               ),
             ],
           ),
@@ -305,7 +285,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 'FaceApp',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color:Color.fromARGB(255, 87, 87, 255),
+                  color: Color.fromARGB(255, 87, 87, 255),
                   fontSize: 34,
                   fontWeight: FontWeight.w700,
                   fontFamily: mainFont,
@@ -369,7 +349,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           hintText: 'Masukkan email Anda',
                           hintStyle: TextStyle(
-                            color:Color.fromARGB(255, 87, 87, 255),
+                            color: Color.fromARGB(255, 87, 87, 255),
                             fontFamily: 'Georgia',
                             fontWeight: FontWeight.w400,
                             fontSize: 16,
@@ -421,7 +401,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         controller: _passwordController,
                         obscureText: _obscure,
                         style: TextStyle(
-                          color:Color.fromARGB(255, 87, 87, 255),
+                          color: Color.fromARGB(255, 87, 87, 255),
                           fontFamily: mainFont,
                           fontSize: 16,
                           letterSpacing: 2.0,
@@ -442,7 +422,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           prefixIcon: const Icon(
                             Icons.lock_outline,
-                            color:Color.fromARGB(255, 87, 87, 255),
+                            color: Color.fromARGB(255, 87, 87, 255),
                           ),
                           suffixIcon: IconButton(
                             onPressed: () =>
@@ -562,10 +542,7 @@ class _LoginScreenState extends State<LoginScreen> {
               Row(
                 children: [
                   Expanded(
-                    child: Divider(
-                      color: Colors.grey.shade300,
-                      thickness: 1,
-                    ),
+                    child: Divider(color: Colors.grey.shade300, thickness: 1),
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -578,10 +555,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   Expanded(
-                    child: Divider(
-                      color: Colors.grey.shade300,
-                      thickness: 1,
-                    ),
+                    child: Divider(color: Colors.grey.shade300, thickness: 1),
                   ),
                 ],
               ),

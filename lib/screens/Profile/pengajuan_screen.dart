@@ -104,9 +104,9 @@ class PengajuanScreen extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 24),
       child: GestureDetector(
         onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Membuka pengajuan $title')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Membuka pengajuan $title')));
         },
         child: Container(
           decoration: BoxDecoration(
@@ -131,10 +131,7 @@ class PengajuanScreen extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: LinearGradient(
-                      colors: [
-                        color.withOpacity(0.9),
-                        color.withOpacity(0.7),
-                      ],
+                      colors: [color.withOpacity(0.9), color.withOpacity(0.7)],
                     ),
                   ),
                   child: Icon(

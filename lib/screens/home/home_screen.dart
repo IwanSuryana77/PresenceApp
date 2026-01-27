@@ -38,14 +38,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Hanya return body utama, tanpa Scaffold, agar navbar dari BottomNavWrapper selalu muncul
     return SafeArea(
       child: CustomScrollView(
         slivers: [
-          // ---- HEADER GREETING BAR ----
           const SliverToBoxAdapter(child: GreetingHeader()),
           const SliverToBoxAdapter(child: SizedBox(height: 3)),
-          // ---- CAROUSEL ----
           SliverPadding(
             padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 12),
             sliver: SliverToBoxAdapter(
@@ -57,19 +54,17 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: PageView(
                       controller: _pageController,
                       children: const [
-                         PromoCard(
+                        PromoCard(
                           imageAsset: 'assets/images/safety.jpg',
                           title: 'Keselamatan',
                           desc: 'Utamakan keselamatan dalam bekerja.',
                         ),
-
                         PromoCard(
                           imageAsset: 'assets/images/work.jpg',
                           title: 'Kerja Produktif',
                           desc:
                               'Tingkatkan produktivitas dengan manajemen waktu yang baik.',
                         ),
-                        
                         PromoCard(
                           imageAsset: 'assets/images/fokus.jpg',
                           title: 'Fokus & Semangat',
@@ -82,7 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 12),
                   SmoothPageIndicator(
                     controller: _pageController,
-                    count: 2,
+                    count: 3,
                     effect: ExpandingDotsEffect(
                       dotHeight: 8,
                       dotWidth: 8,
@@ -97,7 +92,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
-          // ---- MENU GRID ----
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 14),
             sliver: SliverToBoxAdapter(
@@ -167,8 +161,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) =>
-                                  const DaftarAbsenPage(absensi: []),
+                              builder: (_) => const DaftarAbsenPage(absensi: []),
                             ),
                           );
                         },
@@ -230,8 +223,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) =>
-                                  AbsensiDashboardPage(userId: userId),
+                              builder: (_) => AbsensiDashboardPage(userId: userId),
                             ),
                           );
                         },
@@ -242,7 +234,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
-          // ---- PENGUMUMAN ----
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
             sliver: SliverToBoxAdapter(
@@ -270,15 +261,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: 'Belum ada pengumuman',
                   subtitle: 'Pengumuman akan tampil disini',
                   titleStyle: TextStyle(
-                    color: Colors.black87,
+                    color: Colors.black54,
                     fontWeight: FontWeight.w600,
+                    fontSize: 14,
                   ),
-                  subtitleStyle: TextStyle(color: Colors.black54),
+                  subtitleStyle: TextStyle(
+                    color: Colors.black38,
+                    fontWeight: FontWeight.w400,
+                    fontSize: 13,
+                  ),
                 ),
               ),
             ),
           ),
-          // ---- TUGAS ----
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
             sliver: SliverToBoxAdapter(
@@ -304,10 +299,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: 'Tidak ada tugas',
                   subtitle: 'Anda tidak memiliki tugas yang tertunda',
                   titleStyle: TextStyle(
-                    color: Colors.black87,
+                    color: Colors.black54,
                     fontWeight: FontWeight.w600,
+                    fontSize: 14,
                   ),
-                  subtitleStyle: TextStyle(color: Colors.black54),
+                  subtitleStyle: TextStyle(
+                    color: Colors.black38,
+                    fontWeight: FontWeight.w400,
+                    fontSize: 13,
+                  ),
                 ),
               ),
             ),
@@ -329,7 +329,6 @@ class GreetingHeader extends StatefulWidget {
 class _GreetingHeaderState extends State<GreetingHeader> {
   late Future<Map<String, dynamic>> _userDataFuture;
 
-  // Daftar asset gambar profil lokal
   static const List<String> _availableProfileAssets = [
     'assets/images/profil1.jpg',
     'assets/images/profil2.jpg',
@@ -339,14 +338,6 @@ class _GreetingHeaderState extends State<GreetingHeader> {
     'assets/images/profil6.png',
     'assets/images/profil7.png',
     'assets/images/profil8.png',
-    // 'assets/images/avatar1.png',
-    // 'assets/images/avatar2.png',
-    // 'assets/images/avatar3.png',
-    // 'assets/images/user1.jpg',
-    // 'assets/images/user2.jpg',
-    // 'assets/images/user3.jpg',
-    // 'assets/images/employee1.png',
-    // 'assets/images/employee2.png',
   ];
 
   @override
@@ -357,15 +348,12 @@ class _GreetingHeaderState extends State<GreetingHeader> {
 
   Future<Map<String, dynamic>> _fetchUserData() async {
     try {
-      final user = FirebaseAuth.instance.currentUser;
       String displayName = await AuthHelper.getCurrentUserName();
       String companyName = await AuthHelper.getCurrentUserCompanyName();
 
-      // Ambil path asset profil dari SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       String savedPhotoAsset = prefs.getString('user_photo_asset') ?? '';
 
-      // Jika belum ada asset yang disimpan, pilih berdasarkan nama
       if (savedPhotoAsset.isEmpty) {
         savedPhotoAsset = _getProfileAssetByUserName(displayName);
         await prefs.setString('user_photo_asset', savedPhotoAsset);
@@ -377,25 +365,23 @@ class _GreetingHeaderState extends State<GreetingHeader> {
       return {
         'name': displayName,
         'companyName': companyName,
-        'photoAsset': savedPhotoAsset, // Menggunakan asset lokal, bukan URL
+        'photoAsset': savedPhotoAsset,
       };
     } catch (e) {
       print('Error fetching user data: $e');
       return {
         'name': 'User',
         'companyName': 'Unknown Company',
-        'photoAsset': 'assets/images/profile1.png', // Asset default
+        'photoAsset': 'assets/images/profile1.png',
       };
     }
   }
 
-  // Method untuk mendapatkan asset profil berdasarkan nama user
   String _getProfileAssetByUserName(String userName) {
     if (userName.isEmpty || userName == 'User') {
-      return 'assets/images/profile1.png'; // Asset default
+      return 'assets/images/profile1.png';
     }
 
-    // Gunakan hash dari nama untuk konsistensi
     final nameHash = userName.hashCode.abs();
     final index = nameHash % _availableProfileAssets.length;
 
@@ -404,17 +390,10 @@ class _GreetingHeaderState extends State<GreetingHeader> {
 
   String getInitials(String name) {
     final cleanName = name.trim();
-
     if (cleanName.isEmpty) return 'U';
-
     final parts = cleanName.split(' ').where((p) => p.isNotEmpty).toList();
-
     if (parts.isEmpty) return 'U';
-
-    if (parts.length == 1) {
-      return parts[0][0].toUpperCase();
-    }
-
+    if (parts.length == 1) return parts[0][0].toUpperCase();
     return (parts[0][0] + parts.last[0]).toUpperCase();
   }
 
@@ -434,7 +413,7 @@ class _GreetingHeaderState extends State<GreetingHeader> {
           height: 40,
           fit: BoxFit.cover,
           errorBuilder: (context, error, stackTrace) {
-            // Jika asset tidak ditemukan, tampilkan inisial
+            // FIX: Tambahkan textBaseline dan overflow untuk mencegah garis kuning
             return Container(
               color: Colors.white,
               child: Center(
@@ -444,6 +423,13 @@ class _GreetingHeaderState extends State<GreetingHeader> {
                     color: AppColors.primary,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
+                  ),
+                  // FIX 1: Tambahkan overflow untuk mencegah garis kuning
+                  overflow: TextOverflow.clip,
+                  // FIX 2: Atau bisa juga dengan menghilangkan baseline
+                  textHeightBehavior: const TextHeightBehavior(
+                    applyHeightToFirstAscent: false,
+                    applyHeightToLastDescent: false,
                   ),
                 ),
               ),
@@ -464,7 +450,7 @@ class _GreetingHeaderState extends State<GreetingHeader> {
             : 'User';
         final photoAsset = snapshot.hasData
             ? snapshot.data!['photoAsset'] as String
-            : 'assets/images/profile1.png'; // Asset default
+            : 'assets/images/profile1.png';
         final companyName = snapshot.hasData
             ? snapshot.data!['companyName'] as String
             : 'Unknown Company';
@@ -485,7 +471,6 @@ class _GreetingHeaderState extends State<GreetingHeader> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const SizedBox(width: 10),
-                  // Menggunakan asset lokal untuk foto profil
                   _buildAvatar(photoAsset, userName),
                   const SizedBox(width: 14),
                   Expanded(
@@ -493,6 +478,7 @@ class _GreetingHeaderState extends State<GreetingHeader> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // FIX 3: Tambahkan overflow untuk teks nama
                         Text(
                           userName,
                           maxLines: 1,
@@ -504,8 +490,11 @@ class _GreetingHeaderState extends State<GreetingHeader> {
                           ),
                         ),
                         const SizedBox(height: 2),
+                        // FIX 4: Tambahkan overflow untuk teks company
                         Text(
                           companyName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             color: Colors.white.withOpacity(0.85),
                             fontSize: 12,

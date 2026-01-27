@@ -32,7 +32,7 @@ class _PromoCarouselState extends State<PromoCarousel> {
       desc: 'Jaga fokus untuk hasil maksimal.',
     ),
   ];
-  
+
   int _currentPage = 0;
   Timer? _timer;
 
@@ -86,10 +86,7 @@ class _PromoCarouselState extends State<PromoCarousel> {
           ),
         ),
         const SizedBox(height: 8),
-        DotIndicator(
-          currentIndex: _currentPage,
-          count: _data.length,
-        ),
+        DotIndicator(currentIndex: _currentPage, count: _data.length),
       ],
     );
   }
@@ -99,7 +96,7 @@ class PromoCard extends StatelessWidget {
   final String imageAsset;
   final String title;
   final String desc;
-  
+
   const PromoCard({
     super.key,
     required this.imageAsset,
@@ -134,7 +131,7 @@ class PromoCard extends StatelessWidget {
               ),
               child: _buildImage(),
             ),
-            
+
             // Content section
             Padding(
               padding: const EdgeInsets.all(16),
@@ -158,6 +155,7 @@ class PromoCard extends StatelessWidget {
                       fontSize: 13,
                       color: Colors.black54,
                       height: 1.4,
+                      decoration: TextDecoration.none,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -173,7 +171,7 @@ class PromoCard extends StatelessWidget {
 
   Widget _buildImage() {
     const double imageHeight = 100;
-    
+
     if (imageAsset == 'assets/images/safety.jpg') {
       return SizedBox(
         height: imageHeight,
@@ -192,14 +190,11 @@ class PromoCard extends StatelessWidget {
         ),
       );
     }
-    
+
     return SizedBox(
       height: imageHeight,
       width: double.infinity,
-      child: Image.asset(
-        imageAsset,
-        fit: BoxFit.cover,
-      ),
+      child: Image.asset(imageAsset, fit: BoxFit.cover),
     );
   }
 }
@@ -208,7 +203,7 @@ class PromoModel {
   final String imageAsset;
   final String title;
   final String desc;
-  
+
   PromoModel({
     required this.imageAsset,
     required this.title,
@@ -219,7 +214,7 @@ class PromoModel {
 class DotIndicator extends StatelessWidget {
   final int currentIndex;
   final int count;
-  
+
   const DotIndicator({
     super.key,
     required this.currentIndex,
@@ -237,7 +232,7 @@ class DotIndicator extends StatelessWidget {
           margin: const EdgeInsets.symmetric(horizontal: 3),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: currentIndex == index 
+            color: currentIndex == index
                 ? Colors.blue
                 : Colors.grey.withOpacity(0.3),
           ),

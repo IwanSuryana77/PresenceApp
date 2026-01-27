@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:peresenceapp/screens/auth/login_screen.dart';
 
 // SplashScreen: Menampilkan logo dan animasi teks "FaceApp" satu per satu
 class SplashScreen extends StatefulWidget {
@@ -20,6 +20,11 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     // Mulai animasi teks satu per satu
+    _startAnimation();
+  }
+
+  void _startAnimation() {
+    // Mulai animasi teks satu per satu
     _timer = Timer.periodic(const Duration(milliseconds: 200), (timer) {
       if (_visibleChars < _appName.length) {
         setState(() {
@@ -27,16 +32,13 @@ class _SplashScreenState extends State<SplashScreen> {
         });
       } else {
         _timer?.cancel();
-        // Navigasi otomatis ke LoginScreen setelah animasi selesai
-        Future.delayed(const Duration(milliseconds: 600), () {
+        // Setelah animasi selesai, navigasi ke LoginScreen
+        Future.delayed(const Duration(milliseconds: 500), () {
           if (mounted) {
-            // Cek status login, jika sudah login langsung ke main, jika belum ke login
-            final user = FirebaseAuth.instance.currentUser;
-            if (user != null) {
-              Navigator.of(context).pushReplacementNamed('/main');
-            } else {
-              Navigator.of(context).pushReplacementNamed('/login');
-            }
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const LoginScreen()),
+            );
           }
         });
       }
