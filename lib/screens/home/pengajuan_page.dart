@@ -190,7 +190,7 @@ class _PengajuanPageState extends State<PengajuanPage> {
       appBar: AppBar(
         title: const Text('Pengajuan Cuti'),
         centerTitle: true,
-        backgroundColor: const Color.fromARGB(255, 2, 61, 255),
+        backgroundColor: Color(0xFF3F7DF4),
         foregroundColor: Colors.black,
         elevation: 0,
         actions: [
@@ -224,7 +224,7 @@ class _PengajuanPageState extends State<PengajuanPage> {
                     borderRadius: BorderRadius.circular(9),
                   ),
                   child: const Icon(Icons.calendar_month,
-                      color: Color(0xFF3936B5), size: 28),
+                      color: Color(0xFF3F7DF4), size: 28),
                 ),
                 const SizedBox(width: 18),
                 Column(
@@ -348,7 +348,7 @@ class _PengajuanPageState extends State<PengajuanPage> {
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _submitPengajuan,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF3936B5),
+                      backgroundColor:  Color(0xFF3936B5),
                       padding: const EdgeInsets.symmetric(vertical: 13),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(9),

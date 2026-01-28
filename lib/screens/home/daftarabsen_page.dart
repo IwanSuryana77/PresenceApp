@@ -98,7 +98,7 @@ class _DaftarAbsenPageState extends State<DaftarAbsenPage> {
 
   @override
   Widget build(BuildContext context) {
-    const navy = Color(0xFF1B1E6D);
+    const navy =  Color(0xFF3F7DF4);
     const surface = Color(0xFFF6F7FB);
 
     return Scaffold(
@@ -111,7 +111,7 @@ class _DaftarAbsenPageState extends State<DaftarAbsenPage> {
         title: const Text(
           'Daftar Absen',
           style: TextStyle(
-            color: navy,
+            color:  Color(0xFF3F7DF4),
             fontWeight: FontWeight.bold,
             fontSize: 21,
           ),
@@ -133,7 +133,7 @@ class _DaftarAbsenPageState extends State<DaftarAbsenPage> {
                       ),
                     );
                   },
-                  icon: const Icon(Icons.chevron_left, color: navy),
+                  icon: const Icon(Icons.chevron_left, color:  Color(0xFF3F7DF4)),
                 ),
                 Expanded(
                   child: GestureDetector(
@@ -161,14 +161,14 @@ class _DaftarAbsenPageState extends State<DaftarAbsenPage> {
                             ).format(selectedMonth),
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: navy,
+                              color:  Color(0xFF3F7DF4),
                               fontSize: 16,
                             ),
                           ),
                           const SizedBox(width: 5),
                           const Icon(
                             Icons.keyboard_arrow_down,
-                            color: navy,
+                            color:  Color(0xFF3F7DF4),
                             size: 22,
                           ),
                         ],
@@ -218,7 +218,7 @@ class _DaftarAbsenPageState extends State<DaftarAbsenPage> {
                           child: Text(
                             "Belum ada data absen bulan ini.",
                             style: TextStyle(
-                              color: navy,
+                              color:  Color(0xFF3F7DF4),
                               fontWeight: FontWeight.w500,
                               fontSize: 15,
                             ),
@@ -264,7 +264,7 @@ class _DaftarAbsenPageState extends State<DaftarAbsenPage> {
                             Text(
                               hari,
                               style: const TextStyle(
-                                color: navy,
+                                color:  Color(0xFF3F7DF4),
                                 fontWeight: FontWeight.w700,
                                 fontSize: 16,
                               ),
@@ -276,14 +276,14 @@ class _DaftarAbsenPageState extends State<DaftarAbsenPage> {
                                   "Masuk: ",
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    color: navy,
+                                    color:  Color(0xFF3F7DF4),
                                   ),
                                 ),
                                 Text(
                                   DateFormat('HH:mm').format(absen.jamMasuk),
                                   style: TextStyle(
                                     fontWeight: FontWeight.w500,
-                                    color: navy.withOpacity(0.74),
+                                    color:  Color(0xFF3F7DF4).withOpacity(0.74),
                                   ),
                                 ),
                                 const SizedBox(width: 14),
@@ -291,14 +291,14 @@ class _DaftarAbsenPageState extends State<DaftarAbsenPage> {
                                   "Pulang: ",
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    color: navy,
+                                    color:  Color(0xFF3F7DF4),
                                   ),
                                 ),
                                 Text(
                                   DateFormat('HH:mm').format(absen.jamPulang),
                                   style: TextStyle(
                                     fontWeight: FontWeight.w500,
-                                    color: navy.withOpacity(0.74),
+                                    color:  Color(0xFF3F7DF4).withOpacity(0.74),
                                   ),
                                 ),
                               ],
@@ -310,7 +310,7 @@ class _DaftarAbsenPageState extends State<DaftarAbsenPage> {
                                 'id_ID',
                               ).format(absen.tanggal),
                               style: TextStyle(
-                                color: navy.withOpacity(0.75),
+                                color:  Color(0xFF3F7DF4).withOpacity(0.75),
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -326,7 +326,7 @@ class _DaftarAbsenPageState extends State<DaftarAbsenPage> {
                                 const Text(
                                   "Total Jam Kerja: ",
                                   style: TextStyle(
-                                    color: navy,
+                                    color: Color(0xFF3F7DF4),
                                     fontWeight: FontWeight.w500,
                                     fontSize: 14,
                                   ),
@@ -334,7 +334,7 @@ class _DaftarAbsenPageState extends State<DaftarAbsenPage> {
                                 Text(
                                   totalTime,
                                   style: const TextStyle(
-                                    color: Color(0xFF2196F3),
+                                    color:  Color(0xFF3F7DF4),
                                     fontWeight: FontWeight.bold,
                                     fontSize: 15,
                                   ),

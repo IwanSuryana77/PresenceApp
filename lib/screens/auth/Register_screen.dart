@@ -217,7 +217,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           Text(
             label,
             style: TextStyle(
-              color: primaryBlue,
+              color:Color(0xFF0C75BA),
               fontSize: 17,
               fontFamily: mainFont,
               fontWeight: FontWeight.w600,
@@ -236,14 +236,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
               keyboardType: keyboardType,
               maxLength: maxLength,
               style: TextStyle(
-                color: primaryBlue,
+                color: Color(0xFF0C75BA),
                 fontFamily: mainFont,
                 fontSize: 16,
               ),
               decoration: InputDecoration(
                 hintText: hintText,
                 hintStyle: TextStyle(
-                  color: primaryBlue.withOpacity(0.6),
+                  color: Color(0xFF0C75BA).withOpacity(0.6),
                   fontFamily: mainFont,
                   fontWeight: FontWeight.w400,
                   fontSize: 16,
@@ -253,12 +253,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   horizontal: 16,
                   vertical: 18,
                 ),
-                prefixIcon: Icon(prefixIcon, color: primaryBlue, size: 22),
+                prefixIcon: Icon(prefixIcon, color:Color(0xFF0C75BA), size: 22),
                 suffixIcon: isPassword && onToggleObscure != null
                     ? IconButton(
                         icon: Icon(
                           isObscure ? Icons.visibility_off : Icons.visibility,
-                          color: primaryBlue,
+                          color: Color(0xFF0C75BA),
                           size: 22,
                         ),
                         onPressed: onToggleObscure,
@@ -285,7 +285,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         elevation: 0,
         leading: IconButton(
           onPressed: _isLoading ? null : () => Navigator.pop(context),
-          icon: Icon(Icons.arrow_back_ios_new, color: primaryBlue, size: 22),
+          icon: Icon(Icons.arrow_back_ios_new, color: Color(0xFF0C75BA), size: 22),
         ),
       ),
       body: SingleChildScrollView(
@@ -315,7 +315,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         child: Icon(
                           Icons.person_add_alt_1,
                           size: 60,
-                          color: primaryBlue,
+                          color: Color(0xFF0C75BA),
                         ),
                       );
                     },
@@ -330,7 +330,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     'FaceApp',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: primaryBlue,
+                      color:Color(0xFF0C75BA),
                       fontSize: 34,
                       fontWeight: FontWeight.w700,
                       fontFamily: mainFont,
@@ -345,7 +345,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: Text(
                     'Buat Akun Baru',
                     style: TextStyle(
-                      color: primaryBlue.withOpacity(0.8),
+                      color: Color(0xFF0C75BA),
                       fontSize: 18,
                       fontWeight: FontWeight.w400,
                       fontFamily: mainFont,
@@ -360,7 +360,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 Text(
                   'Informasi Perusahaan',
                   style: TextStyle(
-                    color: primaryBlue,
+                    color: Color(0xFF0C75BA),
                     fontSize: 16,
                     fontFamily: mainFont,
                     fontWeight: FontWeight.w600,
@@ -409,7 +409,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 Text(
                   'Informasi Pribadi',
                   style: TextStyle(
-                    color: Color.fromARGB(255, 87, 87, 255),
+                    color: Color(0xFF0C75BA),
                     fontSize: 16,
                     fontFamily: mainFont,
                     fontWeight: FontWeight.w600,
@@ -480,7 +480,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 Text(
                   'Keamanan Akun',
                   style: TextStyle(
-                    color:Color.fromARGB(255, 87, 87, 255),
+                    color:Color(0xFF0C75BA),
                     fontSize: 16,
                     fontFamily: mainFont,
                     fontWeight: FontWeight.w600,
@@ -540,14 +540,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.info_outline, color: primaryBlue, size: 18),
+                      Icon(Icons.info_outline, color: Color(0xFF0C75BA),),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           'Dengan mendaftar, akun Anda akan dibuat dan Anda dapat langsung login setelah registrasi.',
                           style: TextStyle(
                             fontSize: 12,
-                            color: primaryBlue.withOpacity(0.7),
+                            color: Color(0xFF0C75BA),
                             fontFamily: mainFont,
                             height: 1.4,
                           ),
@@ -564,7 +564,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _register,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color.fromARGB(255, 87, 87, 255),
+                      backgroundColor: Color(0xFF0C75BA),
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
@@ -620,7 +620,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         child: Text(
                           'Masuk di sini',
                           style: TextStyle(
-                            color: Color.fromARGB(255, 87, 87, 255),
+                            color:Color(0xFF0C75BA),
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
                             fontFamily: mainFont,

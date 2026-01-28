@@ -221,7 +221,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const primaryBlue = Color.fromARGB(255, 87, 87, 255);
+    const primaryBlue = Color(0xFF0C75BA);
     const mainFont = 'Georgia';
 
     // Tampilkan loading jika sedang cek auto login
@@ -235,8 +235,8 @@ class _LoginScreenState extends State<LoginScreen> {
               const CircularProgressIndicator(),
               const SizedBox(height: 20),
               Text(
-                'Memeriksa sesi login...',
-                style: TextStyle(color: primaryBlue, fontFamily: mainFont),
+                '',
+                style: TextStyle(color: Color(0xFF0C75BA), fontFamily: mainFont),
               ),
             ],
           ),
@@ -272,7 +272,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Icon(
                       Icons.person,
                       size: 60,
-                      color: Colors.blue.shade700,
+                      color: Color(0xFF0C75BA),
                     ),
                   );
                 },
@@ -285,7 +285,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 'FaceApp',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Color.fromARGB(255, 87, 87, 255),
+                  color: Color(0xFF0C75BA),
                   fontSize: 34,
                   fontWeight: FontWeight.w700,
                   fontFamily: mainFont,
@@ -298,7 +298,7 @@ class _LoginScreenState extends State<LoginScreen> {
               Text(
                 'Masuk Akun',
                 style: TextStyle(
-                  color: Color.fromARGB(255, 87, 87, 255),
+                  color: Color(0xFF0C75BA),
                   fontSize: 18,
                   fontWeight: FontWeight.w400,
                   fontFamily: mainFont,
@@ -317,7 +317,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Text(
                       "Email",
                       style: TextStyle(
-                        color: Color.fromARGB(255, 87, 87, 255),
+                        color: Color(0xFF0C75BA),
                         fontSize: 17,
                         fontFamily: mainFont,
                         fontWeight: FontWeight.w600,
@@ -337,7 +337,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
                         style: TextStyle(
-                          color: Color.fromARGB(255, 87, 87, 255),
+                          color: Color(0xFF0C75BA),
                           fontFamily: mainFont,
                           fontSize: 16,
                         ),
@@ -349,14 +349,14 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           hintText: 'Masukkan email Anda',
                           hintStyle: TextStyle(
-                            color: Color.fromARGB(255, 87, 87, 255),
+                            color: Color(0xFF0C75BA),
                             fontFamily: 'Georgia',
                             fontWeight: FontWeight.w400,
                             fontSize: 16,
                           ),
                           prefixIcon: Icon(
                             Icons.email_outlined,
-                            color: Color.fromARGB(255, 87, 87, 255),
+                            color: Color(0xFF0C75BA),
                           ),
                         ),
                         validator: (v) {
@@ -381,7 +381,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Text(
                       "Kata Sandi",
                       style: TextStyle(
-                        color: Color.fromARGB(255, 87, 87, 255),
+                        color: Color(0xFF0C75BA),
                         fontSize: 17,
                         fontFamily: mainFont,
                         fontWeight: FontWeight.w600,
@@ -401,7 +401,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         controller: _passwordController,
                         obscureText: _obscure,
                         style: TextStyle(
-                          color: Color.fromARGB(255, 87, 87, 255),
+                          color: Color(0xFF0C75BA),
                           fontFamily: mainFont,
                           fontSize: 16,
                           letterSpacing: 2.0,
@@ -414,7 +414,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           hintText: '••••••',
                           hintStyle: const TextStyle(
-                            color: Color.fromARGB(255, 87, 87, 255),
+                            color: Color(0xFF0C75BA),
                             fontFamily: 'Georgia',
                             fontWeight: FontWeight.w400,
                             fontSize: 18,
@@ -422,7 +422,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           prefixIcon: const Icon(
                             Icons.lock_outline,
-                            color: Color.fromARGB(255, 87, 87, 255),
+                            color: Color(0xFF0C75BA),
                           ),
                           suffixIcon: IconButton(
                             onPressed: () =>
@@ -431,7 +431,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               _obscure
                                   ? Icons.visibility_off
                                   : Icons.visibility,
-                              color: Color.fromARGB(255, 87, 87, 255),
+                              color: Color(0xFF0C75BA),
                             ),
                           ),
                         ),
@@ -455,7 +455,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: Text(
                           'Lupa Kata Sandi?',
                           style: TextStyle(
-                            color: Color.fromARGB(255, 87, 87, 255),
+                            color: Color(0xFF0C75BA),
                             fontSize: 14,
                             fontFamily: mainFont,
                             fontWeight: FontWeight.w500,
@@ -472,7 +472,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: ElevatedButton(
                         onPressed: _loading ? null : _login,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Color.fromARGB(255, 87, 87, 255),
+                          backgroundColor: Color(0xFF0C75BA),
                           foregroundColor: Colors.white,
                           minimumSize: const Size.fromHeight(56),
                           shape: RoundedRectangleBorder(
@@ -525,7 +525,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Text(
                       "Daftar di sini",
                       style: TextStyle(
-                        color: Color.fromARGB(255, 87, 87, 255),
+                        color: Color(0xFF0C75BA),
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                         fontFamily: mainFont,

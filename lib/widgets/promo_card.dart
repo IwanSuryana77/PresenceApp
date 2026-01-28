@@ -43,12 +43,15 @@ class _PromoCarouselState extends State<PromoCarousel> {
   }
 
   void _startAutoScroll() {
-    _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
+    // Use a slightly longer periodic interval than the animation
+    // duration to avoid overlapping animations.
+    _timer = Timer.periodic(const Duration(seconds: 4), (timer) {
       if (_controller.hasClients) {
         final nextPage = (_currentPage + 1) % _data.length;
         _controller.animateToPage(
           nextPage,
-          duration: const Duration(milliseconds: 600),
+          // Animation duration set to 3 seconds as requested
+          duration: const Duration(seconds: 3),
           curve: Curves.easeInOut,
         );
       }

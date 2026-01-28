@@ -80,11 +80,11 @@ class _SplashScreenState extends State<SplashScreen> {
                 width: 120,
                 height: 120,
                 decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 255, 255, 255),
+                  color: Color.fromARGB(255, 255, 255, 255),
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: const Color.fromARGB(255, 44, 47, 228).withOpacity(0.2),
+                      color: Color(0xFF0C75BA).withOpacity(0.2),
                       blurRadius: 24,
                       offset: const Offset(0, 8),
                     ),
@@ -109,7 +109,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   style: TextStyle(
                     fontSize: 36,
                     fontWeight: FontWeight.bold,
-                    color: const Color.fromARGB(255, 255, 255, 255),
+                    color: Color(0xFF0C75BA),
                     letterSpacing: 2,
                   ),
                 );

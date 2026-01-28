@@ -10,7 +10,8 @@ class InboxPage extends StatelessWidget {
     final List<_MessageInbox> messages = [
       _MessageInbox(
         title: "Pesan Baru dari Admin",
-        desc: "Hai, ada informasi penting mengenai akun Anda. Mohon segera periksa pesan sebelum jatuh tempo.",
+        desc:
+            "Hai, ada informasi penting mengenai akun Anda. Mohon segera periksa pesan sebelum jatuh tempo.",
         icon: Icons.mail_outline,
         isImportant: true,
         isUnread: true,
@@ -18,7 +19,8 @@ class InboxPage extends StatelessWidget {
       ),
       _MessageInbox(
         title: "Promo Spesial Minggu Ini",
-        desc: "Dapatkan diskon 20% untuk semua produk kepegawaian tahun. Promo berlaku hingga 1 minggu lagi.",
+        desc:
+            "Dapatkan diskon 20% untuk semua produk kepegawaian tahun. Promo berlaku hingga 1 minggu lagi.",
         icon: Icons.local_offer_outlined,
         isUnread: true,
         time: "1 jam yang lalu",
@@ -39,7 +41,8 @@ class InboxPage extends StatelessWidget {
       ),
       _MessageInbox(
         title: "Konfirmasi Pesanan #123456",
-        desc: "Pesanan Anda dengan nomor #123456 sudah dikonfirmasi, silahkan cek detail di riwayat.",
+        desc:
+            "Pesanan Anda dengan nomor #123456 sudah dikonfirmasi, silahkan cek detail di riwayat.",
         icon: Icons.receipt_long_rounded,
         time: "Kemarin",
       ),
@@ -52,13 +55,15 @@ class InboxPage extends StatelessWidget {
       ),
       _MessageInbox(
         title: "Penawaran Eksklusif untuk Anda!",
-        desc: "Nikmati penawaran khusus untuk akun anda, klik untuk melihat promo terbaru.",
+        desc:
+            "Nikmati penawaran khusus untuk akun anda, klik untuk melihat promo terbaru.",
         icon: Icons.volunteer_activism,
         time: "2 hari yang lalu",
       ),
       _MessageInbox(
         title: "Pembaruan Kebijakan Privasi",
-        desc: "Kami telah memperbarui kebijakan privasi kami. Mohon baca untuk mengetahui info baru.",
+        desc:
+            "Kami telah memperbarui kebijakan privasi kami. Mohon baca untuk mengetahui info baru.",
         icon: Icons.privacy_tip_outlined,
         time: "4 hari yang lalu",
       ),
@@ -68,7 +73,8 @@ class InboxPage extends StatelessWidget {
       backgroundColor: AppColors.extraLight,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: const Color.fromARGB(255, 78, 104, 255),
+        backgroundColor: Color(0xFF3F7DF4),
+        automaticallyImplyLeading: false,
         // Back button otomatis
         centerTitle: true,
         title: const Text(
@@ -81,7 +87,11 @@ class InboxPage extends StatelessWidget {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.inbox_rounded, color: AppColors.primary, size: 27),
+            icon: const Icon(
+              Icons.inbox_rounded,
+              color: AppColors.primary,
+              size: 27,
+            ),
             tooltip: "Inbox",
             onPressed: () {},
           ),
@@ -100,7 +110,11 @@ class InboxPage extends StatelessWidget {
                         color: AppColors.primaryLight,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.inbox_rounded, size: 50, color: AppColors.primary),
+                      child: const Icon(
+                        Icons.inbox_rounded,
+                        size: 50,
+                        color: AppColors.primary,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     const Text(
@@ -121,12 +135,16 @@ class InboxPage extends StatelessWidget {
                 ),
               )
             : ListView.separated(
-                padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 13,
+                  vertical: 8,
+                ),
                 itemCount: messages.length,
                 separatorBuilder: (_, __) => const SizedBox(height: 8),
                 itemBuilder: (context, i) {
                   final msg = messages[i];
-                  Color border = Colors.transparent, iconClr = AppColors.primary;
+                  Color border = Colors.transparent,
+                      iconClr = AppColors.primary;
                   if (msg.isUnread) border = AppColors.primary.withOpacity(.19);
                   if (msg.isWarning) iconClr = Colors.redAccent;
                   if (msg.isInfo) iconClr = Colors.orange;
@@ -165,7 +183,7 @@ class InboxPage extends StatelessWidget {
                                   backgroundColor: Colors.white,
                                   child: CircleAvatar(
                                     radius: 6,
-                                    backgroundColor: AppColors.primary,
+                                    backgroundColor: Color(0xFF3F7DF4),
                                   ),
                                 ),
                               ),
@@ -201,7 +219,11 @@ class InboxPage extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 if (msg.isWarning)
-                                  const Icon(Icons.error_outline, color: Colors.redAccent, size: 16),
+                                  const Icon(
+                                    Icons.error_outline,
+                                    color: Colors.redAccent,
+                                    size: 16,
+                                  ),
                                 Text(
                                   msg.time,
                                   style: TextStyle(
@@ -215,8 +237,13 @@ class InboxPage extends StatelessWidget {
                           ],
                         ),
                         trailing: null,
-                        contentPadding: const EdgeInsets.symmetric(vertical: 9, horizontal: 11),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 9,
+                          horizontal: 11,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         onTap: () {}, // Atur ke detail jika diperlukan
                       ),
                     ),

@@ -5,7 +5,7 @@ import 'dart:async';
 
 import 'package:peresenceapp/screens/home/clockin_page.dart';
 
-const primaryPurple = Color(0xFF242484);
+const primaryPurple =  Color(0xFF3F7DF4);
 
 class AbsensiDashboardPage extends StatefulWidget {
   final String userId;
@@ -60,7 +60,7 @@ class _AbsensiDashboardPageState extends State<AbsensiDashboardPage> {
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.more_vert, color: primaryPurple),
+            icon: Icon(Icons.more_vert, color:  Color(0xFF3F7DF4)),
             onPressed: () {},
           ),
         ],
@@ -93,7 +93,7 @@ class _AbsensiDashboardPageState extends State<AbsensiDashboardPage> {
                   style: TextStyle(
                     fontSize: 34,
                     fontWeight: FontWeight.bold,
-                    color: primaryPurple,
+                    color:  Color(0xFF3F7DF4),
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -246,10 +246,10 @@ class AbsenceButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
-        backgroundColor: filled ? primaryPurple : Colors.white,
+        backgroundColor: filled ?  Color(0xFF3F7DF4) : Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         elevation: 0,
-        side: filled ? null : BorderSide(color: primaryPurple, width: 1.1),
+        side: filled ? null : BorderSide(color:  Color(0xFF3F7DF4), width: 1.1),
         padding: const EdgeInsets.symmetric(vertical: 20),
       ),
       onPressed: onTap,
@@ -260,14 +260,14 @@ class AbsenceButton extends StatelessWidget {
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 16,
-              color: filled ? Colors.white : primaryPurple,
+              color: filled ? Colors.white : Color(0xFF3F7DF4),
             ),
           ),
           Text(
             info,
             style: TextStyle(
               fontSize: 13,
-              color: filled ? Colors.white : primaryPurple,
+              color: filled ? Colors.white :  Color(0xFF3F7DF4),
             ),
           ),
         ],
