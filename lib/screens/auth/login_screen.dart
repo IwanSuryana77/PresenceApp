@@ -221,7 +221,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const primaryBlue = Color(0xFF0C75BA);
     const mainFont = 'Georgia';
 
     // Tampilkan loading jika sedang cek auto login
@@ -236,7 +235,10 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 20),
               Text(
                 '',
-                style: TextStyle(color: Color(0xFF0C75BA), fontFamily: mainFont),
+                style: TextStyle(
+                  color: Color(0xFF0C75BA),
+                  fontFamily: mainFont,
+                ),
               ),
             ],
           ),

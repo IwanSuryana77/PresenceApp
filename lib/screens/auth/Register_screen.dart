@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:peresenceapp/services/auth_helper.dart';
 import 'login_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -31,7 +30,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       TextEditingController();
 
   // Warna utama sama denganLoginScreen
-  static const primaryBlue = Color.fromARGB(255, 87, 87, 255);
   static const mainFont = 'Georgia';
 
   Future<void> _register() async {
@@ -163,8 +161,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       if (currentUser != null) {
         // User sudah login otomatis setelah registrasi
-        final userEmail = currentUser.email ?? email;
-        final userName = fullName;
 
         // Anda bisa menambahkan HomeScreen navigation di sini
         // Untuk sekarang, kita arahkan ke login screen dulu
@@ -217,7 +213,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           Text(
             label,
             style: TextStyle(
-              color:Color(0xFF0C75BA),
+              color: Color(0xFF0C75BA),
               fontSize: 17,
               fontFamily: mainFont,
               fontWeight: FontWeight.w600,
@@ -253,7 +249,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   horizontal: 16,
                   vertical: 18,
                 ),
-                prefixIcon: Icon(prefixIcon, color:Color(0xFF0C75BA), size: 22),
+                prefixIcon: Icon(
+                  prefixIcon,
+                  color: Color(0xFF0C75BA),
+                  size: 22,
+                ),
                 suffixIcon: isPassword && onToggleObscure != null
                     ? IconButton(
                         icon: Icon(
@@ -285,7 +285,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
         elevation: 0,
         leading: IconButton(
           onPressed: _isLoading ? null : () => Navigator.pop(context),
-          icon: Icon(Icons.arrow_back_ios_new, color: Color(0xFF0C75BA), size: 22),
+          icon: Icon(
+            Icons.arrow_back_ios_new,
+            color: Color(0xFF0C75BA),
+            size: 22,
+          ),
         ),
       ),
       body: SingleChildScrollView(
@@ -330,7 +334,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     'FaceApp',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color:Color(0xFF0C75BA),
+                      color: Color(0xFF0C75BA),
                       fontSize: 34,
                       fontWeight: FontWeight.w700,
                       fontFamily: mainFont,
@@ -480,7 +484,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 Text(
                   'Keamanan Akun',
                   style: TextStyle(
-                    color:Color(0xFF0C75BA),
+                    color: Color(0xFF0C75BA),
                     fontSize: 16,
                     fontFamily: mainFont,
                     fontWeight: FontWeight.w600,
@@ -540,7 +544,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.info_outline, color: Color(0xFF0C75BA),),
+                      Icon(Icons.info_outline, color: Color(0xFF0C75BA)),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -620,7 +624,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         child: Text(
                           'Masuk di sini',
                           style: TextStyle(
-                            color:Color(0xFF0C75BA),
+                            color: Color(0xFF0C75BA),
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
                             fontFamily: mainFont,

@@ -44,9 +44,9 @@ class _PengajuanPageState extends State<PengajuanPage> {
         _leaveRequests = requests;
         _isLoading = false;
       });
-      
+
       final approved = requests.where((e) => e.status == 'Disetujui');
-      int pakai = approved.fold(0, (n, e) => n + (e.daysCount ?? 0));
+      int pakai = approved.fold(0, (n, e) => n + e.daysCount);
       setState(() {
         _sisaCuti = (12 - pakai).clamp(0, 1000);
       });
@@ -57,7 +57,8 @@ class _PengajuanPageState extends State<PengajuanPage> {
   }
 
   // Format nama bulan Indonesia
-  String _bln(int month) => DateFormat('MMMM', 'id_ID').format(DateTime(0, month));
+  String _bln(int month) =>
+      DateFormat('MMMM', 'id_ID').format(DateTime(0, month));
 
   String _formatRange(DateTime start, DateTime end) {
     final r1 = DateFormat('d MMMM yyyy', 'id_ID').format(start);
@@ -67,15 +68,16 @@ class _PengajuanPageState extends State<PengajuanPage> {
   }
 
   List<int> _availableMonths() =>
-    _leaveRequests.map((r) => r.startDate.month).toSet().toList()..sort();
+      _leaveRequests.map((r) => r.startDate.month).toSet().toList()..sort();
 
   List<int> _availableYears() =>
-    _leaveRequests.map((r) => r.startDate.year).toSet().toList()..sort();
+      _leaveRequests.map((r) => r.startDate.year).toSet().toList()..sort();
 
   List<LeaveRequest> get _filteredRiwayat => _leaveRequests
-      .where((r) =>
-        r.startDate.month == selectedMonth &&
-        r.startDate.year == selectedYear
+      .where(
+        (r) =>
+            r.startDate.month == selectedMonth &&
+            r.startDate.year == selectedYear,
       )
       .toList();
 
@@ -131,7 +133,7 @@ class _PengajuanPageState extends State<PengajuanPage> {
 
         await _api.createLeaveRequest(leaveRequest);
 
-        // Kurangi sisa cuti sementara 
+        // Kurangi sisa cuti sementara
         setState(() {
           _sisaCuti = (_sisaCuti - daysCount).clamp(0, 1000);
         });
@@ -212,7 +214,7 @@ class _PengajuanPageState extends State<PengajuanPage> {
                   blurRadius: 14,
                   color: Colors.black.withOpacity(.07),
                   offset: const Offset(0, 3.3),
-                )
+                ),
               ],
             ),
             child: Row(
@@ -223,8 +225,11 @@ class _PengajuanPageState extends State<PengajuanPage> {
                     color: Colors.purple.withOpacity(.09),
                     borderRadius: BorderRadius.circular(9),
                   ),
-                  child: const Icon(Icons.calendar_month,
-                      color: Color(0xFF3F7DF4), size: 28),
+                  child: const Icon(
+                    Icons.calendar_month,
+                    color: Color(0xFF3F7DF4),
+                    size: 28,
+                  ),
                 ),
                 const SizedBox(width: 18),
                 Column(
@@ -232,7 +237,10 @@ class _PengajuanPageState extends State<PengajuanPage> {
                   children: [
                     const Text(
                       "Sisa Cuti Tahunan",
-                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15.7),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15.7,
+                      ),
                     ),
                     Text(
                       "$_sisaCuti Hari",
@@ -245,7 +253,10 @@ class _PengajuanPageState extends State<PengajuanPage> {
                     ),
                     Text(
                       "Tersedia hingga 31 Desember ${DateTime.now().year}",
-                      style: const TextStyle(fontSize: 13, color: Colors.black54),
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Colors.black54,
+                      ),
                     ),
                   ],
                 ),
@@ -261,17 +272,19 @@ class _PengajuanPageState extends State<PengajuanPage> {
               borderRadius: borderRadius,
               boxShadow: [
                 BoxShadow(
-                  blurRadius: 13, color: Colors.black.withOpacity(.06), offset: const Offset(0, 2.5)
-                )
+                  blurRadius: 13,
+                  color: Colors.black.withOpacity(.06),
+                  offset: const Offset(0, 2.5),
+                ),
               ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("Ajukan Cuti Baru",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15.5)),
+                const Text(
+                  "Ajukan Cuti Baru",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.5),
+                ),
                 const SizedBox(height: 13),
                 // Tanggal mulai
                 GestureDetector(
@@ -280,19 +293,27 @@ class _PengajuanPageState extends State<PengajuanPage> {
                     child: TextFormField(
                       decoration: InputDecoration(
                         hintText: 'Tanggal Mulai',
-                        prefixIcon: const Icon(Icons.calendar_today_outlined, size: 21),
+                        prefixIcon: const Icon(
+                          Icons.calendar_today_outlined,
+                          size: 21,
+                        ),
                         fillColor: const Color(0xFFF7F8FB),
                         filled: true,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(11),
                           borderSide: BorderSide.none,
                         ),
-                        contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 14,
+                        ),
                       ),
                       controller: TextEditingController(
                         text: _startDate != null
-                          ? DateFormat('dd MMMM yyyy', 'id_ID').format(_startDate!)
-                          : "",
+                            ? DateFormat(
+                                'dd MMMM yyyy',
+                                'id_ID',
+                              ).format(_startDate!)
+                            : "",
                       ),
                       style: const TextStyle(fontSize: 14.5),
                     ),
@@ -306,19 +327,27 @@ class _PengajuanPageState extends State<PengajuanPage> {
                     child: TextFormField(
                       decoration: InputDecoration(
                         hintText: 'Tanggal Berakhir',
-                        prefixIcon: const Icon(Icons.calendar_today_outlined, size: 21),
+                        prefixIcon: const Icon(
+                          Icons.calendar_today_outlined,
+                          size: 21,
+                        ),
                         fillColor: const Color(0xFFF7F8FB),
                         filled: true,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(11),
                           borderSide: BorderSide.none,
                         ),
-                        contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 14,
+                        ),
                       ),
                       controller: TextEditingController(
                         text: _endDate != null
-                          ? DateFormat('dd MMMM yyyy', 'id_ID').format(_endDate!)
-                          : "",
+                            ? DateFormat(
+                                'dd MMMM yyyy',
+                                'id_ID',
+                              ).format(_endDate!)
+                            : "",
                       ),
                       style: const TextStyle(fontSize: 14.5),
                     ),
@@ -348,7 +377,7 @@ class _PengajuanPageState extends State<PengajuanPage> {
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _submitPengajuan,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor:  Color(0xFF3936B5),
+                      backgroundColor: Color(0xFF3936B5),
                       padding: const EdgeInsets.symmetric(vertical: 13),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(9),
@@ -393,7 +422,11 @@ class _PengajuanPageState extends State<PengajuanPage> {
                 // Filter bulan/tahun
                 Row(
                   children: [
-                    Icon(Icons.calendar_today_rounded, color: AppColors.primary, size: 19),
+                    Icon(
+                      Icons.calendar_today_rounded,
+                      color: AppColors.primary,
+                      size: 19,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: DropdownButton<int>(
@@ -402,13 +435,20 @@ class _PengajuanPageState extends State<PengajuanPage> {
                         underline: SizedBox(),
                         borderRadius: BorderRadius.circular(10),
                         items: _availableMonths().isEmpty
-                            ? [DropdownMenuItem(value: DateTime.now().month, child: Text(_bln(DateTime.now().month)))]
-                            : _availableMonths().map(
-                                (b) => DropdownMenuItem(
-                                  value: b,
-                                  child: Text(_bln(b)),
+                            ? [
+                                DropdownMenuItem(
+                                  value: DateTime.now().month,
+                                  child: Text(_bln(DateTime.now().month)),
                                 ),
-                              ).toList(),
+                              ]
+                            : _availableMonths()
+                                  .map(
+                                    (b) => DropdownMenuItem(
+                                      value: b,
+                                      child: Text(_bln(b)),
+                                    ),
+                                  )
+                                  .toList(),
                         onChanged: (val) {
                           if (val != null) setState(() => selectedMonth = val);
                         },
@@ -422,13 +462,20 @@ class _PengajuanPageState extends State<PengajuanPage> {
                         underline: SizedBox(),
                         borderRadius: BorderRadius.circular(10),
                         items: _availableYears().isEmpty
-                            ? [DropdownMenuItem(value: DateTime.now().year, child: Text('${DateTime.now().year}'))]
-                            : _availableYears().map(
-                                (t) => DropdownMenuItem(
-                                  value: t,
-                                  child: Text('$t'),
+                            ? [
+                                DropdownMenuItem(
+                                  value: DateTime.now().year,
+                                  child: Text('${DateTime.now().year}'),
                                 ),
-                              ).toList(),
+                              ]
+                            : _availableYears()
+                                  .map(
+                                    (t) => DropdownMenuItem(
+                                      value: t,
+                                      child: Text('$t'),
+                                    ),
+                                  )
+                                  .toList(),
                         onChanged: (val) {
                           if (val != null) setState(() => selectedYear = val);
                         },
@@ -437,7 +484,10 @@ class _PengajuanPageState extends State<PengajuanPage> {
                   ],
                 ),
                 const SizedBox(height: 13),
-                const Text("Riwayat Pengajuan Cuti", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                const Text(
+                  "Riwayat Pengajuan Cuti",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                ),
                 const SizedBox(height: 13),
                 if (_isLoading)
                   const Padding(
@@ -454,20 +504,29 @@ class _PengajuanPageState extends State<PengajuanPage> {
                   ),
                 if (!_isLoading)
                   ..._filteredRiwayat.map((req) {
-                    final lama = req.endDate.difference(req.startDate).inDays + 1;
+                    final lama =
+                        req.endDate.difference(req.startDate).inDays + 1;
                     Color warna;
                     switch (req.status) {
-                      case 'Disetujui': warna = Colors.green;
+                      case 'Disetujui':
+                        warna = Colors.green;
                         break;
-                      case 'Ditolak': warna = Colors.red;
+                      case 'Ditolak':
+                        warna = Colors.red;
                         break;
-                      default: warna = Colors.amber.shade800;
+                      default:
+                        warna = Colors.amber.shade800;
                     }
                     return Container(
                       margin: const EdgeInsets.only(bottom: 9),
-                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 8,
+                        horizontal: 2,
+                      ),
                       decoration: BoxDecoration(
-                        border: Border(left: BorderSide(color: warna, width: 3.5)),
+                        border: Border(
+                          left: BorderSide(color: warna, width: 3.5),
+                        ),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -485,11 +544,16 @@ class _PengajuanPageState extends State<PengajuanPage> {
                                 ),
                               ),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 13,
+                                  vertical: 4,
+                                ),
                                 decoration: BoxDecoration(
                                   color: warna.withOpacity(0.15),
                                   borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: warna.withOpacity(.3)),
+                                  border: Border.all(
+                                    color: warna.withOpacity(.3),
+                                  ),
                                 ),
                                 child: Text(
                                   req.status,
@@ -505,7 +569,10 @@ class _PengajuanPageState extends State<PengajuanPage> {
                           const SizedBox(height: 2),
                           Text(
                             req.reason,
-                            style: const TextStyle(fontSize: 13, color: Colors.black54),
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: Colors.black54,
+                            ),
                           ),
                         ],
                       ),

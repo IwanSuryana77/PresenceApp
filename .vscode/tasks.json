@@ -9,6 +9,12 @@
 			"isBackground": false,
 			"problemMatcher": [],
 			"group": "build"
+		},
+		{
+			"label": "Run Flutter app on Chrome",
+			"type": "shell",
+			"command": "flutter run -d chrome",
+			"group": "build"
 		}
 	]
 }

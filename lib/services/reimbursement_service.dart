@@ -4,8 +4,7 @@ import '../models/reimbursement_request.dart';
 /// Firebase Service untuk Reimbursement Request (Pengembalian Dana)
 /// Mengelola CRUD operations di collection 'reimbursement_requests'
 class ReimbursementService {
-  static final FirebaseFirestore _firestore =
-      FirebaseFirestore.instance;
+  static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   static const String _collectionName = 'reimbursement_requests';
 
@@ -40,12 +39,7 @@ class ReimbursementService {
           .get();
 
       return snapshot.docs
-          .map(
-            (doc) => ReimbursementRequest.fromMap(
-              doc.data() as Map<String, dynamic>,
-              doc.id,
-            ),
-          )
+          .map((doc) => ReimbursementRequest.fromMap(doc.data(), doc.id))
           .toList();
     } catch (e) {
       print('Error fetching reimbursements: $e');
@@ -62,12 +56,7 @@ class ReimbursementService {
           .get();
 
       return snapshot.docs
-          .map(
-            (doc) => ReimbursementRequest.fromMap(
-              doc.data() as Map<String, dynamic>,
-              doc.id,
-            ),
-          )
+          .map((doc) => ReimbursementRequest.fromMap(doc.data(), doc.id))
           .toList();
     } catch (e) {
       print('Error fetching all reimbursements: $e');
@@ -76,12 +65,9 @@ class ReimbursementService {
   }
 
   // Ambil reimbursement berdasarkan ID
-  static Future<ReimbursementRequest?> getReimbursementById(
-    String id,
-  ) async {
+  static Future<ReimbursementRequest?> getReimbursementById(String id) async {
     try {
-      final doc =
-          await _firestore.collection(_collectionName).doc(id).get();
+      final doc = await _firestore.collection(_collectionName).doc(id).get();
 
       if (doc.exists) {
         return ReimbursementRequest.fromMap(
@@ -95,7 +81,6 @@ class ReimbursementService {
       return null;
     }
   }
-
 
   // Update status reimbursement
   static Future<void> updateReimbursementStatus(
@@ -115,10 +100,7 @@ class ReimbursementService {
         updateData['rejectionReason'] = rejectionReason;
       }
 
-      await _firestore
-          .collection(_collectionName)
-          .doc(id)
-          .update(updateData);
+      await _firestore.collection(_collectionName).doc(id).update(updateData);
 
       print('Reimbursement status updated to: $newStatus');
     } catch (e) {
@@ -131,10 +113,7 @@ class ReimbursementService {
   // Hapus reimbursement
   static Future<void> deleteReimbursement(String id) async {
     try {
-      await _firestore
-          .collection(_collectionName)
-          .doc(id)
-          .delete();
+      await _firestore.collection(_collectionName).doc(id).delete();
 
       print('Reimbursement deleted: $id');
     } catch (e) {
@@ -145,8 +124,9 @@ class ReimbursementService {
 
   // ================= STREAM =================
   // Real-time reimbursement user
-  static Stream<List<ReimbursementRequest>>
-      getUserReimbursementsStream(String employeeId) {
+  static Stream<List<ReimbursementRequest>> getUserReimbursementsStream(
+    String employeeId,
+  ) {
     return _firestore
         .collection(_collectionName)
         .where('employeeId', isEqualTo: employeeId)
@@ -154,12 +134,7 @@ class ReimbursementService {
         .snapshots()
         .map(
           (snapshot) => snapshot.docs
-              .map(
-                (doc) => ReimbursementRequest.fromMap(
-                  doc.data() as Map<String, dynamic>,
-                  doc.id,
-                ),
-              )
+              .map((doc) => ReimbursementRequest.fromMap(doc.data(), doc.id))
               .toList(),
         );
   }

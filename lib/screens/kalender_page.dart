@@ -4,13 +4,13 @@ import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Colors
-const biruModern = Color(0xFF2563EB); // Blue untuk tombol dan header
+const biruModern = Color(0xFF2563EB);
 const whiteBg = Color(0xFFF7F8FC);
 
 class EventData {
   final DateTime date;
   final String acara;
-  final String id; // ID dokumen Firestore
+  final String id;
   EventData(this.date, this.acara, {this.id = ""});
 }
 
@@ -25,7 +25,6 @@ class _CalendarPageState extends State<CalendarPage> {
   DateTime? _selectedDay;
   Map<DateTime, List<EventData>> _events = {};
 
-  // --- Firestore reference ---
   final CollectionReference eventCollection =
       FirebaseFirestore.instance.collection('calendar_events');
 
@@ -37,7 +36,6 @@ class _CalendarPageState extends State<CalendarPage> {
 
   DateTime _normalizeDate(DateTime date) => DateTime(date.year, date.month, date.day);
 
-  // --- Load from Firestore, group by date ---
   Future<void> _loadEventsFromFirestore() async {
     final snapshot = await eventCollection.get();
     final Map<DateTime, List<EventData>> eventMap = {};
@@ -47,9 +45,7 @@ class _CalendarPageState extends State<CalendarPage> {
         DateTime d = (data['date'] as Timestamp).toDate();
         DateTime groupKey = _normalizeDate(d);
         eventMap.putIfAbsent(groupKey, () => []);
-        eventMap[groupKey]!.add(
-          EventData(groupKey, data['acara'], id: doc.id),
-        );
+        eventMap[groupKey]!.add(EventData(groupKey, data['acara'], id: doc.id));
       }
     }
     setState(() {
@@ -57,7 +53,6 @@ class _CalendarPageState extends State<CalendarPage> {
     });
   }
 
-  // Save to Firebase!
   Future<void> _addEventToFirestore(DateTime date, String acara) async {
     await eventCollection.add({
       'date': date,
@@ -67,14 +62,12 @@ class _CalendarPageState extends State<CalendarPage> {
     await _loadEventsFromFirestore();
   }
 
-  // Event for selected day
   List<EventData> get _eventForSelectedDay {
     final day = _normalizeDate(_selectedDay ?? _focusedDay);
     return _events[day] ?? [];
   }
 
   Future<void> _pickYearMonth(BuildContext context) async {
-    // Show year/month picker dialog (customized)
     int startYear = 2020;
     int endYear = 2040;
     int currYear = _focusedDay.year;
@@ -97,7 +90,6 @@ class _CalendarPageState extends State<CalendarPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Tahun dropdown
                   DropdownButton<int>(
                     value: pickedYear,
                     style: const TextStyle(fontWeight: FontWeight.bold, color: biruModern),
@@ -111,7 +103,6 @@ class _CalendarPageState extends State<CalendarPage> {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  // Bulan picker
                   Wrap(
                     alignment: WrapAlignment.center,
                     spacing: 6,
@@ -215,264 +206,260 @@ class _CalendarPageState extends State<CalendarPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: whiteBg,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-          child: Column(
-            children: [
-              // ==== Header Kalender ====
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 7),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(15),
-                  boxShadow: const [
-                    BoxShadow(color: Color(0x11000000), blurRadius: 18, offset: Offset(0, 5)),
-                  ],
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(51),
+        child: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          centerTitle: true,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.black, size: 23),
+            onPressed: () => Navigator.of(context).pop(),
+            tooltip: "Kembali ke Home",
+          ),
+          title: GestureDetector(
+            onTap: () => _pickYearMonth(context),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  DateFormat('MMM yyyy').format(_focusedDay),
+                  style: const TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 18,
+                  ),
                 ),
-                child: Column(
-                  children: [
-                    // App bar custom: back, month/year, "Hari ini"
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.arrow_back, color: biruModern, size: 28),
-                          onPressed: () => Navigator.of(context).pop(),
-                          tooltip: "Kembali ke Home",
-                        ),
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () => _pickYearMonth(context),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  "${DateFormat('MMM yyyy').format(_focusedDay)}",
-                                  style: const TextStyle(
-                                    color: biruModern,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 19,
-                                  ),
-                                ),
-                                const Icon(Icons.expand_more, color: biruModern, size: 22),
-                              ],
-                            ),
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: () => setState(() {
-                            final now = DateTime.now();
-                            _focusedDay = DateTime(now.year, now.month, now.day);
-                            _selectedDay = _focusedDay;
-                          }),
-                          child: const Text(
-                            "Hari Ini",
-                            style: TextStyle(
-                              color: biruModern,
-                              fontWeight: FontWeight.w400,
-                              fontSize: 15,
-                            ),
-                          ),
-                        ),
+                const SizedBox(width: 3),
+                const Icon(Icons.keyboard_arrow_down,
+                    color: Colors.black, size: 20),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => setState(() {
+                final now = DateTime.now();
+                _focusedDay = DateTime(now.year, now.month, now.day);
+                _selectedDay = _focusedDay;
+              }),
+              child: const Text(
+                "Hari ini",
+                style: TextStyle(
+                  color: biruModern,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      body: Column(
+        children: [
+          // ==== Calendar ====
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 7),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(13),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.06),
+                  blurRadius: 16, offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                TableCalendar<EventData>(
+                  locale: 'id_ID',
+                  firstDay: DateTime.utc(2005, 1, 1),
+                  lastDay: DateTime.utc(2050, 12, 31),
+                  focusedDay: _focusedDay,
+                  selectedDayPredicate: (day) => isSameDay(day, _selectedDay),
+                  calendarFormat: CalendarFormat.month,
+                  eventLoader: (date) => _events[_normalizeDate(date)] ?? [],
+                  startingDayOfWeek: StartingDayOfWeek.monday,
+                  headerVisible: false,
+                  daysOfWeekStyle: DaysOfWeekStyle(
+                    weekdayStyle: const TextStyle(
+                      color: Colors.black87, fontWeight: FontWeight.w600, fontSize: 12.6,
+                    ),
+                    weekendStyle: const TextStyle(
+                      color: Color(0xFFEF3A3A), fontWeight: FontWeight.w600, fontSize: 12.6,
+                    ),
+                  ),
+                  calendarStyle: const CalendarStyle(
+                    todayDecoration: BoxDecoration(
+                      color: Color(0xFFD0EAFF),
+                      shape: BoxShape.circle,
+                    ),
+                    selectedDecoration: BoxDecoration(
+                      color: biruModern,
+                      shape: BoxShape.circle,
+                    ),
+                    selectedTextStyle: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    defaultTextStyle: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                    weekendTextStyle: TextStyle(
+                      color: Color(0xFFEF3A3A),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                  onDaySelected: (selected, focused) {
+                    setState(() {
+                      _selectedDay = _normalizeDate(selected);
+                      _focusedDay = _normalizeDate(focused);
+                    });
+                  },
+                ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: biruModern, padding: EdgeInsets.zero),
+                    onPressed: _showMonthEventsPage,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Text("Lihat Acara Bulan Ini", style: TextStyle(fontWeight: FontWeight.w600)),
+                        SizedBox(width: 3),
+                        Icon(Icons.arrow_forward, size: 19),
                       ],
                     ),
-                    // TableCalendar
-                    TableCalendar<EventData>(
-                      locale: 'id_ID',
-                      firstDay: DateTime.utc(2005, 1, 1),
-                      lastDay: DateTime.utc(2050, 12, 31),
-                      focusedDay: _focusedDay,
-                      selectedDayPredicate: (day) => isSameDay(day, _selectedDay),
-                      calendarFormat: CalendarFormat.month,
-                      eventLoader: (date) => _events[_normalizeDate(date)] ?? [],
-                      startingDayOfWeek: StartingDayOfWeek.monday,
-                      calendarStyle: const CalendarStyle(
-                        todayDecoration: BoxDecoration(
-                          color: Color(0xFF93C5FD),
-                          shape: BoxShape.circle,
-                        ),
-                        selectedDecoration: BoxDecoration(
-                          color: biruModern,
-                          shape: BoxShape.circle,
-                        ),
-                        selectedTextStyle: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        defaultTextStyle: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        weekendTextStyle: TextStyle(
-                          color: Color(0xFFEF3A3A),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      daysOfWeekStyle: DaysOfWeekStyle(
-                        weekdayStyle: const TextStyle(
-                          color: Colors.black87,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13.5,
-                        ),
-                        weekendStyle: const TextStyle(
-                          color: Color(0xFFEF3A3A),
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13.5,
-                        ),
-                      ),
-                      headerVisible: false,
-                      onDaySelected: (selected, focused) {
-                        setState(() {
-                          _selectedDay = _normalizeDate(selected);
-                          _focusedDay = _normalizeDate(focused);
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 8),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: TextButton(
-                        onPressed: _showMonthEventsPage,
-                        child: const Text(
-                          "Lihat Acara Bulan Ini",
-                          style: TextStyle(
-                            color: biruModern,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 14.5,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // ==== Card Catatan Hari Terpilih ====
-              Expanded(
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 7),
-                  padding: const EdgeInsets.fromLTRB(12, 13, 12, 12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(15),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x11000000),
-                        blurRadius: 12,
-                        offset: Offset(0, 5),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Title & divider
-                      const Padding(
-                        padding: EdgeInsets.only(bottom: 2),
-                        child: Text(
-                          "catatan",
-                          style: TextStyle(
-                            color: biruModern,
-                            fontSize: 17,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                      const Divider(color: biruModern, thickness: 1.3, endIndent: 30),
-                      const SizedBox(height: 9),
-                      // Center icon + text
-                      Expanded(
-                        child: _eventForSelectedDay.isEmpty
-                            ? Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(Icons.event_busy, size: 42, color: Colors.redAccent),
-                                  const SizedBox(height: 6),
-                                  const Text(
-                                    "Tidak ada acara",
-                                    style: TextStyle(
-                                      color: biruModern,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    "Acara pada tanggal yang dipilih akan terlihat di sini.",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      color: Colors.grey[700],
-                                      fontSize: 13.3,
-                                    ),
-                                  ),
-                                ],
-                              )
-                            : ListView.builder(
-                                shrinkWrap: true,
-                                itemCount: _eventForSelectedDay.length,
-                                itemBuilder: (ctx, i) {
-                                  final event = _eventForSelectedDay[i];
-                                  return Card(
-                                    elevation: 0,
-                                    color: Colors.white,
-                                    margin: const EdgeInsets.symmetric(vertical: 7),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(7),
-                                      side: BorderSide(
-                                        color: biruModern.withOpacity(0.2),
-                                        width: 1,
-                                      ),
-                                    ),
-                                    child: ListTile(
-                                      leading: const Icon(Icons.event, color: biruModern, size: 28),
-                                      title: Text(
-                                        event.acara,
-                                        style: const TextStyle(
-                                          color: biruModern,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 15,
-                                        ),
-                                      ),
-                                      subtitle: Text(
-                                        DateFormat('dd MMM yyyy').format(event.date),
-                                        style: TextStyle(
-                                          color: biruModern.withOpacity(0.77),
-                                          fontSize: 13,
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                      ),
-                      const SizedBox(height: 7),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: biruModern,
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            textStyle: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16.5,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          onPressed: _showAddEventDialog,
-                          child: const Text("Tambah"),
-                        ),
-                      ),
-                    ],
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
+          // ==== Card catatan (event/none) ====
+          Expanded(
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 13),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(13),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.07),
+                    blurRadius: 9, offset: Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "catatan",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF2A3253),
+                      fontSize: 15.4,
+                    ),
+                  ),
+                  const Divider(height: 18, color: Color(0xFFE6ECF3), thickness: 1.2),
+                  Expanded(
+                    child: _eventForSelectedDay.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.event_busy,
+                                    size: 46, color: Colors.redAccent),
+                                const SizedBox(height: 10),
+                                const Text(
+                                  "Tidak ada acara",
+                                  style: TextStyle(
+                                    color: Color(0xFF222946),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  "Acara pada tanggal yang dipilih akan terlihat di sini.",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: Colors.grey[700],
+                                    fontSize: 13.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : ListView.builder(
+                            itemCount: _eventForSelectedDay.length,
+                            itemBuilder: (ctx, i) {
+                              final event = _eventForSelectedDay[i];
+                              return Card(
+                                elevation: 0,
+                                color: Colors.white,
+                                margin: const EdgeInsets.symmetric(vertical: 7),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(7),
+                                  side: BorderSide(
+                                    color: biruModern.withOpacity(0.11),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: ListTile(
+                                  leading: const Icon(Icons.event, color: biruModern, size: 26),
+                                  title: Text(
+                                    event.acara,
+                                    style: const TextStyle(
+                                      color: Color(0xFF212B47),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    DateFormat('dd MMM yyyy').format(event.date),
+                                    style: TextStyle(
+                                      color: biruModern.withOpacity(0.7),
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: biruModern,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        textStyle: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15.5,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(7),
+                        ),
+                      ),
+                      onPressed: _showAddEventDialog,
+                      child: const Text("Tambah"),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

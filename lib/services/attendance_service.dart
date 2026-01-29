@@ -4,8 +4,7 @@ import '../models/attendance.dart';
 // Firebase Service untuk Attendance (Kehadiran)
 // Mengelola CRUD operations di collection 'attendance'
 class AttendanceService {
-  static final FirebaseFirestore _firestore =
-      FirebaseFirestore.instance;
+  static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   static const String _collectionName = 'attendance';
 
@@ -51,12 +50,13 @@ class AttendanceService {
         );
       }
 
-      final snapshot =
-          await query.orderBy('date', descending: true).get();
+      final snapshot = await query.orderBy('date', descending: true).get();
 
       return snapshot.docs
-          .map((doc) =>
-              Attendance.fromMap(doc.data() as Map<String, dynamic>, doc.id))
+          .map(
+            (doc) =>
+                Attendance.fromMap(doc.data() as Map<String, dynamic>, doc.id),
+          )
           .toList();
     } catch (e) {
       print('Error fetching attendance: $e');
@@ -70,8 +70,7 @@ class AttendanceService {
     DateTime date,
   ) async {
     try {
-      final startOfDay =
-          DateTime(date.year, date.month, date.day);
+      final startOfDay = DateTime(date.year, date.month, date.day);
       final endOfDay = startOfDay
           .add(const Duration(days: 1))
           .subtract(const Duration(milliseconds: 1));
@@ -79,19 +78,13 @@ class AttendanceService {
       final snapshot = await _firestore
           .collection(_collectionName)
           .where('employeeId', isEqualTo: employeeId)
-          .where(
-            'date',
-            isGreaterThanOrEqualTo: startOfDay.toIso8601String(),
-          )
-          .where(
-            'date',
-            isLessThanOrEqualTo: endOfDay.toIso8601String(),
-          )
+          .where('date', isGreaterThanOrEqualTo: startOfDay.toIso8601String())
+          .where('date', isLessThanOrEqualTo: endOfDay.toIso8601String())
           .get();
 
       if (snapshot.docs.isNotEmpty) {
         return Attendance.fromMap(
-          snapshot.docs.first.data() as Map<String, dynamic>,
+          snapshot.docs.first.data(),
           snapshot.docs.first.id,
         );
       }
@@ -105,14 +98,10 @@ class AttendanceService {
   // Ambil kehadiran berdasarkan ID
   Future<Attendance?> getAttendanceById(String id) async {
     try {
-      final doc =
-          await _firestore.collection(_collectionName).doc(id).get();
+      final doc = await _firestore.collection(_collectionName).doc(id).get();
 
       if (doc.exists) {
-        return Attendance.fromMap(
-          doc.data() as Map<String, dynamic>,
-          doc.id,
-        );
+        return Attendance.fromMap(doc.data() as Map<String, dynamic>, doc.id);
       }
       return null;
     } catch (e) {
@@ -123,10 +112,7 @@ class AttendanceService {
 
   // ================= UPDATE =================
   // Update data kehadiran
-  Future<void> updateAttendance(
-    String id,
-    Attendance updatedAttendance,
-  ) async {
+  Future<void> updateAttendance(String id, Attendance updatedAttendance) async {
     try {
       await _firestore
           .collection(_collectionName)
@@ -141,15 +127,11 @@ class AttendanceService {
   }
 
   // Update jam check-out saja
-  Future<void> updateCheckOutTime(
-    String id,
-    String checkOutTime,
-  ) async {
+  Future<void> updateCheckOutTime(String id, String checkOutTime) async {
     try {
-      await _firestore
-          .collection(_collectionName)
-          .doc(id)
-          .update({'checkOutTime': checkOutTime});
+      await _firestore.collection(_collectionName).doc(id).update({
+        'checkOutTime': checkOutTime,
+      });
 
       print('Check-out time updated');
     } catch (e) {
@@ -162,10 +144,7 @@ class AttendanceService {
   // Hapus data kehadiran
   Future<void> deleteAttendance(String id) async {
     try {
-      await _firestore
-          .collection(_collectionName)
-          .doc(id)
-          .delete();
+      await _firestore.collection(_collectionName).doc(id).delete();
 
       print('Attendance deleted: $id');
     } catch (e) {
@@ -202,13 +181,7 @@ class AttendanceService {
 
       final snapshot = await query.get();
 
-      final stats = {
-        'Hadir': 0,
-        'Izin': 0,
-        'Sakit': 0,
-        'Libur': 0,
-        'Alpa': 0,
-      };
+      final stats = {'Hadir': 0, 'Izin': 0, 'Sakit': 0, 'Libur': 0, 'Alpa': 0};
 
       for (final doc in snapshot.docs) {
         final status = doc['status'] ?? 'Alpa';
@@ -224,8 +197,7 @@ class AttendanceService {
 
   // ================= STREAM =================
   // Real-time attendance
-  Stream<List<Attendance>> getUserAttendanceStream(
-      String employeeId) {
+  Stream<List<Attendance>> getUserAttendanceStream(String employeeId) {
     return _firestore
         .collection(_collectionName)
         .where('employeeId', isEqualTo: employeeId)
@@ -233,10 +205,7 @@ class AttendanceService {
         .snapshots()
         .map(
           (snapshot) => snapshot.docs
-              .map((doc) => Attendance.fromMap(
-                    doc.data() as Map<String, dynamic>,
-                    doc.id,
-                  ))
+              .map((doc) => Attendance.fromMap(doc.data(), doc.id))
               .toList(),
         );
   }

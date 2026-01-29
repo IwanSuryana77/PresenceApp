@@ -12,11 +12,12 @@ dependencies:
     sdk: flutter
 
   # UI & Utility
+
   cupertino_icons: ^1.0.8
-  google_fonts: ^7.0.0
+  google_fonts: ^8.0.0
   intl: ^0.20.2
   shared_preferences: ^2.2.2
-  http: ^1.2.0
+  http: ^1.2.1
 
   # Media & Animation
   carousel_slider: ^5.1.1
@@ -27,13 +28,13 @@ dependencies:
 
   # Camera & Image
   camera: ^0.11.3
-  image_picker: ^1.0.7
-  file_picker: ^10.3.8
+  image_picker: ^1.0.8
+  file_picker: ^10.3.10
 
   # Location & Maps
   geolocator: ^14.0.2
   geocoding: ^4.0.0
-  google_maps_flutter: ^2.6.0
+  google_maps_flutter: ^2.6.1
 
   # Calendar
   table_calendar: ^3.0.9
