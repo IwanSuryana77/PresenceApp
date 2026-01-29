@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/date_symbol_data_local.dart';
+
 import 'screens/auth/login_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/home/home_screen.dart';
@@ -11,22 +12,18 @@ import 'screens/home/profile_page.dart';
 import 'widgets/bottom_nav.dart';
 import 'theme/app_theme.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: const FirebaseOptions(
+      apiKey: "AIzaSyDzYZzOvPh6SECJMJhXPfM_TpgPOewAELA",
+      appId: "1:993683626108:android:7af88d2abb86f784bb11f9",
+      messagingSenderId: "993683626108",
+      projectId: "presenceapp-bb0f5",
+      storageBucket: "presenceapp-bb0f5.firebasestorage.app",
+    ),
+  );
 
-  if (Firebase.apps.isEmpty) {
-    await Firebase.initializeApp(
-      options: const FirebaseOptions(
-        apiKey: "AIzaSyDzYZzOvPh6SECJMJhXPfM_TpgPOewAELA",
-        appId: "1:993683626108:android:7af88d2abb86f784bb11f9",
-        messagingSenderId: "993683626108",
-        projectId: "presenceapp-bb0f5",
-        storageBucket: "presenceapp-bb0f5.firebasestorage.app",
-      ),
-    );
-  }
-
-  // Initialize date formatting for Indonesian locale
   await initializeDateFormatting('id_ID', null);
 
   runApp(const MyApp());
@@ -41,13 +38,10 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Presence App',
       theme: AppTheme.light(),
-      // SplashScreen sebagai halaman pertama
       home: const SplashScreen(),
-      // Daftar route aplikasi
       routes: {
         '/login': (context) => const LoginScreen(),
         '/main': (context) => const BottomNavWrapper(),
-        // Tambahkan route lain jika perlu
       },
     );
   }
@@ -68,10 +62,8 @@ class AuthGate extends StatelessWidget {
           );
         }
         if (snapshot.data == null) {
-          // Belum login -> tampilkan layar login modern
           return const LoginScreen();
         }
-        // Sudah login -> lanjut ke aplikasi utama
         return const BottomNavWrapper();
       },
     );
